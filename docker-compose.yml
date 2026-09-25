@@ -1,0 +1,20 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: bomberman-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${BOMBERMAN_DB_PASSWORD:?BOMBERMAN_DB_PASSWORD must be set}
+      MYSQL_DATABASE: bomberman_online
+    ports:
+      - "${BOMBERMAN_DB_PORT:-3306}:3306"
+    volumes:
+      - bomberman_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  bomberman_mysql_data:

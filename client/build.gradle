@@ -1,0 +1,27 @@
+plugins {
+    id 'application'
+}
+
+ext {
+    gdxVersion = '1.13.1'
+}
+
+dependencies {
+    implementation project(':common')
+    implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+    runtimeOnly "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+
+    testImplementation platform('org.junit:junit-bom:5.12.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.mockito:mockito-core:5.18.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+application {
+    mainClass = 'com.bomberman.client.DesktopLauncher'
+}
+
+tasks.named('run') {
+    workingDir = rootProject.projectDir
+}
