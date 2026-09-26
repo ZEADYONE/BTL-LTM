@@ -57,7 +57,7 @@ public final class GameScreen implements Screen {
     private final Label diagnostics = new Label();
     private final List<HudPlayerCard> cards = new ArrayList<>();
     private final Set<KeyCode> heldKeys = EnumSet.noneOf(KeyCode.class);
-    private final MatchTracker tracker = new MatchTracker();
+    private final MatchTracker tracker;
     private final GameRenderer renderer;
     private final InputController input;
     private final AnimationTimer timer;
@@ -76,12 +76,13 @@ public final class GameScreen implements Screen {
     private double displayedFps;
 
     public GameScreen(ClientState state, GameClientController controller, Navigator navigator,
-                      SvgAssets assets, AppShell shell) {
+                      SvgAssets assets, AppShell shell, MatchTracker tracker) {
         this.state = state;
         this.controller = controller;
         this.navigator = navigator;
         this.shell = shell;
         this.assets = assets;
+        this.tracker = tracker;
         renderer = new GameRenderer(canvas, assets, tracker);
         input = new InputController(controller::move, controller::placeBomb, this::inputAllowed);
 

@@ -69,6 +69,12 @@ public final class Confetti extends Pane {
         timer.start();
     }
 
+    public void stopAndClear() {
+        timer.stop();
+        pieces.clear();
+        getChildren().clear();
+    }
+
     private void step(double delta) {
         pieces.removeIf(piece -> {
             piece.age += delta;

@@ -120,7 +120,8 @@ public final class GameClientController implements AutoCloseable {
     }
 
     public CompletableFuture<NetworkMessage> playAgain() {
-        return request(MessageType.PLAY_AGAIN, null, false);
+        // ResultScreen treats ROOM_NOT_FINISHED as a successful rematch race.
+        return request(MessageType.PLAY_AGAIN, null, true);
     }
 
     public CompletableFuture<NetworkMessage> requestRanking() {

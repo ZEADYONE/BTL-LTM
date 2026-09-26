@@ -454,6 +454,81 @@
     -fx-text-fill: #A5F0B5;
 }
 
+/* ---------- Result ---------- */
+.result-screen { -fx-background-color: transparent; }
+.section-heading {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 24px;
+    -fx-text-fill: white;
+}
+.result-table {
+    -fx-background-color: rgba(42, 31, 61, 0.34);
+    -fx-background-radius: 20;
+    -fx-padding: 14;
+}
+
+/* ---------- Leaderboard ---------- */
+.podium-name, .podium-score, .podium-rank {
+    -fx-font-family: "Lilita One";
+    -fx-text-fill: white;
+}
+.podium-name { -fx-font-size: 19px; }
+.podium-score { -fx-font-size: 15px; -fx-text-fill: #FFE066; }
+.podium-rank { -fx-font-size: 38px; }
+.podium-platform {
+    -fx-background-color: -color-outline, linear-gradient(to bottom, #B9AEDD, #7362AC);
+    -fx-background-insets: 0, 4;
+    -fx-background-radius: 14 14 0 0, 10 10 0 0;
+    -fx-padding: 8;
+}
+.podium-rank-1 { -fx-background-color: -color-outline, linear-gradient(to bottom, #FFE066, #D89B0B); }
+.podium-rank-2 { -fx-background-color: -color-outline, linear-gradient(to bottom, #E5E8EF, #A2A9B8); }
+.podium-rank-3 { -fx-background-color: -color-outline, linear-gradient(to bottom, #E9A56B, #B9632D); }
+.leaderboard-table {
+    -fx-background-color: rgba(42, 31, 61, 0.28);
+    -fx-background-radius: 18;
+    -fx-padding: 10 14;
+}
+.leaderboard-header {
+    -fx-padding: 0 14;
+    -fx-font-family: "Nunito Black";
+    -fx-font-size: 14px;
+    -fx-text-fill: #FFF1E6;
+}
+.leaderboard-row {
+    -fx-background-color: -color-outline, #FFF1E6;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 12, 10;
+    -fx-padding: 6 12;
+    -fx-alignment: center-left;
+    -fx-font-family: "Nunito";
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-text-fill: -color-outline;
+}
+.leaderboard-row.you { -fx-background-color: white, #D9C8FF; }
+.leaderboard-row.pinned { -fx-background-color: #FFE066, #D9C8FF; }
+.leaderboard-name { -fx-font-family: "Nunito Black"; -fx-font-size: 17px; }
+.leaderboard-rank, .leaderboard-score { -fx-font-family: "Lilita One"; -fx-font-size: 20px; }
+.pinned-divider { -fx-min-height: 2px; -fx-background-color: rgba(255,255,255,0.5); }
+
+/* ---------- Match history ---------- */
+.history-card {
+    -history-accent: #8C8FA3;
+    -fx-background-color: -history-accent, -color-outline, #FFF1E6;
+    -fx-background-insets: 0, 0 0 0 10, 2 2 2 12;
+    -fx-background-radius: 14;
+    -fx-padding: 10 18 10 24;
+}
+.history-win { -history-accent: #38A83A; }
+.history-loss { -history-accent: #E23C3C; }
+.history-draw { -history-accent: #8C8FA3; }
+.history-result { -fx-font-family: "Lilita One"; -fx-font-size: 24px; -fx-text-fill: -color-outline; }
+.history-meta { -fx-font-family: "Nunito"; -fx-font-size: 14px; -fx-text-fill: #6B5B85; }
+.history-duration { -fx-font-family: "Lilita One"; -fx-font-size: 17px; -fx-text-fill: #6B5B85; }
+.history-player-name { -fx-font-family: "Nunito"; -fx-font-weight: bold; -fx-font-size: 13px; }
+.history-score { -fx-font-family: "Lilita One"; -fx-font-size: 30px; -fx-text-fill: #5F36B8; }
+
 .check-icon {
     -fx-background-color: -color-outline, -check-fill;
     -fx-background-insets: 0, 2;

@@ -101,9 +101,11 @@ GĐ1 ──► GĐ2 ──┬──► GĐ3 ──► GĐ4 ──► GĐ5 ──
 ## Giai đoạn 6 · Result, Leaderboard, History (M)
 
 **Đầu việc**
-- [ ] S6 Result: 3 biến thể, bảng xếp hạng theo thứ tự bị loại, tranh chấp Play Again.
-- [ ] S7 Leaderboard: bục top 3 và bảng.
-- [ ] S8 History.
+- [x] S6 Result: 3 biến thể, bảng xếp hạng theo thứ tự bị loại, tranh chấp Play Again.
+- [x] S7 Leaderboard: bục top 3 và bảng.
+- [x] S8 History.
+
+**Kiểm thử tự động:** `client-fx` 78 test pass. `MatchTracker` kiểm tra đồng hạng, thứ tự bị loại, hòa và fallback khi thiếu snapshot; `GameFormats` kiểm tra điểm nửa đơn vị, thời lượng và múi giờ. App khởi động thành công với cả ba màn đã đăng ký; vẫn cần thử tay các tiêu chí dưới đây trên dữ liệu server thật.
 
 **Nghiệm thu**
 - [ ] Tiêu chí ở [02](02-man-hinh-va-dieu-huong.md) mục 3.6–3.8.

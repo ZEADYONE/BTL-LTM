@@ -2,7 +2,7 @@
 
 Bộ tài liệu gồm kế hoạch và yêu cầu cho việc làm lại giao diện client desktop, theo 6 mẫu thiết kế trong thư mục [`img/`](../../img/).
 
-> **Trạng thái:** đang triển khai; giai đoạn 1–4 đã hoàn thành, giai đoạn 5 đã xong phần code và đang chờ nghiệm thu thủ công.
+> **Trạng thái:** đang triển khai; giai đoạn 1–4 đã hoàn thành, giai đoạn 5–6 đã xong phần code và đang chờ nghiệm thu thủ công.
 > **Cập nhật lần cuối:** 2026-09-26
 
 ## Mục tiêu
@@ -77,7 +77,7 @@ Khi một quyết định thay đổi, cập nhật bảng này và các file li
 - [x] Giai đoạn 3: Login, Home, popup (2026-09-26)
 - [x] Giai đoạn 4: Room Browser, Room Lobby (2026-09-26)
 - [ ] Giai đoạn 5: Màn chơi — đã xong phần code và test tự động (2026-09-26), chờ thử tay T08–T10 và đo FPS
-- [ ] Giai đoạn 6: Result, Leaderboard, History
+- [ ] Giai đoạn 6: Result, Leaderboard, History — đã xong phần code và test tự động (2026-09-26), chờ thử tay
 - [ ] Giai đoạn 7: Đóng gói exe
 
 Tài nguyên: 22/22 SVG bắt buộc đã có **bản tạm** (0/22 bản đẹp), B07 họa tiết nền có bản tạm, 2/2 bộ font (xem [05](05-tai-nguyen-svg-va-font.md)).
