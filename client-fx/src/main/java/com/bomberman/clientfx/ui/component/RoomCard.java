@@ -24,6 +24,7 @@ public final class RoomCard extends VBox {
     private final List<PlayerHead> heads = new ArrayList<>();
     private final Tag status = new Tag("", Tag.Kind.WAITING);
     private final GameButton join = new GameButton("JOIN", GameButton.Tone.GREEN, GameButton.Size.S);
+    private boolean joinable;
 
     public RoomCard(SvgAssets assets) {
         getStyleClass().add("room-card");
@@ -64,7 +65,18 @@ public final class RoomCard extends VBox {
             case PLAYING -> Tag.Kind.PLAYING;
             case FINISHED -> Tag.Kind.FINISHED;
         });
-        join.setDisable(roomStatus != RoomStatus.WAITING || players >= maxPlayers);
+        joinable = roomStatus == RoomStatus.WAITING && players < maxPlayers;
+        if (!join.isLoading()) {
+            join.setDisable(!joinable);
+        }
+    }
+
+    /** Spinner on JOIN while the request is in flight. */
+    public void setBusy(boolean busy) {
+        join.setLoading(busy);
+        if (!busy) {
+            join.setDisable(!joinable);
+        }
     }
 
     public void setOnJoin(Runnable action) {

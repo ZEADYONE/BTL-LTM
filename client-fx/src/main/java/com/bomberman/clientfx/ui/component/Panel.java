@@ -16,11 +16,12 @@ public final class Panel extends VBox {
     }
 
     private final VBox body = new VBox(10);
+    private Label header;
 
     public Panel(Style style, String title, Node... content) {
         getStyleClass().addAll("panel", "panel-" + style.name().toLowerCase(Locale.ROOT));
         if (title != null) {
-            Label header = new Label(title);
+            header = new Label(title);
             header.getStyleClass().addAll("panel-header", "label-display");
             header.setStyle("-fx-font-size: 22px;");
             header.setMaxWidth(Double.MAX_VALUE);
@@ -29,6 +30,13 @@ public final class Panel extends VBox {
         body.getStyleClass().add("panel-body");
         body.getChildren().addAll(content);
         getChildren().add(body);
+    }
+
+    /** Changes the header text; ignored for panels created without a title. */
+    public void setTitle(String title) {
+        if (header != null) {
+            header.setText(title);
+        }
     }
 
     public VBox body() {

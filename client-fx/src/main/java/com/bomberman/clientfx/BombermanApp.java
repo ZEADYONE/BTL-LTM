@@ -18,6 +18,8 @@ import com.bomberman.clientfx.ui.screen.GalleryScreen;
 import com.bomberman.clientfx.ui.screen.HomeScreen;
 import com.bomberman.clientfx.ui.screen.LoginScreen;
 import com.bomberman.clientfx.ui.screen.PlaceholderScreen;
+import com.bomberman.clientfx.ui.screen.RoomBrowserScreen;
+import com.bomberman.clientfx.ui.screen.RoomLobbyScreen;
 import com.bomberman.clientfx.ui.popup.Popups;
 import com.bomberman.clientfx.ui.theme.Fonts;
 import javafx.application.Application;
@@ -75,8 +77,10 @@ public final class BombermanApp extends Application {
 
         navigator.register(ScreenId.LOGIN, new LoginScreen(state, controller, preferences, assets, shell));
         navigator.register(ScreenId.HOME, new HomeScreen(state, controller, navigator, assets, shell, stage));
+        navigator.register(ScreenId.ROOM_BROWSER, new RoomBrowserScreen(state, controller, navigator, assets));
+        navigator.register(ScreenId.ROOM_LOBBY, new RoomLobbyScreen(state, controller, assets, shell));
         navigator.setFallback(id -> switch (id) {
-            case ROOM_LOBBY, GAME, RESULT -> new PlaceholderScreen(id, "LEAVE ROOM", controller::leaveRoom);
+            case GAME, RESULT -> new PlaceholderScreen(id, "LEAVE ROOM", controller::leaveRoom);
             default -> new PlaceholderScreen(id, "BACK", () -> navigator.show(ScreenId.HOME));
         });
 

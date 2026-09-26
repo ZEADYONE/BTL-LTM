@@ -116,14 +116,28 @@ class ClientMessageDispatcherTest {
 
     @Test
     void gameStateIsStoredAndOpensTheGameScreen() {
-        GameStateDto snapshot = new GameStateDto(
-                4, GameStatus.RUNNING, List.of(List.of(TileType.EMPTY)), List.of(), List.of(), List.of(), 2
-        );
+        dispatcher.onMessage(roomState(true, RoomStatus.PLAYING));
+        navigator.show(ScreenId.ROOM_LOBBY);
 
-        dispatcher.onMessage(message(MessageType.GAME_STATE, snapshot));
+        dispatcher.onMessage(message(MessageType.GAME_STATE, snapshot(4)));
 
         assertEquals(4, state.getGameState().tick());
         assertEquals(ScreenId.GAME, navigator.current());
+    }
+
+    @Test
+    void lateSnapshotsAfterLeavingDoNotPullThePlayerBackIntoTheMatch() {
+        dispatcher.onMessage(roomState(true, RoomStatus.PLAYING));
+        dispatcher.onMessage(roomState(false, RoomStatus.PLAYING));
+        assertEquals(ScreenId.HOME, navigator.current());
+
+        dispatcher.onMessage(message(MessageType.GAME_STATE, snapshot(9)));
+
+        assertEquals(ScreenId.HOME, navigator.current());
+    }
+
+    private static GameStateDto snapshot(long tick) {
+        return new GameStateDto(tick, GameStatus.RUNNING, List.of(List.of(TileType.EMPTY)), List.of(), List.of(), List.of(), 2);
     }
 
     @Test

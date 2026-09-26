@@ -379,7 +379,7 @@ Tiêu đề "CONNECTION LOST", nội dung "Lost connection to <host>:<port>.", n
 | `ROOM_STATE`, `member = true`, `WAITING` | `room` | → S4, **trừ khi** đang ở S6: ở lại và bật cờ rematch (mục 3.6) |
 | `ROOM_STATE`, `member = true`, `PLAYING` | `room`; bắt đầu theo dõi trận mới (06 mục 8) | → S5 |
 | `ROOM_STATE`, `member = true`, `FINISHED` | `room` | Không chuyển màn |
-| `GAME_STATE` | Snapshot mới nhất (ghi ngay trên luồng mạng); cập nhật bộ theo dõi trận | Nếu chưa ở S5/S6 → S5 |
+| `GAME_STATE` | Snapshot mới nhất (ghi ngay trên luồng mạng); cập nhật bộ theo dõi trận | Nếu **đang ở trong phòng** và chưa ở S5/S6 → S5. Người vừa rời phòng vẫn nhận snapshot tới khi trận kết thúc, nên không được kéo họ về S5 |
 | `GAME_OVER` | `gameOver` | Sau 1.2 giây → S6 |
 | `RANKING_RESPONSE` | `rankingEntries` | Cập nhật S2, S7 |
 | `HISTORY_RESPONSE` | `matchHistory` | Cập nhật S8 |

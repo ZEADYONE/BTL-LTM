@@ -157,7 +157,9 @@ public final class ClientMessageDispatcher implements ServerListener {
             state.setLatestGameState(read(message, GameStateDto.class));
             uiThread.execute(() -> {
                 ScreenId current = navigator.current();
-                if (current != ScreenId.GAME && current != ScreenId.RESULT) {
+                // The server keeps sending snapshots to a player who just left until the match ends;
+                // only players still in a room are taken to the match.
+                if (state.getRoom() != null && current != ScreenId.GAME && current != ScreenId.RESULT) {
                     navigator.show(ScreenId.GAME);
                 }
             });

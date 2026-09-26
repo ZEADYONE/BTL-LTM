@@ -32,6 +32,15 @@ public final class InputValidation {
         return Optional.empty();
     }
 
+    /** The server trims the name before checking it. */
+    public static Optional<String> roomNameError(String roomName) {
+        String trimmed = roomName == null ? "" : roomName.strip();
+        if (trimmed.isEmpty() || trimmed.length() > ServerRules.MAX_ROOM_NAME_LENGTH) {
+            return Optional.of("Room name must be 1–" + ServerRules.MAX_ROOM_NAME_LENGTH + " characters.");
+        }
+        return Optional.empty();
+    }
+
     public static Optional<String> hostError(String host) {
         if (host == null || host.isBlank()) {
             return Optional.of("Host is required.");

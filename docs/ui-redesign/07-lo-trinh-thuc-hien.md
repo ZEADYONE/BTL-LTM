@@ -66,14 +66,18 @@ GĐ1 ──► GĐ2 ──┬──► GĐ3 ──► GĐ4 ──► GĐ5 ──
 ## Giai đoạn 4 · Room Browser và Room Lobby (M)
 
 **Đầu việc**
-- [ ] S3 Room Browser: lưới phòng, tạo phòng, danh sách online.
-- [ ] S4 Room Lobby theo mẫu 4 (R-01…R-20): slot, map xem trước có điểm xuất phát, panel INFO và ROOM STATUS.
-- [ ] Quy tắc chuyển màn theo `ROOM_STATE` ([02](02-man-hinh-va-dieu-huong.md) mục 5).
-- [ ] Nạp trước sprite trận khi vào S4.
+- [x] S3 Room Browser: lưới phòng (cập nhật tại chỗ theo roomId), tạo phòng, danh sách online có trạng thái.
+- [x] S4 Room Lobby theo mẫu 4 (R-01…R-20): slot, map xem trước có điểm xuất phát (`ArenaPreview`, `MapPreview`), panel INFO và ROOM STATUS (`LobbyStatus`).
+- [x] Quy tắc chuyển màn theo `ROOM_STATE` ([02](02-man-hinh-va-dieu-huong.md) mục 5). Thêm: snapshot đến muộn sau khi đã rời phòng không kéo người chơi về màn trận.
+- [ ] Nạp trước sprite trận khi vào S4 → **chuyển sang giai đoạn 5**, vì cỡ ô trên sân chỉ biết khi có `BoardLayout`.
 
-**Nghiệm thu**
-- [ ] Tiêu chí ở [02](02-man-hinh-va-dieu-huong.md) mục 3.3 và 3.4.
-- [ ] Hai client: tạo phòng, vào phòng, READY, START → cả hai vào trận.
+**Nghiệm thu** (server của bạn, 2 client)
+- [x] Room Browser: thẻ phòng hiện tên, host, 1/4, WAITING, JOIN; danh sách online hiện IN ROOM / IN LOBBY đúng.
+- [x] Hai client: tạo phòng, vào phòng, READY, host START → cả hai vào màn trận. START bị khóa khi chưa đủ điều kiện; người không phải host thấy "WAITING FOR HOST".
+- [x] Map xem trước hiện đầu nhân vật ở đúng góc xuất phát của từng slot.
+- [x] Rời trận giữa chừng → về Home; người còn lại thắng, hạng và điểm cập nhật (RANK #1 · 1.0 PTS).
+- [x] `.\gradlew test` pass: client-fx 55, server 60, common 9, client 1.
+- [ ] Host rời phòng → host mới: chưa thử tay (server đã có test cho logic này).
 
 ## Giai đoạn 5 · Màn chơi (L)
 

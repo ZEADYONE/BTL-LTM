@@ -6,6 +6,7 @@ import static com.bomberman.clientfx.ui.InputValidation.confirmationError;
 import static com.bomberman.clientfx.ui.InputValidation.hostError;
 import static com.bomberman.clientfx.ui.InputValidation.passwordError;
 import static com.bomberman.clientfx.ui.InputValidation.portError;
+import static com.bomberman.clientfx.ui.InputValidation.roomNameError;
 import static com.bomberman.clientfx.ui.InputValidation.usernameError;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -41,6 +42,16 @@ class InputValidationTest {
         assertTrue(portError("65536").isPresent());
         assertTrue(portError("abc").isPresent());
         assertTrue(portError("").isPresent());
+    }
+
+    @Test
+    void roomNameIsTrimmedThenLimitedToSixty() {
+        assertTrue(roomNameError("Bomber Party!").isEmpty());
+        assertTrue(roomNameError("  Phòng của Đức  ").isEmpty());
+        assertTrue(roomNameError("   ").isPresent());
+        assertTrue(roomNameError("x".repeat(60)).isEmpty());
+        assertTrue(roomNameError("  " + "x".repeat(60) + "  ").isEmpty());
+        assertTrue(roomNameError("x".repeat(61)).isPresent());
     }
 
     @Test
