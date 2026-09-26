@@ -114,9 +114,9 @@ GĐ1 ──► GĐ2 ──┬──► GĐ3 ──► GĐ4 ──► GĐ5 ──
 ## Giai đoạn 7 · Đóng gói và hoàn thiện (S)
 
 **Đầu việc**
-- [ ] Tạo `packaging/app_icon.ico` (16–256 px) từ C06 hoặc A02.
-- [ ] Task `packageApp`; tùy chọn `packageInstaller`.
-- [ ] Cập nhật README gốc: cách chạy và đóng gói `client-fx`.
+- [x] Tạo `packaging/app_icon.ico` (16–256 px) từ C06 hoặc A02.
+- [x] Task `packageApp`; tùy chọn `packageInstaller`.
+- [x] Cập nhật README gốc: cách chạy và đóng gói `client-fx`.
 - [ ] Chạy toàn bộ kịch bản thử tay ở [08](08-kiem-thu-va-rui-ro.md).
 
 **Nghiệm thu**

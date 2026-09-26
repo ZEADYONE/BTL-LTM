@@ -35,3 +35,70 @@ application {
 tasks.named('run') {
     workingDir = rootProject.projectDir
 }
+
+def packageName = 'BombermanOnline'
+def isWindows = System.getProperty('os.name').toLowerCase().contains('windows')
+def packageIcon = rootProject.layout.projectDirectory.file('packaging/app_icon.ico')
+def jpackageInput = layout.buildDirectory.dir('jpackage/input')
+def packageDestination = layout.buildDirectory.dir('dist')
+def clientJar = tasks.named('jar', Jar)
+def jpackageExecutable = javaToolchains.launcherFor {
+    languageVersion = JavaLanguageVersion.of(21)
+}.map { launcher ->
+    launcher.metadata.installationPath.file("bin/jpackage${isWindows ? '.exe' : ''}").asFile
+}
+
+tasks.register('prepareJpackageInput', Sync) {
+    group = 'distribution'
+    description = 'Collects the JavaFX client and its runtime dependencies for jpackage.'
+    dependsOn clientJar
+
+    into(jpackageInput)
+    from(clientJar.flatMap { it.archiveFile })
+    from(configurations.runtimeClasspath)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.register('packageApp', Exec) {
+    group = 'distribution'
+    description = 'Builds a self-contained Windows app image with jpackage.'
+    dependsOn tasks.named('prepareJpackageInput')
+
+    inputs.file(packageIcon)
+    inputs.files(configurations.runtimeClasspath)
+    outputs.dir(packageDestination.map { it.dir(packageName) })
+
+    doFirst {
+        if (!isWindows) {
+            throw new GradleException('packageApp currently targets Windows and must run on Windows.')
+        }
+        if (!packageIcon.asFile.isFile()) {
+            throw new GradleException("Missing application icon: ${packageIcon.asFile}")
+        }
+
+        File jpackage = jpackageExecutable.get()
+        if (!jpackage.isFile()) {
+            throw new GradleException(
+                    "JDK 21 does not provide jpackage at ${jpackage}. Install a full JDK 21, not a JRE."
+            )
+        }
+
+        File inputDir = jpackageInput.get().asFile
+        File destinationDir = packageDestination.get().asFile
+        File appImageDir = new File(destinationDir, packageName)
+        project.delete(appImageDir)
+        destinationDir.mkdirs()
+
+        executable jpackage.absolutePath
+        args '--type', 'app-image',
+                '--name', packageName,
+                '--input', inputDir.absolutePath,
+                '--main-jar', clientJar.get().archiveFileName.get(),
+                '--main-class', application.mainClass.get(),
+                '--icon', packageIcon.asFile.absolutePath,
+                '--dest', destinationDir.absolutePath,
+                '--java-options', '-Dfile.encoding=UTF-8',
+                '--vendor', 'Bomberman Online',
+                '--description', 'Online multiplayer Bomberman game'
+    }
+}

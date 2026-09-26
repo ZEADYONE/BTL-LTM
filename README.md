@@ -1,12 +1,13 @@
 # Bomberman Online Mini
 
 Đồ án Lập trình mạng: game Bomberman desktop 2–4 người chơi mỗi phòng, hỗ trợ nhiều
-phòng chạy đồng thời. Server Spring Boot là authoritative server; client libGDX chỉ
-gửi input và render snapshot nhận qua persistent TCP connection.
+phòng chạy đồng thời. Server Spring Boot là authoritative server; client JavaFX mới
+và client libGDX tương thích ngược chỉ gửi input rồi render snapshot nhận qua kết nối
+TCP duy trì liên tục.
 
 ## Requirements
 
-- JDK 21
+- JDK 21 đầy đủ (`jpackage` cần thiết khi đóng gói bản Windows)
 - Docker Desktop hoặc Docker Engine + Docker Compose
 - Gradle Wrapper đi kèm project, không cần cài Gradle riêng
 - Windows, Linux hoặc macOS để chạy server; desktop client cần môi trường đồ họa
@@ -34,6 +35,13 @@ bomberman-online/
 │       ├── screen/                 Login/Lobby/Room/Game/Ranking/History
 │       ├── state/                  presentation state
 │       └── renderer/               authoritative snapshot renderer
+├── client-fx/                      JavaFX desktop application (giao diện chính)
+│   └── src/main/java/com/bomberman/clientfx/
+│       ├── game/                   renderer, input và hiệu ứng trận đấu
+│       ├── network/                persistent TCP client và dispatcher
+│       ├── state/                  presentation state
+│       └── ui/                     screen, component, popup và theme
+├── packaging/                      icon nguồn và icon nhiều kích thước cho Windows
 ├── docker-compose.yml              MySQL only
 ├── settings.gradle
 └── build.gradle
@@ -47,12 +55,13 @@ bomberman-online/
 | `BOMBERMAN_DB_USERNAME` | server | `root` | Database username |
 | `BOMBERMAN_DB_URL` | server | local `bomberman_online` database | JDBC URL |
 | `BOMBERMAN_DB_PORT` | Docker | `3306` | Published MySQL port |
-| `BOMBERMAN_TCP_PORT` | server, client | `8081` | Gameplay TCP port |
-| `BOMBERMAN_SERVER_HOST` | client | `127.0.0.1` | TCP server hostname/IP |
+| `BOMBERMAN_TCP_PORT` | server, clients | `8081` | Gameplay TCP port |
+| `BOMBERMAN_SERVER_HOST` | clients | `127.0.0.1` | TCP server hostname/IP |
 
-Client defaults live in `client/src/main/resources/client.properties`. They can also
-be overridden with Java system properties `bomberman.server.host` and
-`bomberman.tcp.port`.
+Client defaults live in each module's `src/main/resources/client.properties`. They can
+also be overridden with Java system properties `bomberman.server.host` and
+`bomberman.tcp.port`. Trên client JavaFX, người chơi có thể nhập `host:port` ngay tại
+màn hình đăng nhập; địa chỉ hợp lệ gần nhất sẽ được ghi nhớ.
 
 ## Start MySQL
 
@@ -92,21 +101,25 @@ Linux/macOS:
 The server opens gameplay TCP port `8081` by default. Gameplay does not use an HTTP,
 REST or WebSocket endpoint.
 
-## Run desktop client
+## Run JavaFX desktop client
 
 In another terminal:
 
 ```powershell
-.\gradlew.bat :client:run
+.\gradlew.bat :client-fx:run
 ```
 
-For a remote server:
+Mở gallery component và tài nguyên giao diện:
 
 ```powershell
-$env:BOMBERMAN_SERVER_HOST = "192.168.1.20"
-$env:BOMBERMAN_TCP_PORT = "8081"
-.\gradlew.bat :client:run
+.\gradlew.bat :client-fx:run --args="--gallery"
 ```
+
+Để kết nối server từ xa hoặc trong mạng LAN, chọn **Server Address** trên màn hình
+đăng nhập rồi nhập `host:port`, ví dụ `192.168.1.20:8081`.
+
+Client libGDX cũ vẫn có thể chạy bằng `.\gradlew.bat :client:run` để kiểm tra tương
+thích giao thức.
 
 ## Demo with four clients
 
@@ -114,13 +127,13 @@ $env:BOMBERMAN_TCP_PORT = "8081"
 2. Build the reusable desktop distribution:
 
    ```powershell
-   .\gradlew.bat :client:installDist
+   .\gradlew.bat :client-fx:installDist
    ```
 
 3. Open four terminals and run this command once in each terminal:
 
    ```powershell
-   .\client\build\install\client\bin\client.bat
+   .\client-fx\build\install\client-fx\bin\client-fx.bat
    ```
 
 4. Register four different accounts and log in.
@@ -128,6 +141,27 @@ $env:BOMBERMAN_TCP_PORT = "8081"
 6. All players press Ready; the host presses Start Game.
 7. Use WASD/arrow keys to move and Space to place a bomb.
 8. On game over, open Ranking and History from the Lobby to inspect persisted data.
+
+## Package the JavaFX client for Windows
+
+Trên Windows có cài JDK 21 đầy đủ, chạy:
+
+```powershell
+.\gradlew.bat :client-fx:packageApp
+```
+
+Gradle tự tìm `jpackage` trong JDK 21 toolchain; không bắt buộc thêm `jpackage` vào
+`PATH`. Kết quả nằm tại:
+
+```text
+client-fx/build/dist/BombermanOnline/
+├── BombermanOnline.exe
+├── app/
+└── runtime/
+```
+
+Thư mục `runtime/` chứa Java dành riêng cho ứng dụng. Khi phát hành, nén và gửi
+**toàn bộ thư mục `BombermanOnline`**, không gửi riêng file `.exe`.
 
 ## Architecture
 

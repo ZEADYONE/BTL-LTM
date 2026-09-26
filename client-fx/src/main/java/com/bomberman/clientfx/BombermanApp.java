@@ -31,6 +31,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
@@ -43,6 +44,7 @@ import java.util.Objects;
 public final class BombermanApp extends Application {
 
     private static final String TITLE = "Bomberman Online Mini";
+    private static final String APP_ICON = "/assets/app_icon.png";
     private static final String GALLERY_FLAG = "--gallery";
     private static final double MIN_WIDTH = 960;
     private static final double MIN_HEIGHT = 540;
@@ -107,6 +109,10 @@ public final class BombermanApp extends Application {
         });
 
         stage.setTitle(TITLE);
+        stage.getIcons().add(new Image(Objects.requireNonNull(
+                BombermanApp.class.getResource(APP_ICON),
+                "Missing " + APP_ICON
+        ).toExternalForm()));
         stage.setMinWidth(MIN_WIDTH);
         stage.setMinHeight(MIN_HEIGHT);
         // ESC is reserved for popups and the in-match menu, so only F11 leaves fullscreen.

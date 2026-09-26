@@ -78,7 +78,7 @@ Khi một quyết định thay đổi, cập nhật bảng này và các file li
 - [x] Giai đoạn 4: Room Browser, Room Lobby (2026-09-26)
 - [ ] Giai đoạn 5: Màn chơi — đã xong phần code và test tự động (2026-09-26), chờ thử tay T08–T10 và đo FPS
 - [ ] Giai đoạn 6: Result, Leaderboard, History — đã xong phần code và test tự động (2026-09-26), chờ thử tay
-- [ ] Giai đoạn 7: Đóng gói exe
+- [ ] Giai đoạn 7: Đã xong icon, task `packageApp` và hướng dẫn; chờ chạy toàn bộ kịch bản thử tay, LAN và máy không cài Java
 
 Tài nguyên: 22/22 SVG bắt buộc đã có **bản tạm** (0/22 bản đẹp), B07 họa tiết nền có bản tạm, 2/2 bộ font (xem [05](05-tai-nguyen-svg-va-font.md)).
 
