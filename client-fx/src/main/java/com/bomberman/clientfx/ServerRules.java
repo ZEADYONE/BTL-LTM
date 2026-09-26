@@ -9,6 +9,9 @@ public final class ServerRules {
     /** AuthenticationService.MAX_USERNAME_LENGTH. */
     public static final int MAX_USERNAME_LENGTH = 50;
 
+    /** RoomManager.MAX_ROOM_NAME_LENGTH (after trimming). */
+    public static final int MAX_ROOM_NAME_LENGTH = 60;
+
     private ServerRules() {
     }
 }

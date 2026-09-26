@@ -24,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,12 +39,15 @@ class ClientMessageDispatcherTest {
     private final ClientState state = new ClientState();
     private final RecordingNavigator navigator = new RecordingNavigator();
     private final List<String> feedback = new ArrayList<>();
+    private final PendingRequests pendingRequests = new PendingRequests(Runnable::run, java.time.Duration.ofSeconds(5), () -> { });
+    private int connectionLostCount;
     private ClientMessageDispatcher dispatcher;
 
     @BeforeEach
     void setUp() {
         state.addFeedbackListener(entry -> feedback.add(entry.message()));
-        dispatcher = new ClientMessageDispatcher(state, navigator, Runnable::run);
+        dispatcher = new ClientMessageDispatcher(state, navigator, Runnable::run, pendingRequests,
+                () -> connectionLostCount++);
         navigator.show(ScreenId.LOGIN);
     }
 
@@ -140,11 +144,39 @@ class ClientMessageDispatcherTest {
         state.login(1L, "alex");
         navigator.show(ScreenId.HOME);
 
+        state.setConnected(true);
+        CompletableFuture<NetworkMessage> waiting = pendingRequests.register("request-1", false);
+
         dispatcher.onDisconnected();
 
         assertFalse(state.isLoggedIn());
+        assertFalse(state.isConnected());
         assertEquals(ScreenId.LOGIN, navigator.current());
-        assertEquals(List.of("Disconnected from server."), feedback);
+        assertEquals(1, connectionLostCount);
+        assertTrue(waiting.isCompletedExceptionally());
+    }
+
+    @Test
+    void repliesCompleteTheirPendingRequestAfterBeingApplied() {
+        CompletableFuture<NetworkMessage> reply = pendingRequests.register("login-1", false);
+        reply.thenRun(() -> assertTrue(state.isLoggedIn(), "state must be updated before the caller hears back"));
+
+        dispatcher.onMessage(new NetworkMessage(MessageType.LOGIN_RESPONSE, "login-1", objectMapper.valueToTree(
+                new LoginResponse(true, AuthResultCode.SUCCESS, 7L, "alex", PlayerStatus.FREE))));
+
+        assertTrue(reply.isDone());
+        assertEquals(MessageType.LOGIN_RESPONSE, reply.join().type());
+    }
+
+    @Test
+    void quietRequestsHandleTheirOwnErrors() {
+        CompletableFuture<NetworkMessage> reply = pendingRequests.register("join-1", true);
+
+        dispatcher.onMessage(new NetworkMessage(MessageType.ERROR, "join-1",
+                objectMapper.valueToTree(new ErrorResponse("ROOM_FULL", "Room is full"))));
+
+        assertTrue(feedback.isEmpty());
+        assertEquals("ROOM_FULL", reply.join().payload().path("code").asText());
     }
 
     private NetworkMessage roomState(boolean member, RoomStatus status) {

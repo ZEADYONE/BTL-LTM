@@ -64,7 +64,8 @@ Mọi màn         ──mất kết nối────────────�
 ```
 
 **Hành vi**
-- Hai tab LOGIN và REGISTER. Tab REGISTER có thêm ô CONFIRM PASSWORD, nút lớn đổi thành REGISTER.
+- Hai tab LOGIN và REGISTER. Tab REGISTER có thêm ô CONFIRM PASSWORD (phải trùng mật khẩu), nút lớn đổi thành CREATE ACCOUNT.
+- Mỗi ô mật khẩu có **nút con mắt** ở mép phải để hiện/ẩn mật khẩu đang gõ; chuyển qua lại vẫn giữ vị trí con trỏ.
 - Nhấn Enter trong ô nhập tương đương bấm nút lớn.
 - Kiểm tra dữ liệu trước khi gửi theo mục 6.1. Sai thì báo ngay dưới ô nhập, không gửi lên server.
 - Bấm gửi thì nút chuyển sang trạng thái chờ (có vòng xoay), khóa cho tới khi có phản hồi hoặc hết 5 giây (mục 5.2).
@@ -105,7 +106,7 @@ Mọi màn         ──mất kết nối────────────�
 - Nút PLAY (H-11) chạy **Quick Play**:
   1. Lọc các phòng có `status = WAITING` và `playerCount < maxPlayers`.
   2. Chọn phòng đông người nhất. Nếu bằng nhau thì lấy phòng đứng trước trong danh sách (server đã sắp theo tên).
-  3. Có phòng thì gửi `JOIN_ROOM`. Nếu bị lỗi `ROOM_FULL`, `ROOM_NOT_WAITING` hoặc `ROOM_NOT_FOUND` thì thử lại **một lần** với phòng kế tiếp, rồi mới báo lỗi.
+  3. Có phòng thì gửi `JOIN_ROOM`. Nếu bị lỗi `ROOM_FULL`, `ROOM_NOT_WAITING` hoặc `ROOM_NOT_FOUND` (phòng vừa đầy/vừa bắt đầu) thì thử **một lần** với phòng kế tiếp. Vẫn không vào được thì chuyển sang tạo phòng mới (bước 4). Lỗi khác thì báo lỗi.
   4. Không có phòng nào thì gửi `CREATE_ROOM` với tên `"<username>'s Room"`, cắt còn tối đa 60 ký tự.
   5. Nút PLAY ở trạng thái chờ cho tới khi nhận `ROOM_STATE` hoặc lỗi.
 

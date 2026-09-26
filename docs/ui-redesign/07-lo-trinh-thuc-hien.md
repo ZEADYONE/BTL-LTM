@@ -48,15 +48,20 @@ GĐ1 ──► GĐ2 ──┬──► GĐ3 ──► GĐ4 ──► GĐ5 ──
 ## Giai đoạn 3 · Login, Home, popup (M)
 
 **Đầu việc**
-- [ ] S1 Login/Register + popup Server Address ([02](02-man-hinh-va-dieu-huong.md) mục 3.1, 4.2).
-- [ ] S2 Home theo mẫu 1, các phần tử H-01…H-12.
-- [ ] Quick Play.
-- [ ] Popup Settings, Help, Confirm, Connection Lost (khung popup và toast đã có từ giai đoạn 2).
-- [ ] Theo dõi yêu cầu đang chờ (hết giờ 5 giây).
+- [x] S1 Login/Register + popup Server Address ([02](02-man-hinh-va-dieu-huong.md) mục 3.1, 4.2). Thêm theo yêu cầu: ô CONFIRM PASSWORD và nút con mắt hiện/ẩn mật khẩu (`PasswordInput`).
+- [x] S2 Home theo mẫu 1, các phần tử H-01…H-12 (`HeroCharacter` dùng chung với Login).
+- [x] Quick Play (`game/QuickPlay` + `HomeScreen.tryJoin`).
+- [x] Popup Settings, Help, Confirm, Connection Lost (`ui/popup`).
+- [x] Theo dõi yêu cầu đang chờ, hết giờ 5 giây (`PendingRequests`); nút hiện vòng xoay khi chờ.
+- [x] Màn chờ cho các màn chưa làm có nút thoát (BACK hoặc LEAVE ROOM).
 
-**Nghiệm thu**
-- [ ] Tiêu chí ở [02](02-man-hinh-va-dieu-huong.md) mục 3.1 và 3.2.
-- [ ] Đặt cạnh mẫu 1 để so sánh: bố cục, màu, cỡ chữ gần như trùng.
+**Nghiệm thu** (chạy thật với server + MySQL cục bộ, 2 client)
+- [x] Đăng ký: xác nhận sai → viền đỏ + "Passwords do not match."; nút con mắt hiện đúng mật khẩu; đăng ký xong → toast xanh, về tab LOGIN, xóa mật khẩu.
+- [x] Đăng nhập → Home đúng bố cục mẫu 1; tên, UNRANKED, số online, số phòng mở tự cập nhật khi client thứ hai đăng nhập.
+- [x] Quick Play: không có phòng → tạo "fxtest3's Room"; client thứ hai bấm PLAY → vào đúng phòng đó (log server `Room joined` cùng roomId).
+- [x] HELP, SETTINGS hiển thị đủ; Server Address báo lỗi cổng 99999.
+- [x] Tắt server → popup CONNECTION LOST, về Login, chấm trạng thái chuyển xám.
+- [x] `.\gradlew test` pass: client-fx 46, server 60, common 9, client 1.
 
 ## Giai đoạn 4 · Room Browser và Room Lobby (M)
 

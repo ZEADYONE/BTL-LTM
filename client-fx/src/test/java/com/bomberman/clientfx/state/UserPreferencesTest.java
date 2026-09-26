@@ -43,6 +43,15 @@ class UserPreferencesTest {
     }
 
     @Test
+    void clearedServerFallsBackToDefaults() {
+        preferences.saveServer(new ClientNetworkConfig("192.168.1.20", 9000));
+
+        preferences.clearServer();
+
+        assertEquals(Optional.empty(), preferences.savedServer());
+    }
+
+    @Test
     void corruptedServerEntryIsIgnored() {
         node.put("serverHost", "lan-server");
         node.putInt("serverPort", 70_000);

@@ -2,6 +2,7 @@ package com.bomberman.clientfx.ui;
 
 import com.bomberman.clientfx.ServerRules;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /** Client-side checks that mirror the server rules, so invalid input is caught before sending. */
@@ -22,5 +23,31 @@ public final class InputValidation {
             return Optional.of("Password is required.");
         }
         return Optional.empty();
+    }
+
+    public static Optional<String> confirmationError(String password, String confirmation) {
+        if (!Objects.equals(password, confirmation)) {
+            return Optional.of("Passwords do not match.");
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<String> hostError(String host) {
+        if (host == null || host.isBlank()) {
+            return Optional.of("Host is required.");
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<String> portError(String port) {
+        try {
+            int value = Integer.parseInt(port == null ? "" : port.strip());
+            if (value >= 1 && value <= 65_535) {
+                return Optional.empty();
+            }
+        } catch (NumberFormatException notANumber) {
+            // Reported below.
+        }
+        return Optional.of("Port must be between 1 and 65535.");
     }
 }

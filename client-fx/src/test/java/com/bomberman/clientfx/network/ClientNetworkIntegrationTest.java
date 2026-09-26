@@ -28,6 +28,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Drives the real TCP client against a scripted server socket speaking the shared codec. */
 class ClientNetworkIntegrationTest {
@@ -37,6 +39,8 @@ class ClientNetworkIntegrationTest {
     private final BlockingQueue<ScreenId> shownScreens = new LinkedBlockingQueue<>();
     private final BlockingQueue<String> feedback = new LinkedBlockingQueue<>();
     private final ClientState state = new ClientState();
+    private final CountDownLatch connectionLost = new CountDownLatch(1);
+    private PendingRequests pendingRequests;
     private GameNetworkClient networkClient;
     private GameClientController controller;
 
@@ -47,6 +51,9 @@ class ClientNetworkIntegrationTest {
         }
         if (networkClient != null) {
             networkClient.close();
+        }
+        if (pendingRequests != null) {
+            pendingRequests.close();
         }
         uiThread.shutdownNow();
     }
@@ -59,8 +66,9 @@ class ClientNetworkIntegrationTest {
             Thread.ofPlatform().daemon().start(() -> answerOneLogin(server, receivedRequest, closeConnection));
             connectClient(server.getLocalPort());
 
-            controller.login("Minh Đức", "secret");
+            CompletableFuture<NetworkMessage> reply = controller.login("Minh Đức", "secret");
 
+            assertEquals(MessageType.LOGIN_RESPONSE, reply.get(5, TimeUnit.SECONDS).type());
             assertEquals(ScreenId.HOME, shownScreens.poll(5, TimeUnit.SECONDS));
             NetworkMessage request = receivedRequest.get(5, TimeUnit.SECONDS);
             assertEquals(MessageType.LOGIN_REQUEST, request.type());
@@ -70,7 +78,8 @@ class ClientNetworkIntegrationTest {
             closeConnection.countDown();
 
             assertEquals(ScreenId.LOGIN, shownScreens.poll(5, TimeUnit.SECONDS));
-            assertEquals("Disconnected from server.", feedback.poll(5, TimeUnit.SECONDS));
+            assertTrue(connectionLost.await(5, TimeUnit.SECONDS));
+            assertEquals(false, uiThread.submit(state::isConnected).get());
         }
     }
 
@@ -82,9 +91,10 @@ class ClientNetworkIntegrationTest {
         }
         connectClient(unusedPort);
 
-        controller.login("alex", "secret");
+        CompletableFuture<NetworkMessage> reply = controller.login("alex", "secret");
 
         assertEquals("Cannot connect to 127.0.0.1:" + unusedPort + ".", feedback.poll(10, TimeUnit.SECONDS));
+        assertThrows(java.util.concurrent.ExecutionException.class, () -> reply.get(5, TimeUnit.SECONDS));
     }
 
     private void connectClient(int port) {
@@ -103,11 +113,14 @@ class ClientNetworkIntegrationTest {
             }
         };
         state.addFeedbackListener(entry -> feedback.add(entry.message()));
-        networkClient = new GameNetworkClient(new ClientMessageDispatcher(state, navigator, uiThread));
+        pendingRequests = new PendingRequests(uiThread, PendingRequests.DEFAULT_TIMEOUT, () -> { });
+        networkClient = new GameNetworkClient(new ClientMessageDispatcher(
+                state, navigator, uiThread, pendingRequests, connectionLost::countDown));
         controller = new GameClientController(
                 networkClient,
                 state,
                 new ClientNetworkConfig("127.0.0.1", port),
+                pendingRequests,
                 uiThread
         );
     }

@@ -74,7 +74,7 @@ Khi một quyết định thay đổi, cập nhật bảng này và các file li
 
 - [x] Giai đoạn 1: Nền móng (2026-09-26) — chạy bằng `.\gradlew :client-fx:run`
 - [x] Giai đoạn 2: Design system và tài nguyên (2026-09-26) — xem bằng `.\gradlew :client-fx:run --args="--gallery"`
-- [ ] Giai đoạn 3: Login, Home, popup
+- [x] Giai đoạn 3: Login, Home, popup (2026-09-26)
 - [ ] Giai đoạn 4: Room Browser, Room Lobby
 - [ ] Giai đoạn 5: Màn chơi
 - [ ] Giai đoạn 6: Result, Leaderboard, History

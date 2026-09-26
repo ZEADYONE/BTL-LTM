@@ -459,22 +459,68 @@
 .game-scroll .scroll-bar .increment-button,
 .game-scroll .scroll-bar .decrement-button { -fx-padding: 0; }
 
-/* ---------- Temporary phase-1 screens (replaced in phase 3) ---------- */
-.temp-panel {
-    -fx-background-color: -color-outline, -color-panel-cream;
-    -fx-background-insets: 0, 3;
-    -fx-background-radius: 20, 17;
-    -fx-padding: 28;
+/* ---------- Login ---------- */
+.login-card {
+    -fx-padding: 22 30 28 30;
 }
-.temp-title {
+.form-label {
     -fx-font-family: "Lilita One";
-    -fx-font-size: 32px;
+    -fx-font-size: 16px;
+    -fx-text-fill: #6B5B85;
+}
+.game-field.with-reveal { -fx-padding: 10 52 10 16; }
+.reveal-toggle {
+    -fx-background-color: transparent;
+    -fx-padding: 4 8;
+    -fx-cursor: hand;
+}
+.reveal-toggle .ikonli-font-icon { -fx-icon-color: #6B5B85; -fx-icon-size: 24px; }
+.reveal-toggle:hover .ikonli-font-icon { -fx-icon-color: -color-outline; }
+.server-address {
+    -fx-font-family: "Nunito Black";
+    -fx-font-size: 18px;
     -fx-text-fill: -color-outline;
 }
-.temp-note {
-    -fx-text-fill: #6B5B85;
-    -fx-font-size: 13px;
+
+/* ---------- Home ---------- */
+.rooms-card {
+    -fx-min-width: 400px;
+    -fx-pref-width: 400px;
+    -fx-min-height: 112px;
+    -fx-alignment: center-left;
+    -fx-padding: 8 18 16 18;
 }
-.temp-error {
-    -fx-text-fill: #C62828;
+.rooms-card:pressed { -fx-padding: 12 18 12 18; }
+.rooms-card .ikonli-font-icon { -fx-stroke-width: 2; }
+.rooms-subtitle {
+    -fx-font-family: "Nunito Black";
+    -fx-font-size: 16px;
+    -fx-text-fill: #FFE9A8;
+}
+.mini-map {
+    -fx-border-color: -color-outline;
+    -fx-border-width: 3;
+    -fx-border-radius: 6;
+}
+.play-button { -fx-min-width: 330px; }
+
+/* ---------- Popups ---------- */
+.popup-heading {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 20px;
+    -fx-text-fill: -color-outline;
+}
+.keycap {
+    -fx-background-color: -color-outline, white;
+    -fx-background-insets: 0, 2 2 5 2;
+    -fx-background-radius: 8, 6;
+    -fx-padding: 2 10 7 10;
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 16px;
+    -fx-text-fill: -color-outline;
+}
+.key-separator {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 16px;
+    -fx-text-fill: #6B5B85;
 }

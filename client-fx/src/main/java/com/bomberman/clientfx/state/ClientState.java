@@ -23,6 +23,7 @@ public final class ClientState {
     private final List<ClientStateListener> listeners = new CopyOnWriteArrayList<>();
     private final List<Consumer<Feedback>> feedbackListeners = new CopyOnWriteArrayList<>();
 
+    private boolean connected;
     private String currentUsername;
     private long currentUserId;
     private List<OnlineUserDto> onlineUsers = List.of();
@@ -50,6 +51,15 @@ public final class ClientState {
         latestGameState.set(null);
         latestGameOver.set(null);
         notifyListeners();
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+        notifyListeners();
+    }
+
+    public boolean isConnected() {
+        return connected;
     }
 
     public void setOnlineUsers(List<OnlineUserDto> onlineUsers) {

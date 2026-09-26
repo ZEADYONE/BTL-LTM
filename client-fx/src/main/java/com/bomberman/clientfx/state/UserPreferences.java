@@ -40,6 +40,12 @@ public final class UserPreferences {
         node.putInt(SERVER_PORT, server.port());
     }
 
+    /** Forgets the saved address so the defaults apply again. */
+    public void clearServer() {
+        node.remove(SERVER_HOST);
+        node.remove(SERVER_PORT);
+    }
+
     public String lastUsername() {
         return node.get(LAST_USERNAME, "");
     }

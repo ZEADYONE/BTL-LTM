@@ -7,6 +7,8 @@ import com.bomberman.clientfx.network.ClientMessageDispatcher;
 import com.bomberman.clientfx.network.ClientNetworkConfig;
 import com.bomberman.clientfx.network.GameClientController;
 import com.bomberman.clientfx.network.GameNetworkClient;
+import com.bomberman.clientfx.network.PendingRequests;
+import com.bomberman.clientfx.state.Feedback;
 import com.bomberman.clientfx.state.ClientState;
 import com.bomberman.clientfx.state.UserPreferences;
 import com.bomberman.clientfx.ui.AppShell;
@@ -15,6 +17,8 @@ import com.bomberman.clientfx.ui.ScreenNavigator;
 import com.bomberman.clientfx.ui.screen.GalleryScreen;
 import com.bomberman.clientfx.ui.screen.HomeScreen;
 import com.bomberman.clientfx.ui.screen.LoginScreen;
+import com.bomberman.clientfx.ui.screen.PlaceholderScreen;
+import com.bomberman.clientfx.ui.popup.Popups;
 import com.bomberman.clientfx.ui.theme.Fonts;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -39,6 +43,7 @@ public final class BombermanApp extends Application {
 
     private GameNetworkClient networkClient;
     private GameClientController controller;
+    private PendingRequests pendingRequests;
     private SvgAssets assets;
 
     @Override
@@ -53,19 +58,27 @@ public final class BombermanApp extends Application {
         shell.renderScaleProperty().addListener(observable -> loadBackgroundPattern(shell));
         loadBackgroundPattern(shell);
 
-        networkClient = new GameNetworkClient(
-                new ClientMessageDispatcher(state, navigator, Platform::runLater)
-        );
+        pendingRequests = new PendingRequests(Platform::runLater, PendingRequests.DEFAULT_TIMEOUT,
+                () -> state.setFeedback(Feedback.error("Server is not responding.")));
+        networkClient = new GameNetworkClient(new ClientMessageDispatcher(
+                state, navigator, Platform::runLater, pendingRequests,
+                () -> Popups.connectionLost(shell, controller.networkConfig().displayAddress())
+        ));
         controller = new GameClientController(
                 networkClient,
                 state,
                 ClientNetworkConfig.load(preferences.savedServer().orElse(null)),
+                pendingRequests,
                 Platform::runLater
         );
         state.addFeedbackListener(shell::showToast);
 
-        navigator.register(ScreenId.LOGIN, new LoginScreen(state, controller, preferences));
-        navigator.register(ScreenId.HOME, new HomeScreen(state, controller, navigator));
+        navigator.register(ScreenId.LOGIN, new LoginScreen(state, controller, preferences, assets, shell));
+        navigator.register(ScreenId.HOME, new HomeScreen(state, controller, navigator, assets, shell, stage));
+        navigator.setFallback(id -> switch (id) {
+            case ROOM_LOBBY, GAME, RESULT -> new PlaceholderScreen(id, "LEAVE ROOM", controller::leaveRoom);
+            default -> new PlaceholderScreen(id, "BACK", () -> navigator.show(ScreenId.HOME));
+        });
 
         Scene scene = new Scene(shell.root(), initialWidth(), initialWidth() * 9 / 16);
         scene.getStylesheets().add(Objects.requireNonNull(
@@ -107,6 +120,9 @@ public final class BombermanApp extends Application {
         }
         if (networkClient != null) {
             networkClient.close();
+        }
+        if (pendingRequests != null) {
+            pendingRequests.close();
         }
         if (assets != null) {
             assets.close();

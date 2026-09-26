@@ -74,6 +74,13 @@ public class GameButton extends Button {
         hoverProperty().addListener((observable, wasHovered, hovered) -> animateHover(hovered));
     }
 
+    /** Changes the visible label (and the accessible text). */
+    public void setLabelText(String text) {
+        setText(text);
+        label.setText(text);
+        refreshContent();
+    }
+
     /** Places {@code icon} before the label; {@code null} removes it. */
     public final void setIcon(Node icon) {
         this.icon = icon;

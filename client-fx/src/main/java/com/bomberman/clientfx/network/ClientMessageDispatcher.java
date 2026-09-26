@@ -22,6 +22,7 @@ import com.bomberman.common.message.NetworkMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -38,12 +39,23 @@ public final class ClientMessageDispatcher implements ServerListener {
     private final ClientState state;
     private final Navigator navigator;
     private final Executor uiThread;
+    private final PendingRequests pendingRequests;
+    private final Runnable onConnectionLost;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ClientMessageDispatcher(ClientState state, Navigator navigator, Executor uiThread) {
+    /** @param onConnectionLost runs on the UI thread after an established connection drops */
+    public ClientMessageDispatcher(
+            ClientState state,
+            Navigator navigator,
+            Executor uiThread,
+            PendingRequests pendingRequests,
+            Runnable onConnectionLost
+    ) {
         this.state = Objects.requireNonNull(state, "state must not be null");
         this.navigator = Objects.requireNonNull(navigator, "navigator must not be null");
         this.uiThread = Objects.requireNonNull(uiThread, "uiThread must not be null");
+        this.pendingRequests = Objects.requireNonNull(pendingRequests, "pendingRequests must not be null");
+        this.onConnectionLost = Objects.requireNonNull(onConnectionLost, "onConnectionLost must not be null");
     }
 
     @Override
@@ -59,8 +71,10 @@ public final class ClientMessageDispatcher implements ServerListener {
     public void onDisconnected() {
         uiThread.execute(() -> {
             state.logout();
-            state.setFeedback(Feedback.error("Disconnected from server."));
+            state.setConnected(false);
+            pendingRequests.failAll(new IOException("Connection lost"));
             navigator.show(ScreenId.LOGIN);
+            onConnectionLost.run();
         });
     }
 
@@ -81,7 +95,11 @@ public final class ClientMessageDispatcher implements ServerListener {
                 case GAME_OVER -> state.setGameOver(read(message, GameOverDto.class));
                 case RANKING_RESPONSE -> state.setRankingEntries(read(message, RankingResponse.class).entries());
                 case HISTORY_RESPONSE -> state.setMatchHistory(read(message, HistoryResponse.class).matches());
-                case ERROR -> handleError(read(message, ErrorResponse.class));
+                case ERROR -> {
+                    if (!pendingRequests.isQuiet(message.requestId())) {
+                        handleError(read(message, ErrorResponse.class));
+                    }
+                }
                 default -> {
                     // Other messages do not change presentation state.
                 }
@@ -89,6 +107,7 @@ public final class ClientMessageDispatcher implements ServerListener {
         } catch (JsonProcessingException | IllegalArgumentException exception) {
             state.setFeedback(Feedback.error("Invalid server message: " + message.type()));
         }
+        pendingRequests.complete(message);
     }
 
     private void handleRegister(RegisterResponse response) {

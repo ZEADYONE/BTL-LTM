@@ -16,30 +16,38 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** UI-facing facade for all outgoing protocol commands; the socket is opened on first use. */
+/**
+ * UI-facing facade for all outgoing protocol commands; the socket is opened on first use.
+ * Commands that the server answers return a future completed with the reply (or failed on
+ * timeout / connection error) on the UI thread, which screens use to show a loading state.
+ */
 public final class GameClientController implements AutoCloseable {
 
     private final GameNetworkClient networkClient;
     private final ClientState state;
-    private final ClientNetworkConfig networkConfig;
+    private final PendingRequests pendingRequests;
     private final Executor uiThread;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ExecutorService networkWriter = Executors.newSingleThreadExecutor(
             Thread.ofVirtual().name("client-network-writer", 0).factory());
+    private volatile ClientNetworkConfig networkConfig;
 
     public GameClientController(
             GameNetworkClient networkClient,
             ClientState state,
             ClientNetworkConfig networkConfig,
+            PendingRequests pendingRequests,
             Executor uiThread
     ) {
         this.networkClient = Objects.requireNonNull(networkClient, "networkClient must not be null");
         this.state = Objects.requireNonNull(state, "state must not be null");
         this.networkConfig = Objects.requireNonNull(networkConfig, "networkConfig must not be null");
+        this.pendingRequests = Objects.requireNonNull(pendingRequests, "pendingRequests must not be null");
         this.uiThread = Objects.requireNonNull(uiThread, "uiThread must not be null");
     }
 
@@ -47,12 +55,25 @@ public final class GameClientController implements AutoCloseable {
         return networkConfig;
     }
 
-    public void login(String username, String password) {
-        send(MessageType.LOGIN_REQUEST, new LoginRequest(username, password));
+    /**
+     * Points the client at another server (Server Address popup, logged out only).
+     * An open connection to the old address is dropped; the next command connects to the new one.
+     */
+    public void setNetworkConfig(ClientNetworkConfig config) {
+        ClientNetworkConfig previous = networkConfig;
+        networkConfig = Objects.requireNonNull(config, "config must not be null");
+        if (!config.equals(previous) && networkClient.isConnected()) {
+            networkClient.close();
+            state.setConnected(false);
+        }
     }
 
-    public void register(String username, String password) {
-        send(MessageType.REGISTER_REQUEST, new RegisterRequest(username, password));
+    public CompletableFuture<NetworkMessage> login(String username, String password) {
+        return request(MessageType.LOGIN_REQUEST, new LoginRequest(username, password), false);
+    }
+
+    public CompletableFuture<NetworkMessage> register(String username, String password) {
+        return request(MessageType.REGISTER_REQUEST, new RegisterRequest(username, password), false);
     }
 
     public void logout() {
@@ -65,24 +86,29 @@ public final class GameClientController implements AutoCloseable {
         send(MessageType.ROOM_LIST_REQUEST, null);
     }
 
-    public void createRoom(String roomName) {
-        send(MessageType.CREATE_ROOM, new CreateRoomRequest(roomName));
+    public CompletableFuture<NetworkMessage> createRoom(String roomName) {
+        return request(MessageType.CREATE_ROOM, new CreateRoomRequest(roomName), false);
     }
 
-    public void joinRoom(String roomId) {
-        send(MessageType.JOIN_ROOM, new JoinRoomRequest(roomId));
+    public CompletableFuture<NetworkMessage> joinRoom(String roomId) {
+        return joinRoom(roomId, false);
     }
 
-    public void leaveRoom() {
-        send(MessageType.LEAVE_ROOM, null);
+    /** @param quietErrors the caller retries or reports failures itself (Quick Play) */
+    public CompletableFuture<NetworkMessage> joinRoom(String roomId, boolean quietErrors) {
+        return request(MessageType.JOIN_ROOM, new JoinRoomRequest(roomId), quietErrors);
     }
 
-    public void ready(boolean ready) {
-        send(MessageType.READY, new ReadyRequest(ready));
+    public CompletableFuture<NetworkMessage> leaveRoom() {
+        return request(MessageType.LEAVE_ROOM, null, false);
     }
 
-    public void startGame() {
-        send(MessageType.START_GAME, null);
+    public CompletableFuture<NetworkMessage> ready(boolean ready) {
+        return request(MessageType.READY, new ReadyRequest(ready), false);
+    }
+
+    public CompletableFuture<NetworkMessage> startGame() {
+        return request(MessageType.START_GAME, null, false);
     }
 
     public void move(Direction direction) {
@@ -93,45 +119,61 @@ public final class GameClientController implements AutoCloseable {
         send(MessageType.PLACE_BOMB, null);
     }
 
-    public void playAgain() {
-        send(MessageType.PLAY_AGAIN, null);
+    public CompletableFuture<NetworkMessage> playAgain() {
+        return request(MessageType.PLAY_AGAIN, null, false);
     }
 
-    public void requestRanking() {
-        send(MessageType.RANKING_REQUEST, null);
+    public CompletableFuture<NetworkMessage> requestRanking() {
+        return request(MessageType.RANKING_REQUEST, null, false);
     }
 
-    public void requestHistory() {
-        send(MessageType.HISTORY_REQUEST, null);
+    public CompletableFuture<NetworkMessage> requestHistory() {
+        return request(MessageType.HISTORY_REQUEST, null, false);
+    }
+
+    private CompletableFuture<NetworkMessage> request(MessageType type, Object payload, boolean quietErrors) {
+        NetworkMessage message = message(type, payload);
+        CompletableFuture<NetworkMessage> reply = pendingRequests.register(message.requestId(), quietErrors);
+        networkWriter.execute(() -> sendInBackground(message));
+        return reply;
     }
 
     private void send(MessageType type, Object payload) {
-        NetworkMessage message = new NetworkMessage(
+        NetworkMessage message = message(type, payload);
+        networkWriter.execute(() -> sendInBackground(message));
+    }
+
+    private NetworkMessage message(MessageType type, Object payload) {
+        return new NetworkMessage(
                 type,
                 UUID.randomUUID().toString(),
                 payload == null ? null : objectMapper.valueToTree(payload)
         );
-        networkWriter.execute(() -> sendInBackground(message));
     }
 
     private void sendInBackground(NetworkMessage message) {
+        ClientNetworkConfig target = networkConfig;
         if (!networkClient.isConnected()) {
             try {
-                networkClient.connect(networkConfig.host(), networkConfig.port());
+                networkClient.connect(target.host(), target.port());
+                uiThread.execute(() -> state.setConnected(true));
             } catch (IOException | RuntimeException exception) {
-                postError("Cannot connect to " + networkConfig.displayAddress() + ".");
+                reportFailure(message, "Cannot connect to " + target.displayAddress() + ".", exception);
                 return;
             }
         }
         try {
             networkClient.send(message);
         } catch (IOException | RuntimeException exception) {
-            postError("Connection error: " + exception.getMessage());
+            reportFailure(message, "Connection error: " + exception.getMessage(), exception);
         }
     }
 
-    private void postError(String message) {
-        uiThread.execute(() -> state.setFeedback(Feedback.error(message)));
+    private void reportFailure(NetworkMessage message, String text, Exception cause) {
+        uiThread.execute(() -> {
+            pendingRequests.fail(message.requestId(), cause);
+            state.setFeedback(Feedback.error(text));
+        });
     }
 
     @Override
