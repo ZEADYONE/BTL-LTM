@@ -14,17 +14,17 @@ GĐ1 ──► GĐ2 ──┬──► GĐ3 ──► GĐ4 ──► GĐ5 ──
 ## Giai đoạn 1 · Nền móng (M)
 
 **Đầu việc**
-- [ ] Tạo module `client-fx`, thêm vào `settings.gradle`.
-- [ ] `build.gradle`: JavaFX 21 (classifier theo hệ điều hành), JSVG 2.2.0, Ikonli 12.4.0 + gói Material Design 2, `project(':common')`, JUnit 5.
-- [ ] `Launcher`, `BombermanApp`, `AppShell` (khung 1280×720 có scale, lớp toast/popup, chuyển màn).
-- [ ] Lấy lại tầng network và state từ client cũ ([03](03-kien-truc-ky-thuat.md) mục 5), đổi sang `Platform.runLater`.
-- [ ] Lấy lại `ClientNetworkConfigTest`.
-- [ ] Màn Login tạm (chưa làm đẹp) để thử kết nối.
+- [x] Tạo module `client-fx`, thêm vào `settings.gradle`.
+- [x] `build.gradle`: JavaFX 21.0.12 (classifier theo hệ điều hành), JSVG 2.2.0, Ikonli 12.4.0 + gói Material Design 2, `project(':common')`, JUnit 5.
+- [x] `Launcher`, `BombermanApp`, `AppShell` (khung 1280×720 có scale, lớp toast, chuyển màn). Lớp popup làm ở giai đoạn 3 cùng các popup.
+- [x] Lấy lại tầng network và state từ client cũ ([03](03-kien-truc-ky-thuat.md) mục 5), đổi sang `Platform.runLater`.
+- [x] Lấy lại `ClientNetworkConfigTest`, thêm test cho thứ tự ưu tiên địa chỉ đã lưu.
+- [x] Màn Login tạm và Home tạm (chưa làm đẹp) để thử kết nối.
 
 **Nghiệm thu**
-- [ ] `.\gradlew :client-fx:run` mở được cửa sổ, đăng nhập được vào server thật.
-- [ ] Tắt server → quay về Login với thông báo lỗi.
-- [ ] `.\gradlew test` pass cho mọi module.
+- [x] `.\gradlew :client-fx:run` mở được cửa sổ, đăng nhập được vào server thật (tài khoản LAZY, xác nhận trong log server).
+- [x] Tắt server → quay về Login với thông báo lỗi (kiểm bằng `ClientNetworkIntegrationTest` với server TCP giả; nên thử lại tay với server thật).
+- [x] `.\gradlew test` pass cho mọi module: server 60, common 9, client 1, client-fx 22.
 
 ## Giai đoạn 2 · Design system và tài nguyên (L)
 

@@ -61,18 +61,18 @@ Có 4 màn bắt buộc nhưng chưa có mẫu: **Login, Room Browser, Leaderboa
 | D2 | Client viết bằng Java (JavaFX), không dùng Electron hay Tauri | ✅ Đã chốt |
 | D3 | Làm theo mẫu trong `img/`; chức năng chưa có thì ẩn hoặc chưa làm | ✅ Đã chốt |
 | D4 | Build ra file `.exe` | ✅ Đã chốt |
-| D5 | Coin, Gem, Level được thay bằng tổng điểm, số người online và hạng | ⏳ Chờ chốt, tạm làm theo đề xuất |
-| D6 | Claude vẽ SVG tạm đúng tên file và viewBox; nhóm thay dần bằng bản đẹp | ⏳ Chờ chốt |
-| D7 | Màu nhân vật ngoài trận tính theo `userId % 4` | ⏳ Chờ chốt |
-| D8 | Chữ trên UI bằng tiếng Anh như mẫu; tên người chơi và tên phòng dùng font có dấu tiếng Việt | ⏳ Chờ chốt |
-| D9 | Giữ client libGDX cũ tới khi client mới xong | ⏳ Chờ chốt |
-| D10 | Không sửa server, giữ 10 snapshot/giây | ⏳ Chờ chốt |
+| D5 | Coin, Gem, Level được thay bằng tổng điểm, số người online và hạng | ✅ Theo đề xuất (chốt khi bắt đầu GĐ1) |
+| D6 | Claude vẽ SVG tạm đúng tên file và viewBox; nhóm thay dần bằng bản đẹp | ✅ Theo đề xuất (chốt khi bắt đầu GĐ1) |
+| D7 | Màu nhân vật ngoài trận tính theo `userId % 4` | ✅ Theo đề xuất (chốt khi bắt đầu GĐ1) |
+| D8 | Chữ trên UI bằng tiếng Anh như mẫu; tên người chơi và tên phòng dùng font có dấu tiếng Việt | ✅ Theo đề xuất (chốt khi bắt đầu GĐ1) |
+| D9 | Giữ client libGDX cũ tới khi client mới xong | ✅ Theo đề xuất (chốt khi bắt đầu GĐ1) |
+| D10 | Không sửa server, giữ 10 snapshot/giây | ✅ Theo đề xuất (chốt khi bắt đầu GĐ1) |
 
 Khi một quyết định thay đổi, cập nhật bảng này và các file liên quan.
 
 ## Tiến độ
 
-- [ ] Giai đoạn 1: Nền móng
+- [x] Giai đoạn 1: Nền móng (2026-09-26) — chạy bằng `.\gradlew :client-fx:run`
 - [ ] Giai đoạn 2: Design system và tài nguyên
 - [ ] Giai đoạn 3: Login, Home, popup
 - [ ] Giai đoạn 4: Room Browser, Room Lobby

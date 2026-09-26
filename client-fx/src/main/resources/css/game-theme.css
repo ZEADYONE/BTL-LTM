@@ -1,0 +1,53 @@
+/*
+ * Phase 1: only the window background, the design frame and the temporary screens.
+ * The full design system (docs/ui-redesign/04-design-system.md) is added in phase 2.
+ */
+.root {
+    -color-outline: #2A1F3D;
+    -color-bg-outer: #2B2140;
+    -color-frame-center: #FBB36B;
+    -color-frame-edge: #E8762C;
+    -color-panel-cream: #FFF1E6;
+    -fx-font-family: "Segoe UI", "Noto Sans", sans-serif;
+    -fx-font-size: 16px;
+}
+
+.app-viewport {
+    -fx-background-color: -color-bg-outer;
+}
+
+.app-frame {
+    -fx-background-color: radial-gradient(center 50% 45%, radius 75%, -color-frame-center, -color-frame-edge);
+}
+
+.toast {
+    -fx-background-color: -color-outline;
+    -fx-background-radius: 999;
+    -fx-padding: 10 22;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.temp-panel {
+    -fx-background-color: -color-panel-cream;
+    -fx-background-radius: 20;
+    -fx-border-color: -color-outline;
+    -fx-border-width: 3;
+    -fx-border-radius: 20;
+    -fx-padding: 28;
+}
+
+.temp-title {
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-outline;
+}
+
+.temp-note {
+    -fx-text-fill: #6B5B85;
+    -fx-font-size: 13px;
+}
+
+.temp-error {
+    -fx-text-fill: #C62828;
+}
