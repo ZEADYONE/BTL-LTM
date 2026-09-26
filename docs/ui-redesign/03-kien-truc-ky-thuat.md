@@ -78,7 +78,7 @@ client-fx/
     │       ├── MatchTracker.java             màu slot, thứ tự bị loại, phát hiện sự kiện
     │       ├── QuickPlay.java                chọn phòng cho nút PLAY
     │       ├── MapPreview.java               dựng map mặc định cho Room Lobby
-    │       └── fx/         BombFx, ExplosionFx, DebrisFx, DustFx, DeathFx, ScreenShake, ParticlePool
+    │       └── fx/         ParticlePool (bụi chân và mảnh thùng; các hiệu ứng còn lại do GameRenderer vẽ)
     ├── main/resources/
     │   ├── client.properties                 địa chỉ server mặc định (giống client cũ)
     │   ├── css/game-theme.css

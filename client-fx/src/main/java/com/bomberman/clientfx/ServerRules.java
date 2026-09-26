@@ -26,6 +26,14 @@ public final class ServerRules {
     public static final int MAP_COLUMNS = 13;
     public static final int MAP_ROWS = 11;
 
+    /** RoomGameLoop.TICKS_PER_SECOND; snapshots currently arrive every second tick. */
+    public static final int TICKS_PER_SECOND = 20;
+    public static final int SNAPSHOTS_PER_SECOND = 10;
+
+    /** BombermanGame.BOMB_FUSE / EXPLOSION_DURATION. */
+    public static final long BOMB_FUSE_MILLIS = 3_000;
+    public static final long EXPLOSION_MILLIS = 500;
+
     /** GameMap.SPAWN_POSITIONS; player i of the room starts on spawn i. */
     public static final List<Cell> SPAWNS = List.of(
             new Cell(1, 1),

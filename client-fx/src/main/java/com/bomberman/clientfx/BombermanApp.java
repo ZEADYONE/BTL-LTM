@@ -15,6 +15,7 @@ import com.bomberman.clientfx.ui.AppShell;
 import com.bomberman.clientfx.ui.ScreenId;
 import com.bomberman.clientfx.ui.ScreenNavigator;
 import com.bomberman.clientfx.ui.screen.GalleryScreen;
+import com.bomberman.clientfx.ui.screen.GameScreen;
 import com.bomberman.clientfx.ui.screen.HomeScreen;
 import com.bomberman.clientfx.ui.screen.LoginScreen;
 import com.bomberman.clientfx.ui.screen.PlaceholderScreen;
@@ -79,8 +80,9 @@ public final class BombermanApp extends Application {
         navigator.register(ScreenId.HOME, new HomeScreen(state, controller, navigator, assets, shell, stage));
         navigator.register(ScreenId.ROOM_BROWSER, new RoomBrowserScreen(state, controller, navigator, assets));
         navigator.register(ScreenId.ROOM_LOBBY, new RoomLobbyScreen(state, controller, assets, shell));
+        navigator.register(ScreenId.GAME, new GameScreen(state, controller, navigator, assets, shell));
         navigator.setFallback(id -> switch (id) {
-            case GAME, RESULT -> new PlaceholderScreen(id, "LEAVE ROOM", controller::leaveRoom);
+            case RESULT -> new PlaceholderScreen(id, "LEAVE ROOM", controller::leaveRoom);
             default -> new PlaceholderScreen(id, "BACK", () -> navigator.show(ScreenId.HOME));
         });
 

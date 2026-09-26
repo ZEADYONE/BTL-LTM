@@ -411,10 +411,47 @@
 }
 .hud-card.out { -fx-background-color: -color-outline, linear-gradient(to bottom, #8C8FA3, #5E6173); }
 .hud-card .label-name { -fx-text-fill: white; -fx-font-size: 18px; }
+.hud-out {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 13px;
+    -fx-text-fill: #FFE066;
+}
 .hud-stat {
     -fx-font-family: "Lilita One";
     -fx-font-size: 20px;
     -fx-text-fill: white;
+}
+
+/* ---------- Live match ---------- */
+.game-screen { -fx-background-color: #E8852C; }
+.match-clock {
+    -fx-background-color: -color-outline, linear-gradient(to bottom, #8E63E8, #5F36B8);
+    -fx-background-insets: 0, 4;
+    -fx-background-radius: 18, 14;
+    -fx-padding: 8 18 10 18;
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 32px;
+    -fx-text-fill: white;
+}
+.out-banner {
+    -fx-background-color: rgba(42, 31, 61, 0.9);
+    -fx-background-radius: 16;
+    -fx-border-color: #FFE066;
+    -fx-border-width: 3;
+    -fx-border-radius: 16;
+    -fx-padding: 10 24;
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 24px;
+    -fx-text-fill: white;
+}
+.fps-overlay {
+    -fx-background-color: rgba(20, 16, 28, 0.82);
+    -fx-background-radius: 8;
+    -fx-padding: 7 10;
+    -fx-font-family: "Nunito";
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+    -fx-text-fill: #A5F0B5;
 }
 
 .check-icon {

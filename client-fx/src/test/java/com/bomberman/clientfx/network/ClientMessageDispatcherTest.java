@@ -126,6 +126,17 @@ class ClientMessageDispatcherTest {
     }
 
     @Test
+    void runningSnapshotThatOvertakesThePlayingRoomStateIsPreserved() {
+        dispatcher.onMessage(message(MessageType.GAME_STATE, snapshot(2)));
+        assertEquals(2, state.getGameState().tick());
+
+        dispatcher.onMessage(roomState(true, RoomStatus.PLAYING));
+
+        assertEquals(2, state.getGameState().tick());
+        assertEquals(ScreenId.GAME, navigator.current());
+    }
+
+    @Test
     void lateSnapshotsAfterLeavingDoNotPullThePlayerBackIntoTheMatch() {
         dispatcher.onMessage(roomState(true, RoomStatus.PLAYING));
         dispatcher.onMessage(roomState(false, RoomStatus.PLAYING));

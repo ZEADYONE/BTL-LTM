@@ -243,6 +243,11 @@ public final class AppShell {
         modalLayer.getChildren().clear();
     }
 
+    /** Used by match input to stop commands while any popup or menu covers the game. */
+    public boolean isModalShowing() {
+        return modalLayer.isVisible();
+    }
+
     private void setFramed(boolean framed) {
         StackPane.setMargin(frame, framed ? FRAME_MARGIN : Insets.EMPTY);
         StackPane.setMargin(frameShadow, FRAME_MARGIN);

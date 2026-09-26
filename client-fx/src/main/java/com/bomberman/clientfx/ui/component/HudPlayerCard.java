@@ -16,6 +16,7 @@ public final class HudPlayerCard extends HBox {
     private final PlayerHead avatar;
     private final Label bombs = new Label();
     private final Label range = new Label();
+    private final Label out = new Label("OUT");
 
     public HudPlayerCard(SvgAssets assets, int slotIndex, String playerName) {
         getStyleClass().add("hud-card");
@@ -26,7 +27,10 @@ public final class HudPlayerCard extends HBox {
         Label name = new Label(playerName);
         name.getStyleClass().add("label-name");
         name.setMaxWidth(100);
-        HBox nameRow = new HBox(6, name, new Tag("P" + (slotIndex + 1), Tag.Kind.NEUTRAL));
+        out.getStyleClass().add("hud-out");
+        out.setVisible(false);
+        out.setManaged(false);
+        HBox nameRow = new HBox(6, name, new Tag("P" + (slotIndex + 1), Tag.Kind.NEUTRAL), out);
         nameRow.setAlignment(Pos.CENTER_LEFT);
 
         bombs.getStyleClass().add("hud-stat");
@@ -43,6 +47,8 @@ public final class HudPlayerCard extends HBox {
         bombs.setText(Integer.toString(bombsAvailable));
         range.setText(Integer.toString(blastRange));
         avatar.setState(alive ? PlayerHead.State.NORMAL : PlayerHead.State.OUT);
+        out.setVisible(!alive);
+        out.setManaged(!alive);
         getStyleClass().remove("out");
         if (!alive) {
             getStyleClass().add("out");

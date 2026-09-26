@@ -3,6 +3,7 @@ package com.bomberman.clientfx.ui.screen;
 import com.bomberman.clientfx.ServerRules;
 import com.bomberman.clientfx.asset.AssetIds;
 import com.bomberman.clientfx.asset.SvgAssets;
+import com.bomberman.clientfx.game.GameRenderer;
 import com.bomberman.clientfx.game.LobbyStatus;
 import com.bomberman.clientfx.network.GameClientController;
 import com.bomberman.clientfx.state.ClientState;
@@ -39,6 +40,7 @@ public final class RoomLobbyScreen implements Screen, ClientStateListener {
 
     private final ClientState state;
     private final GameClientController controller;
+    private final SvgAssets assets;
     private final AnchorPane root = new AnchorPane();
     private final Label roomName = new Label();
     private final List<SlotCard> slots = new ArrayList<>();
@@ -55,6 +57,7 @@ public final class RoomLobbyScreen implements Screen, ClientStateListener {
     public RoomLobbyScreen(ClientState state, GameClientController controller, SvgAssets assets, AppShell shell) {
         this.state = state;
         this.controller = controller;
+        this.assets = assets;
 
         TitleBanner title = TitleBanner.purple("ROOM LOBBY", new SvgView(assets, AssetIds.ICON_PLAYERS, 52, 52));
         AnchorPane.setLeftAnchor(title, 24.0);
@@ -126,6 +129,7 @@ public final class RoomLobbyScreen implements Screen, ClientStateListener {
     @Override
     public void onShow() {
         state.addListener(this);
+        GameRenderer.prewarm(assets);
         ready.setLoading(false);
         start.setLoading(false);
         onClientStateChanged();

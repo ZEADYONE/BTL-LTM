@@ -69,7 +69,7 @@ GĐ1 ──► GĐ2 ──┬──► GĐ3 ──► GĐ4 ──► GĐ5 ──
 - [x] S3 Room Browser: lưới phòng (cập nhật tại chỗ theo roomId), tạo phòng, danh sách online có trạng thái.
 - [x] S4 Room Lobby theo mẫu 4 (R-01…R-20): slot, map xem trước có điểm xuất phát (`ArenaPreview`, `MapPreview`), panel INFO và ROOM STATUS (`LobbyStatus`).
 - [x] Quy tắc chuyển màn theo `ROOM_STATE` ([02](02-man-hinh-va-dieu-huong.md) mục 5). Thêm: snapshot đến muộn sau khi đã rời phòng không kéo người chơi về màn trận.
-- [ ] Nạp trước sprite trận khi vào S4 → **chuyển sang giai đoạn 5**, vì cỡ ô trên sân chỉ biết khi có `BoardLayout`.
+- [x] Nạp trước sprite trận khi vào S4 → hoàn thành trong giai đoạn 5 sau khi có `BoardLayout`.
 
 **Nghiệm thu** (server của bạn, 2 client)
 - [x] Room Browser: thẻ phòng hiện tên, host, 1/4, WAITING, JOIN; danh sách online hiện IN ROOM / IN LOBBY đúng.
@@ -82,13 +82,15 @@ GĐ1 ──► GĐ2 ──┬──► GĐ3 ──► GĐ4 ──► GĐ5 ──
 ## Giai đoạn 5 · Màn chơi (L)
 
 **Đầu việc**
-- [ ] Bố cục S5: HUD (G-01…G-06), Canvas sân, trang trí hai bên.
-- [ ] `GameRenderer` theo thứ tự vẽ ở [06](06-gameplay-va-hieu-ung.md) mục 5; `BoardLayout`.
-- [ ] `InputController` (giữ phím, lặp `MOVE`).
-- [ ] `PlayerVisual` (nội suy, hướng nhìn, dáng bước).
-- [ ] Hiệu ứng ở [06](06-gameplay-va-hieu-ung.md) mục 6.
-- [ ] `MatchTracker`.
-- [ ] Menu ESC, dải thông báo khi mình bị loại.
+- [x] Bố cục S5: HUD (G-01…G-06), Canvas sân, trang trí hai bên.
+- [x] `GameRenderer` theo thứ tự vẽ ở [06](06-gameplay-va-hieu-ung.md) mục 5; `BoardLayout`.
+- [x] `InputController` (giữ phím, lặp `MOVE`).
+- [x] `PlayerVisual` (nội suy, hướng nhìn, dáng bước).
+- [x] Hiệu ứng ở [06](06-gameplay-va-hieu-ung.md) mục 6.
+- [x] `MatchTracker`.
+- [x] Menu ESC, dải thông báo khi mình bị loại.
+
+**Kiểm thử tự động:** `client-fx` 75 test pass, gồm test mới cho `BoardLayout`, `InputController`, `PlayerVisual`, phân loại mảnh lửa, `MatchTracker` và trường hợp `GAME_STATE` đến trước `ROOM_STATE`. App khởi động thành công; các tiêu chí nghiệm thu dưới đây vẫn cần thử tay với 2–4 client.
 
 **Nghiệm thu**
 - [ ] 2–4 client chơi hết trận, giữ phím là đi liên tục, không giật.

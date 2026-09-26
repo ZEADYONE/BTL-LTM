@@ -98,6 +98,17 @@ public final class ClientState {
         }
     }
 
+    /** Drops snapshots from the previous round before the first snapshot of a new game arrives. */
+    public void beginGame() {
+        GameStateDto current = latestGameState.get();
+        // GAME_STATE is decoded on the network thread and can overtake this UI-thread ROOM_STATE.
+        // Preserve an already-arrived RUNNING snapshot unless GAME_OVER proves it belongs to the old round.
+        if (latestGameOver.get() != null || current == null || current.gameStatus() != GameStatus.RUNNING) {
+            latestGameState.set(null);
+        }
+        latestGameOver.set(null);
+    }
+
     public void setGameOver(GameOverDto gameOver) {
         latestGameOver.set(gameOver);
         notifyListeners();

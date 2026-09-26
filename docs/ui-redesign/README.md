@@ -2,7 +2,7 @@
 
 Bộ tài liệu gồm kế hoạch và yêu cầu cho việc làm lại giao diện client desktop, theo 6 mẫu thiết kế trong thư mục [`img/`](../../img/).
 
-> **Trạng thái:** đang lập kế hoạch, chưa viết code.
+> **Trạng thái:** đang triển khai; giai đoạn 1–4 đã hoàn thành, giai đoạn 5 đã xong phần code và đang chờ nghiệm thu thủ công.
 > **Cập nhật lần cuối:** 2026-09-26
 
 ## Mục tiêu
@@ -76,7 +76,7 @@ Khi một quyết định thay đổi, cập nhật bảng này và các file li
 - [x] Giai đoạn 2: Design system và tài nguyên (2026-09-26) — xem bằng `.\gradlew :client-fx:run --args="--gallery"`
 - [x] Giai đoạn 3: Login, Home, popup (2026-09-26)
 - [x] Giai đoạn 4: Room Browser, Room Lobby (2026-09-26)
-- [ ] Giai đoạn 5: Màn chơi
+- [ ] Giai đoạn 5: Màn chơi — đã xong phần code và test tự động (2026-09-26), chờ thử tay T08–T10 và đo FPS
 - [ ] Giai đoạn 6: Result, Leaderboard, History
 - [ ] Giai đoạn 7: Đóng gói exe
 

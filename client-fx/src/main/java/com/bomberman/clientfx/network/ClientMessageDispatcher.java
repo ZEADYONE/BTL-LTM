@@ -134,6 +134,7 @@ public final class ClientMessageDispatcher implements ServerListener {
         state.setRoom(update.room());
         RoomStatus status = update.room().status();
         if (status == RoomStatus.PLAYING) {
+            state.beginGame();
             navigator.show(ScreenId.GAME);
         } else if (status == RoomStatus.WAITING && navigator.current() != ScreenId.RESULT) {
             // A rematch started by another player must not pull this player off the result screen.
