@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Placeholder art, facing the camera. Feet rest at y = 120. -->
+  <g stroke="#2A1F3D" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="44" y="104" width="17" height="15" rx="6" fill="#FFFFFF"/>
+    <rect x="67" y="104" width="17" height="15" rx="6" fill="#FFFFFF"/>
+    <rect x="42" y="78" width="44" height="30" rx="12" fill="#E53935"/>
+    <rect x="43" y="96" width="42" height="7" fill="#3A3550" stroke="none"/>
+    <circle cx="38" cy="92" r="8" fill="#FFFFFF"/>
+    <circle cx="90" cy="92" r="8" fill="#FFFFFF"/>
+    <circle cx="64" cy="50" r="34" fill="#B71C1C"/>
+    <circle cx="62" cy="48" r="31" fill="#E53935" stroke="none"/>
+    <circle cx="64" cy="50" r="34" fill="none"/>
+    <ellipse cx="47" cy="30" rx="9" ry="5" transform="rotate(-35 47 30)" fill="#FF8A80" stroke="none"/>
+    <circle cx="30" cy="54" r="9" fill="#FFC93C"/>
+    <circle cx="98" cy="54" r="9" fill="#FFC93C"/>
+    <rect x="42" y="40" width="44" height="34" rx="13" fill="#FFE3C7"/>
+    <ellipse cx="55" cy="55" rx="3.5" ry="5.5" fill="#2A1F3D" stroke="none"/>
+    <ellipse cx="73" cy="55" rx="3.5" ry="5.5" fill="#2A1F3D" stroke="none"/>
+    <path d="M58 65 Q64 70 70 65" fill="none" stroke-width="3"/>
+    <rect x="57" y="12" width="14" height="8" rx="3" fill="#8C8FA3"/>
+    <path d="M64 12 Q65 5 73 4" fill="none" stroke="#E8D3A8" stroke-width="3"/>
+  </g>
+</svg>

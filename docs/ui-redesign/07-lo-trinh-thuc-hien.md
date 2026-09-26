@@ -29,17 +29,21 @@ GĐ1 ──► GĐ2 ──┬──► GĐ3 ──► GĐ4 ──► GĐ5 ──
 ## Giai đoạn 2 · Design system và tài nguyên (L)
 
 **Đầu việc**
-- [ ] `css/game-theme.css`: biến màu và class cho component ([04](04-design-system.md)).
-- [ ] Các component ở [04](04-design-system.md) mục 5.
-- [ ] Nạp font F01, F02.
-- [ ] `SvgAssets`: đọc SVG, đổi màu đội, cache, dự phòng PNG, ảnh thay thế khi thiếu file, nạp trước.
-- [ ] Vẽ **SVG tạm** cho A01–A22 và B07 (quyết định D6).
-- [ ] Màn Gallery (`--args="--gallery"`): mọi component ở mọi trạng thái, 4 màu nhân vật, tile, hiệu ứng lửa.
+- [x] `css/game-theme.css`: biến màu và class cho component ([04](04-design-system.md)).
+- [x] Các component ở [04](04-design-system.md) mục 5, thêm `Tag`, `GameFields`, `Motion.BACK_OUT`.
+- [x] Nạp font F01, F02 (bản tĩnh từ Google Fonts; Nunito đủ 62/62 chữ tiếng Việt, Lilita One chỉ 6/62).
+- [x] `SvgAssets` + `SvgRasterizer`: đọc SVG, đổi màu đội, cache, dự phòng PNG, ảnh thay thế khi thiếu file, nạp trước.
+- [x] Vẽ **SVG tạm** cho A01–A22 và B07 (quyết định D6).
+- [x] Màn Gallery (`--args="--gallery"`): mọi component ở mọi trạng thái, 4 màu nhân vật, tile, hiệu ứng lửa. Phím PageUp/PageDown/Home/End để cuộn.
+- [x] Khung cam trong nền tối (lề 64/36), họa tiết bom, toast theo loại, lớp popup (chuyển từ giai đoạn 3 lên).
 
 **Nghiệm thu**
-- [ ] Gallery hiển thị đủ, đổi màu 4 đội không sót mảng đỏ.
-- [ ] Sắc nét ở Windows scale 100/125/150%.
-- [ ] Đổi tên tạm một file SVG → app không lỗi, hiện ảnh thay thế, có log.
+- [x] Gallery hiển thị đủ, đổi màu 4 đội không sót mảng đỏ (có test tự động `SvgRasterizerTest`).
+- [x] Sắc nét khi co giãn cửa sổ: ảnh vẽ lại theo tỷ lệ thật × DPI. Máy hiện tại chỉ thử được ở mức scale đang dùng; 125/150% cần thử thêm trên máy khác (kịch bản T14).
+- [x] Thiếu file SVG → app không lỗi, hiện ảnh thay thế, có đúng một dòng log (Gallery có sẵn mục thử `icons/does_not_exist`).
+- [x] Hiệu năng: luồng vẽ 0% khi đứng yên (xem mục "Bài học" bên dưới).
+
+**Bài học từ giai đoạn 2** (đã ghi vào [03](03-kien-truc-ky-thuat.md) mục 13): bản đầu làm luồng vẽ bận ~100% và thao tác trễ ~2 giây, do viền chữ kiểu `outside`, hiệu ứng đặt trên node cha và animation chạy trong ScrollPane. Sau khi sửa: 0% khi đứng yên, 24% ở trường hợp nặng nhất có chủ đích (tia sáng xoay trong ScrollPane của Gallery).
 
 ## Giai đoạn 3 · Login, Home, popup (M)
 
@@ -47,7 +51,7 @@ GĐ1 ──► GĐ2 ──┬──► GĐ3 ──► GĐ4 ──► GĐ5 ──
 - [ ] S1 Login/Register + popup Server Address ([02](02-man-hinh-va-dieu-huong.md) mục 3.1, 4.2).
 - [ ] S2 Home theo mẫu 1, các phần tử H-01…H-12.
 - [ ] Quick Play.
-- [ ] Popup Settings, Help, Confirm, Connection Lost; Toast.
+- [ ] Popup Settings, Help, Confirm, Connection Lost (khung popup và toast đã có từ giai đoạn 2).
 - [ ] Theo dõi yêu cầu đang chờ (hết giờ 5 giây).
 
 **Nghiệm thu**

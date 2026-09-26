@@ -185,3 +185,18 @@ Dùng `java.util.prefs.Preferences`, nhánh `com/bomberman/clientfx`: `serverHos
 - `packageInstaller` (tùy chọn) dùng `--type exe`, cần WiX Toolset 3 trong PATH. Máy hiện tại chưa cài.
 - Địa chỉ server mặc định lấy từ `client.properties` trong jar. Người chơi đổi ở màn Login, giá trị được lưu lại cho lần sau.
 - Tùy chọn giảm dung lượng: giới hạn module JDK bằng `--add-modules`. Chỉ làm sau khi bản đầy đủ đã chạy ổn.
+
+## 13. Quy tắc hiệu năng khi vẽ giao diện
+
+Rút ra khi đo ở giai đoạn 2 (luồng vẽ `QuantumRenderer` từng bận ~100% và thao tác trễ ~2 giây):
+
+| Quy tắc | Lý do |
+|---|---|
+| **Không dùng** `StrokeType.OUTSIDE` / `INSIDE` (kể cả `-fx-stroke-type` trong CSS) | JavaFX tính viền này bằng phép trừ vùng hình học trên CPU ở **mỗi lần vẽ lại**. Chữ có viền dùng `OutlinedText`: một bản chữ phía sau có viền `CENTERED` dày gấp đôi, một bản phía trước chỉ tô màu |
+| **Không đặt `-fx-effect`** (bóng đổ, làm mờ…) lên node cha của nội dung hay thay đổi | Node có hiệu ứng phải vẽ lại cả cây con vào ảnh tạm mỗi khi một node con thay đổi. Bóng đổ của khung cam nằm trên một node riêng không có con (`app-frame-shadow`) |
+| **Không chạy animation liên tục bên trong `ScrollPane`** | Vùng cuộn bị vẽ lại toàn bộ mỗi frame. Animation (tia sáng, nhân vật nhún) đặt ngoài vùng cuộn |
+| Chữ và hình tĩnh có hiệu ứng thì bật `setCache(true)` | Vẽ một lần thành texture, các lần sau chỉ dán lại. `OutlinedText` đã bật sẵn |
+| Không phủ hiệu ứng màu lên cả cửa sổ | Họa tiết nền trắng được tô sẵn một lần (`AppShell.whitened`) thay vì dùng `ColorAdjust` |
+| `Interpolator.SPLINE` không cho điểm điều khiển ngoài [0, 1] | Hiệu ứng vọt quá rồi nảy về dùng `Motion.BACK_OUT` |
+
+Cách đo: `jstack <pid>` và so sánh `cpu=` của luồng `QuantumRenderer-0` sau vài giây. Khi màn hình đứng yên phải gần 0%.

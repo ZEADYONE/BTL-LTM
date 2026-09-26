@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 public final class ClientState {
 
     private final List<ClientStateListener> listeners = new CopyOnWriteArrayList<>();
-    private final List<Consumer<String>> feedbackListeners = new CopyOnWriteArrayList<>();
+    private final List<Consumer<Feedback>> feedbackListeners = new CopyOnWriteArrayList<>();
 
     private String currentUsername;
     private long currentUserId;
@@ -94,7 +94,7 @@ public final class ClientState {
     }
 
     /** Announces a one-off message (result or error) to the player. */
-    public void setFeedback(String feedback) {
+    public void setFeedback(Feedback feedback) {
         feedbackListeners.forEach(listener -> listener.accept(feedback));
     }
 
@@ -106,7 +106,7 @@ public final class ClientState {
         listeners.remove(listener);
     }
 
-    public void addFeedbackListener(Consumer<String> listener) {
+    public void addFeedbackListener(Consumer<Feedback> listener) {
         feedbackListeners.add(listener);
     }
 

@@ -1,53 +1,480 @@
 /*
- * Phase 1: only the window background, the design frame and the temporary screens.
- * The full design system (docs/ui-redesign/04-design-system.md) is added in phase 2.
+ * Design system from docs/ui-redesign/04-design-system.md.
+ * Sizes are logical pixels on the 1280×720 design canvas.
  */
+
+/* ---------- Tokens ---------- */
 .root {
     -color-outline: #2A1F3D;
     -color-bg-outer: #2B2140;
     -color-frame-center: #FBB36B;
     -color-frame-edge: #E8762C;
+    -color-panel-purple: #6C45C9;
+    -color-panel-purple-header: #563299;
+    -color-panel-dark: #3A2D57;
     -color-panel-cream: #FFF1E6;
-    -fx-font-family: "Segoe UI", "Noto Sans", sans-serif;
-    -fx-font-size: 16px;
+    -color-panel-brown: #B8581F;
+    -color-panel-brown-inner: #9C4718;
+    -color-text-light: #FFFFFF;
+    -color-text-muted: #8B7FA8;
+    -color-gold: #FFC93C;
+    -color-green: #38A83A;
+    -color-red: #E23C3C;
+
+    -fx-font-family: "Nunito ExtraBold";
+    -fx-font-size: 17px;
+    -fx-text-fill: -color-outline;
+    -fx-focus-color: -color-gold;
+    -fx-faint-focus-color: transparent;
 }
 
+/* ---------- Canvas and frame ---------- */
 .app-viewport {
     -fx-background-color: -color-bg-outer;
 }
 
+.outer-pattern {
+    -fx-opacity: 0.06;
+}
+
 .app-frame {
-    -fx-background-color: radial-gradient(center 50% 45%, radius 75%, -color-frame-center, -color-frame-edge);
+    -fx-background-color: -color-outline, radial-gradient(center 50% 42%, radius 80%, -color-frame-center, -color-frame-edge);
+    -fx-background-insets: 0, 4;
+    -fx-background-radius: 28, 24;
 }
 
-.toast {
+.app-frame-shadow {
     -fx-background-color: -color-outline;
-    -fx-background-radius: 999;
-    -fx-padding: 10 22;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
+    -fx-background-radius: 28;
+    -fx-effect: dropshadow(gaussian, rgba(10, 5, 20, 0.55), 24, 0.2, 0, 8);
 }
 
-.temp-panel {
-    -fx-background-color: -color-panel-cream;
-    -fx-background-radius: 20;
-    -fx-border-color: -color-outline;
+.app-frame:bleed {
+    -fx-background-color: radial-gradient(center 50% 42%, radius 80%, -color-frame-center, -color-frame-edge);
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.frame-pattern {
+    -fx-opacity: 0.08;
+    -fx-background-radius: 24;
+}
+
+/* ---------- Text (outlined text is drawn by OutlinedText in code) ---------- */
+.label-display {
+    -fx-font-family: "Lilita One";
+    -fx-text-fill: white;
+}
+
+.label-name {
+    -fx-font-family: "Nunito Black";
+    -fx-font-size: 22px;
+}
+
+.label-body {
+    -fx-font-family: "Nunito ExtraBold";
+    -fx-font-size: 17px;
+}
+
+.label-caption {
+    -fx-font-family: "Nunito";
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-text-muted;
+}
+
+/* ---------- Game button ---------- */
+.game-button {
+    -btn-edge: #1F4FA8;
+    -btn-face: linear-gradient(to bottom, #5AA9FF, #2F7BEA);
+    -btn-shine: linear-gradient(to bottom, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0) 48%);
+    -fx-background-color: -color-outline, -btn-edge, -btn-face, -btn-shine;
+    -fx-background-insets: 0, 3, 3 3 9 3, 3 3 9 3;
+    -fx-background-radius: 16, 13, 13, 13;
+    -fx-alignment: center;
+    -fx-cursor: hand;
+}
+
+.game-button:pressed {
+    -fx-background-insets: 0, 3, 7 3 5 3, 7 3 5 3;
+}
+
+.game-button:disabled {
+    -fx-opacity: 1;
+    -btn-edge: #5E6173;
+    -btn-face: linear-gradient(to bottom, #A7AABB, #8C8FA3);
+    -fx-cursor: default;
+}
+
+.btn-yellow { -btn-edge: #C77F0A; -btn-face: linear-gradient(to bottom, #FFE066, #FDB813); }
+.btn-blue { -btn-edge: #1F4FA8; -btn-face: linear-gradient(to bottom, #5AA9FF, #2F7BEA); }
+.btn-green { -btn-edge: #1F6E24; -btn-face: linear-gradient(to bottom, #6BD968, #38A83A); }
+.btn-red { -btn-edge: #9E1F1F; -btn-face: linear-gradient(to bottom, #FF6B6B, #E23C3C); }
+.btn-purple { -btn-edge: #3C1F80; -btn-face: linear-gradient(to bottom, #8E63E8, #5F36B8); }
+.btn-grey { -btn-edge: #5E6173; -btn-face: linear-gradient(to bottom, #A7AABB, #8C8FA3); }
+
+.btn-xl {
+    -fx-font-size: 60px;
+    -fx-min-height: 120px;
+    -fx-padding: 6 36 14 30;
+    -fx-background-insets: 0, 4, 4 4 12 4, 4 4 12 4;
+    -fx-background-radius: 20, 16, 16, 16;
+}
+.btn-xl:pressed { -fx-background-insets: 0, 4, 9 4 7 4, 9 4 7 4; -fx-padding: 11 36 9 30; }
+
+.btn-l { -fx-font-size: 28px; -fx-min-height: 72px; -fx-padding: 4 24 10 20; }
+.btn-l:pressed { -fx-padding: 8 24 6 20; }
+
+.btn-m { -fx-font-size: 22px; -fx-min-height: 56px; -fx-padding: 3 20 9 16; }
+.btn-m:pressed { -fx-padding: 7 20 5 16; }
+
+.btn-s { -fx-font-size: 18px; -fx-min-height: 44px; -fx-padding: 2 14 8 12; }
+.btn-s:pressed { -fx-padding: 6 14 4 12; }
+
+.btn-icon {
+    -fx-font-size: 22px;
+    -fx-min-width: 56px;
+    -fx-min-height: 56px;
+    -fx-pref-width: 56px;
+    -fx-pref-height: 56px;
+    -fx-padding: 0 0 6 0;
+}
+.btn-icon:pressed { -fx-padding: 4 0 2 0; }
+
+.menu-tile {
+    -fx-alignment: center-left;
+    -fx-pref-width: 250px;
+    -fx-graphic-text-gap: 10;
+    -fx-padding: 4 18 10 16;
+}
+.menu-tile:pressed { -fx-padding: 8 18 6 16; }
+
+/* Centred strokes only: OUTSIDE strokes are computed with area geometry on every repaint. */
+.game-button .ikonli-font-icon,
+.pill .ikonli-font-icon {
+    -fx-icon-color: white;
+    -fx-stroke: -color-outline;
+    -fx-stroke-width: 1.5;
+}
+
+.game-button .progress-indicator {
+    -fx-progress-color: white;
+    -fx-pref-width: 28px;
+    -fx-pref-height: 28px;
+}
+
+/* ---------- Inputs ---------- */
+.game-field {
+    -fx-background-color: -color-outline, -color-panel-cream;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 14, 11;
+    -fx-padding: 10 16;
+    -fx-font-family: "Nunito ExtraBold";
+    -fx-font-size: 18px;
+    -fx-text-fill: -color-outline;
+    -fx-prompt-text-fill: -color-text-muted;
+    -fx-highlight-fill: -color-gold;
+    -fx-highlight-text-fill: -color-outline;
+}
+.game-field:focused { -fx-background-color: -color-gold, -color-panel-cream; }
+.game-field:error { -fx-background-color: -color-red, -color-panel-cream; }
+
+.field-error {
+    -fx-text-fill: -color-red;
+    -fx-font-family: "Nunito";
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.game-tabs {
+    -fx-background-color: -color-outline, -color-panel-dark;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 16, 13;
+    -fx-padding: 6;
+    -fx-spacing: 6;
+}
+.game-tab {
+    -fx-background-color: transparent;
+    -fx-background-radius: 11;
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 20px;
+    -fx-text-fill: #BFB3DD;
+    -fx-padding: 6 22;
+    -fx-cursor: hand;
+}
+.game-tab:hover { -fx-text-fill: white; }
+.game-tab:selected {
+    -fx-background-color: linear-gradient(to bottom, #8E63E8, #5F36B8);
+    -fx-text-fill: white;
+}
+
+/* ---------- Panels ---------- */
+.panel {
+    -panel-body: -color-panel-cream;
+    -fx-background-color: -color-outline, -panel-body;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 20, 17;
+}
+.panel-purple { -panel-body: -color-panel-purple; }
+.panel-brown { -panel-body: -color-panel-brown; }
+
+.panel-header {
+    -fx-background-color: -color-panel-dark;
+    -fx-background-insets: 3 3 0 3;
+    -fx-background-radius: 17 17 0 0;
+    -fx-padding: 12 20 10 20;
+}
+.panel-purple .panel-header { -fx-background-color: -color-panel-purple-header; }
+.panel-brown .panel-header { -fx-background-color: -color-panel-brown-inner; }
+
+.panel-body { -fx-padding: 16 20 20 20; }
+.panel-purple .panel-body .label, .panel-brown .panel-body .label { -fx-text-fill: white; }
+
+.title-banner {
+    -fx-background-color: -color-outline, #3C1F80, linear-gradient(to bottom, #8E63E8, #5F36B8);
+    -fx-background-insets: 0, 3, 3 3 9 3;
+    -fx-background-radius: 20, 17, 17;
+    -fx-padding: 6 30 14 22;
+    -fx-spacing: 14;
+    -fx-alignment: center-left;
+}
+
+.banner-dash {
+    -fx-fill: -color-gold;
+    -fx-stroke: -color-outline;
+    -fx-stroke-width: 3;
+    -fx-arc-width: 8;
+    -fx-arc-height: 8;
+}
+
+.pill {
+    -fx-background-color: -color-outline, -color-panel-dark;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 999, 999;
+    -fx-padding: 4 20 4 6;
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+    -fx-min-height: 40px;
+}
+.pill-value {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 22px;
+    -fx-text-fill: white;
+}
+
+/* ---------- Player pieces ---------- */
+.avatar-box {
+    -fx-background-color: -color-outline, -avatar-fill;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 14, 11;
+}
+
+.player-badge {
+    -fx-background-color: -color-outline, #3C1F80, linear-gradient(to bottom, #8E63E8, #5F36B8);
+    -fx-background-insets: 0, 3, 3 3 8 3;
+    -fx-background-radius: 16, 13, 13;
+    -fx-padding: 6 22 12 6;
+    -fx-spacing: 12;
+    -fx-alignment: center-left;
+}
+.player-badge .label-name { -fx-text-fill: white; }
+.badge-subtitle {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 16px;
+    -fx-text-fill: -color-gold;
+}
+
+.tag {
+    -fx-background-color: -color-outline, -tag-fill;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 8, 6;
+    -fx-padding: 2 10 3 10;
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 16px;
+    -fx-text-fill: white;
+    -tag-fill: -color-panel-dark;
+}
+.tag-host { -tag-fill: linear-gradient(to bottom, #FFE066, #FDB813); -fx-text-fill: -color-outline; }
+.tag-you { -tag-fill: #2F7BEA; }
+.tag-waiting { -tag-fill: #38A83A; }
+.tag-playing { -tag-fill: #F28C28; }
+.tag-finished { -tag-fill: #8C8FA3; }
+.tag-winner { -tag-fill: linear-gradient(to bottom, #FF6B6B, #E23C3C); }
+.tag-draw { -tag-fill: #8C8FA3; }
+
+.status-bar {
+    -fx-background-color: -color-outline, -status-fill;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 10, 8;
+    -fx-padding: 4 12;
+    -fx-spacing: 8;
+    -fx-alignment: center;
+    -status-fill: linear-gradient(to bottom, #A7AABB, #8C8FA3);
+}
+.status-bar.ready { -status-fill: linear-gradient(to bottom, #6BD968, #38A83A); }
+.status-bar .label {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 18px;
+    -fx-text-fill: white;
+}
+
+.name-bar {
+    -fx-background-color: rgba(42, 31, 61, 0.85);
+    -fx-background-radius: 10;
+    -fx-padding: 2 10;
+    -fx-alignment: center;
+}
+.name-bar .label-name { -fx-text-fill: white; -fx-font-size: 20px; }
+
+.slot-card {
+    -fx-background-color: -color-outline, -slot-fill;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 18, 15;
+}
+.slot-card.empty {
+    -fx-background-color: rgba(42, 31, 61, 0.35);
+    -fx-border-color: rgba(42, 31, 61, 0.8);
     -fx-border-width: 3;
-    -fx-border-radius: 20;
+    -fx-border-style: segments(12, 8);
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+}
+.slot-number {
+    -fx-background-color: -color-outline;
+    -fx-background-radius: 8;
+    -fx-min-width: 34px;
+    -fx-min-height: 34px;
+    -fx-alignment: center;
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 20px;
+    -fx-text-fill: white;
+}
+.slot-waiting {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 22px;
+    -fx-text-fill: rgba(255, 241, 230, 0.85);
+}
+
+.room-card {
+    -fx-background-color: -color-outline, -color-panel-cream;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 18, 15;
+    -fx-padding: 14 16;
+    -fx-spacing: 8;
+}
+.room-card:hover { -fx-background-color: -color-gold, -color-panel-cream; }
+
+.rank-row {
+    -fx-background-color: -color-outline, #3C2F66, -row-fill;
+    -fx-background-insets: 0, 3, 3 3 8 3;
+    -fx-background-radius: 16, 13, 13;
+    -fx-padding: 6 16 12 10;
+    -fx-spacing: 14;
+    -fx-alignment: center-left;
+    -row-fill: linear-gradient(to bottom, #B9AEDD, #9C8FCB);
+}
+.rank-row.first { -row-fill: linear-gradient(to bottom, #FFE066, #FDB813); }
+.rank-row.you { -fx-background-color: white, #3C2F66, -row-fill; }
+.rank-row .label-name { -fx-text-fill: white; }
+.rank-row.first .label-name { -fx-text-fill: -color-outline; }
+
+.rank-badge {
+    -fx-background-color: -color-outline, -rank-fill;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 10, 8;
+    -fx-min-width: 48px;
+    -fx-min-height: 48px;
+    -fx-alignment: center;
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 26px;
+    -fx-text-fill: white;
+    -rank-fill: #A99BD6;
+}
+.rank-badge.rank-1 { -rank-fill: #FFC93C; -fx-text-fill: -color-outline; }
+.rank-badge.rank-2 { -rank-fill: #C9CEDB; -fx-text-fill: -color-outline; }
+.rank-badge.rank-3 { -rank-fill: #E0894A; }
+
+.score-text {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 26px;
+    -fx-text-fill: white;
+}
+.rank-row.first .score-text { -fx-text-fill: -color-outline; }
+
+.hud-card {
+    -fx-background-color: -color-outline, linear-gradient(to bottom, #6C45C9, #4B2C94);
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 14, 11;
+    -fx-padding: 6 14 6 6;
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+}
+.hud-card.out { -fx-background-color: -color-outline, linear-gradient(to bottom, #8C8FA3, #5E6173); }
+.hud-card .label-name { -fx-text-fill: white; -fx-font-size: 18px; }
+.hud-stat {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 20px;
+    -fx-text-fill: white;
+}
+
+.check-icon {
+    -fx-background-color: -color-outline, -check-fill;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 999;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-alignment: center;
+    -check-fill: #8C8FA3;
+}
+.check-icon.done { -check-fill: #38A83A; }
+.check-icon.waiting { -check-fill: #F5B82E; }
+.check-icon .ikonli-font-icon { -fx-icon-color: white; -fx-icon-size: 18px; }
+.checklist-text { -fx-text-fill: white; }
+
+/* ---------- Toasts and popups ---------- */
+.toast {
+    -fx-background-color: -color-outline, -toast-fill;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 999;
+    -fx-padding: 10 26;
+    -fx-text-fill: white;
+    -fx-font-family: "Nunito Black";
+    -fx-font-size: 18px;
+    -toast-fill: #6C45C9;
+    -fx-effect: dropshadow(gaussian, rgba(10, 5, 20, 0.45), 12, 0.2, 0, 4);
+}
+.toast-success { -toast-fill: #38A83A; }
+.toast-error { -toast-fill: #E23C3C; }
+
+.modal-overlay {
+    -fx-background-color: rgba(26, 16, 38, 0.6);
+}
+
+.game-scroll,
+.game-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+.game-scroll .scroll-bar:vertical { -fx-background-color: transparent; }
+.game-scroll .scroll-bar .thumb { -fx-background-color: rgba(42, 31, 61, 0.5); -fx-background-radius: 999; }
+.game-scroll .scroll-bar .increment-button,
+.game-scroll .scroll-bar .decrement-button { -fx-padding: 0; }
+
+/* ---------- Temporary phase-1 screens (replaced in phase 3) ---------- */
+.temp-panel {
+    -fx-background-color: -color-outline, -color-panel-cream;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 20, 17;
     -fx-padding: 28;
 }
-
 .temp-title {
-    -fx-font-size: 30px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 32px;
     -fx-text-fill: -color-outline;
 }
-
 .temp-note {
     -fx-text-fill: #6B5B85;
     -fx-font-size: 13px;
 }
-
 .temp-error {
     -fx-text-fill: #C62828;
 }

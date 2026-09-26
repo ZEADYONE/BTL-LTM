@@ -1,6 +1,7 @@
 package com.bomberman.clientfx.network;
 
 import com.bomberman.clientfx.state.ClientState;
+import com.bomberman.clientfx.state.Feedback;
 import com.bomberman.clientfx.ui.Navigator;
 import com.bomberman.clientfx.ui.ScreenId;
 import com.bomberman.common.dto.ErrorResponse;
@@ -58,7 +59,7 @@ public final class ClientMessageDispatcher implements ServerListener {
     public void onDisconnected() {
         uiThread.execute(() -> {
             state.logout();
-            state.setFeedback("Disconnected from server.");
+            state.setFeedback(Feedback.error("Disconnected from server."));
             navigator.show(ScreenId.LOGIN);
         });
     }
@@ -86,14 +87,14 @@ public final class ClientMessageDispatcher implements ServerListener {
                 }
             }
         } catch (JsonProcessingException | IllegalArgumentException exception) {
-            state.setFeedback("Invalid server message: " + message.type());
+            state.setFeedback(Feedback.error("Invalid server message: " + message.type()));
         }
     }
 
     private void handleRegister(RegisterResponse response) {
         state.setFeedback(response.success()
-                ? "Account created. You can log in now."
-                : describe(response.result()));
+                ? Feedback.success("Account created. You can log in now.")
+                : Feedback.error(describe(response.result())));
     }
 
     private void handleLogin(LoginResponse response) {
@@ -101,7 +102,7 @@ public final class ClientMessageDispatcher implements ServerListener {
             state.login(response.userId(), response.username());
             navigator.show(ScreenId.HOME);
         } else {
-            state.setFeedback(describe(response.result()));
+            state.setFeedback(Feedback.error(describe(response.result())));
         }
     }
 
@@ -129,7 +130,7 @@ public final class ClientMessageDispatcher implements ServerListener {
             return;
         }
         String message = error.message();
-        state.setFeedback(message == null || message.isBlank() ? error.code() : message);
+        state.setFeedback(Feedback.error(message == null || message.isBlank() ? error.code() : message));
     }
 
     private void handleGameStateFromNetworkThread(NetworkMessage message) {
@@ -142,7 +143,7 @@ public final class ClientMessageDispatcher implements ServerListener {
                 }
             });
         } catch (JsonProcessingException | IllegalArgumentException exception) {
-            uiThread.execute(() -> state.setFeedback("Invalid server message: " + message.type()));
+            uiThread.execute(() -> state.setFeedback(Feedback.error("Invalid server message: " + message.type())));
         }
     }
 

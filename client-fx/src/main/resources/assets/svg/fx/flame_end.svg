@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Placeholder art. Joins the previous tile at the left edge (y 13–51) and points right. -->
+  <path d="M0 13 Q16 9 32 13 Q56 15 57 32 Q56 49 32 51 Q16 55 0 51 Z" fill="#FF7A1A"/>
+  <path d="M0 19 Q16 16 30 19 Q48 21 49 32 Q48 43 30 45 Q16 48 0 45 Z" fill="#FFC93C"/>
+  <path d="M0 25 H28 Q38 26 38 32 Q38 38 28 39 H0 Z" fill="#FFF6C2"/>
+</svg>

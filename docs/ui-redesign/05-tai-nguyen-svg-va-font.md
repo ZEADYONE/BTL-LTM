@@ -12,7 +12,7 @@ Tài liệu dành cho người chuẩn bị hình ảnh. Không cần biết cod
 | Font (F01–F02) | 4 file TTF | Miễn phí, giấy phép OFL |
 
 - Các mẫu trong `img/` là ảnh PNG do AI tạo và ghép sẵn, **không cắt ra dùng được**: nhân vật dính liền nền, độ phân giải cố định. Chỉ dùng chúng để **tham khảo phong cách**.
-- Theo quyết định D6: Claude sẽ vẽ **bản tạm** cho toàn bộ file bắt buộc, đúng tên file và kích thước, để app chạy được trước. Nhóm thay dần bằng bản đẹp. Thay file là đổi hình, không phải sửa code.
+- Theo quyết định D6: Claude đã vẽ **bản tạm** cho A01–A22 và B07 (giai đoạn 2), đúng tên file và kích thước, nằm trong `client-fx/src/main/resources/assets/svg/`. Nhóm thay dần bằng bản đẹp. Thay file là đổi hình, không phải sửa code.
 
 ## 2. Quy chuẩn chung cho mọi file SVG
 
@@ -53,11 +53,11 @@ Cột **Tạm**: đã có bản tạm. Cột **Đẹp**: đã có bản chính t
 
 | Mã | File | viewBox | Cần vẽ | Dùng ở | Tạm | Đẹp |
 |---|---|---|---|---|---|---|
-| A01 | `bomber_full.svg` | 0 0 512 512 | Toàn thân, đứng nghiêng 3/4 như mẫu 1: mũ bảo hiểm màu đội có tai nghe vàng, dây ngòi và tia lửa trên đỉnh; mặt nháy mắt cười; bộ đồ màu đội, thắt lưng đen khóa vàng; găng và giày trắng; tay cầm quả bom đen. Chân chạm y ≈ 480, căn giữa theo chiều ngang | Login, Home, slot phòng (cắt lấy nửa trên), kết quả hòa, bục Leaderboard | ☐ | ☐ |
-| A02 | `bomber_head.svg` | 0 0 256 256 | Chỉ đầu và mũ, nhìn thẳng, cười. Chừa lề 8 | Mọi avatar: badge, HUD, thẻ phòng, bảng xếp hạng, lịch sử | ☐ | ☐ |
-| A03 | `bomber_down.svg` | 0 0 128 128 | Nhân vật nhỏ trong sân: đầu to (khoảng 55% chiều cao), nhìn chính diện, dáng đang bước. Chân chạm y ≈ 120. Nét đơn giản để còn rõ khi thu nhỏ còn 48–64 px | Trong trận: đứng yên, đi xuống | ☐ | ☐ |
-| A04 | `bomber_up.svg` | 0 0 128 128 | Như A03 nhưng nhìn từ sau lưng | Trong trận: đi lên | ☐ | ☐ |
-| A05 | `bomber_side.svg` | 0 0 128 128 | Như A03 nhưng nhìn nghiêng, **quay sang phải**. Code lật ngang để có hướng trái | Trong trận: đi trái/phải | ☐ | ☐ |
+| A01 | `bomber_full.svg` | 0 0 512 512 | Toàn thân, đứng nghiêng 3/4 như mẫu 1: mũ bảo hiểm màu đội có tai nghe vàng, dây ngòi và tia lửa trên đỉnh; mặt nháy mắt cười; bộ đồ màu đội, thắt lưng đen khóa vàng; găng và giày trắng; tay cầm quả bom đen. Chân chạm y ≈ 480, căn giữa theo chiều ngang | Login, Home, slot phòng (cắt lấy nửa trên), kết quả hòa, bục Leaderboard | ☑ | ☐ |
+| A02 | `bomber_head.svg` | 0 0 256 256 | Chỉ đầu và mũ, nhìn thẳng, cười. Chừa lề 8 | Mọi avatar: badge, HUD, thẻ phòng, bảng xếp hạng, lịch sử | ☑ | ☐ |
+| A03 | `bomber_down.svg` | 0 0 128 128 | Nhân vật nhỏ trong sân: đầu to (khoảng 55% chiều cao), nhìn chính diện, dáng đang bước. Chân chạm y ≈ 120. Nét đơn giản để còn rõ khi thu nhỏ còn 48–64 px | Trong trận: đứng yên, đi xuống | ☑ | ☐ |
+| A04 | `bomber_up.svg` | 0 0 128 128 | Như A03 nhưng nhìn từ sau lưng | Trong trận: đi lên | ☑ | ☐ |
+| A05 | `bomber_side.svg` | 0 0 128 128 | Như A03 nhưng nhìn nghiêng, **quay sang phải**. Code lật ngang để có hướng trái | Trong trận: đi trái/phải | ☑ | ☐ |
 
 ### 4.2 Bản đồ – `tiles/`
 
@@ -65,18 +65,18 @@ Khối trên sân nhìn nghiêng 3/4 từ trên xuống: ảnh cao 80, rộng 64
 
 | Mã | File | viewBox | Cần vẽ | Dùng ở | Tạm | Đẹp |
 |---|---|---|---|---|---|---|
-| A06 | `block_stone.svg` | 0 0 64 80 | Khối đá xám: mặt trên sáng `#B8BCC8` chiếm y 0–60, mặt trước tối `#7C8091` chiếm y 60–80, vài vết nứt nhỏ | Ô `HARD_WALL` (cột bên trong và tường bao) | ☐ | ☐ |
-| A07 | `crate.svg` | 0 0 64 80 | Thùng gỗ cam nâu (`#E08A3C` / `#B8621F`) có khung viền và tấm gỗ chéo như mẫu 5; cùng hình khối với A06 | Ô `BREAKABLE_WALL` | ☐ | ☐ |
+| A06 | `block_stone.svg` | 0 0 64 80 | Khối đá xám: mặt trên sáng `#B8BCC8` chiếm y 0–60, mặt trước tối `#7C8091` chiếm y 60–80, vài vết nứt nhỏ | Ô `HARD_WALL` (cột bên trong và tường bao) | ☑ | ☐ |
+| A07 | `crate.svg` | 0 0 64 80 | Thùng gỗ cam nâu (`#E08A3C` / `#B8621F`) có khung viền và tấm gỗ chéo như mẫu 5; cùng hình khối với A06 | Ô `BREAKABLE_WALL` | ☑ | ☐ |
 
 ### 4.3 Bom và vụ nổ – `fx/`
 
 | Mã | File | viewBox | Cần vẽ | Dùng ở | Tạm | Đẹp |
 |---|---|---|---|---|---|---|
-| A08 | `bomb.svg` | 0 0 64 64 | Bom tròn đen ánh tím (`#3A3550`) có vệt sáng, nắp ngòi xám, dây ngòi cong màu be. **Không vẽ tia lửa.** Thân bom là hình tròn tâm (30, 38) bán kính 24. Đầu dây ngòi kết thúc ở (46, 8) để code gắn tia lửa vào | Bom trong trận, icon trên nút PLAY/START GAME, HUD | ☐ | ☐ |
-| A09 | `spark.svg` | 0 0 32 32 | Tia lửa hình sao 6–8 cánh: lõi trắng, thân vàng `#FFD54A`, viền đỏ `#E53935`, tâm ở (16, 16) | Đầu ngòi bom (code làm nhấp nháy), trang trí | ☐ | ☐ |
-| A10 | `flame_center.svg` | 0 0 64 64 | Tâm vụ nổ: khối lửa tròn nối ra cả 4 cạnh. Ở giữa mỗi cạnh, dải lửa chạm mép trong khoảng 13–51. Lõi trắng vàng `#FFF6C2`, giữa vàng `#FFC93C`, ngoài cam `#FF7A1A` | Ô tâm vụ nổ | ☐ | ☐ |
-| A11 | `flame_mid.svg` | 0 0 64 64 | Đoạn lửa **nằm ngang**, chạm mép trái và mép phải trong khoảng y 13–51. Ghép nhiều ô liền nhau không thấy đường nối. Code xoay 90° cho chiều dọc | Thân tia lửa | ☐ | ☐ |
-| A12 | `flame_end.svg` | 0 0 64 64 | Đầu mút: nối từ mép trái (y 13–51), thuôn tròn và kết thúc trước mép phải (x ≈ 56), **hướng sang phải**. Code xoay cho 3 hướng còn lại | Đầu tia lửa | ☐ | ☐ |
+| A08 | `bomb.svg` | 0 0 64 64 | Bom tròn đen ánh tím (`#3A3550`) có vệt sáng, nắp ngòi xám, dây ngòi cong màu be. **Không vẽ tia lửa.** Thân bom là hình tròn tâm (30, 38) bán kính 24. Đầu dây ngòi kết thúc ở (46, 8) để code gắn tia lửa vào | Bom trong trận, icon trên nút PLAY/START GAME, HUD | ☑ | ☐ |
+| A09 | `spark.svg` | 0 0 32 32 | Tia lửa hình sao 6–8 cánh: lõi trắng, thân vàng `#FFD54A`, viền đỏ `#E53935`, tâm ở (16, 16) | Đầu ngòi bom (code làm nhấp nháy), trang trí | ☑ | ☐ |
+| A10 | `flame_center.svg` | 0 0 64 64 | Tâm vụ nổ: khối lửa tròn nối ra cả 4 cạnh. Ở giữa mỗi cạnh, dải lửa chạm mép trong khoảng 13–51. Lõi trắng vàng `#FFF6C2`, giữa vàng `#FFC93C`, ngoài cam `#FF7A1A` | Ô tâm vụ nổ | ☑ | ☐ |
+| A11 | `flame_mid.svg` | 0 0 64 64 | Đoạn lửa **nằm ngang**, chạm mép trái và mép phải trong khoảng y 13–51. Ghép nhiều ô liền nhau không thấy đường nối. Code xoay 90° cho chiều dọc | Thân tia lửa | ☑ | ☐ |
+| A12 | `flame_end.svg` | 0 0 64 64 | Đầu mút: nối từ mép trái (y 13–51), thuôn tròn và kết thúc trước mép phải (x ≈ 56), **hướng sang phải**. Code xoay cho 3 hướng còn lại | Đầu tia lửa | ☑ | ☐ |
 
 ### 4.4 Icon minh họa nhiều màu – `icons/`
 
@@ -84,16 +84,16 @@ Icon đơn sắc (mũi tên, dấu ✔, ✖, home…) dùng font icon nên **kh�
 
 | Mã | File | viewBox | Cần vẽ | Dùng ở | Tạm | Đẹp |
 |---|---|---|---|---|---|---|
-| A13 | `icon_trophy.svg` | 0 0 128 128 | Cúp vàng có ngôi sao | Nút LEADERBOARD, màn kết quả | ☐ | ☐ |
-| A14 | `icon_history.svg` | 0 0 128 128 | Cuộn giấy kèm đồng hồ nhỏ. *Mẫu chưa có, cần thiết kế mới* | Nút HISTORY | ☐ | ☐ |
-| A15 | `icon_gear.svg` | 0 0 128 128 | Bánh răng tím như mẫu 1 | Nút SETTINGS | ☐ | ☐ |
-| A16 | `icon_help.svg` | 0 0 128 128 | Dấu hỏi vàng như mẫu 1 | Nút HELP | ☐ | ☐ |
-| A17 | `icon_crown.svg` | 0 0 128 128 | Vương miện vàng | Badge HOST, hạng 1, chữ VICTORY | ☐ | ☐ |
-| A18 | `icon_players.svg` | 0 0 128 128 | Nhóm 3 người như mẫu 4 | Tiêu đề ROOM LOBBY, ONLINE ROOMS | ☐ | ☐ |
-| A19 | `icon_star.svg` | 0 0 64 64 | Ngôi sao vàng | Điểm số | ☐ | ☐ |
-| A20 | `icon_fire.svg` | 0 0 64 64 | Ngọn lửa nhỏ màu cam | Tầm nổ trong HUD | ☐ | ☐ |
-| A21 | `icon_timer.svg` | 0 0 64 64 | Đồng hồ bấm giờ | Đồng hồ HUD | ☐ | ☐ |
-| A22 | `icon_skull.svg` | 0 0 64 64 | Đầu lâu trắng | Người chơi bị loại | ☐ | ☐ |
+| A13 | `icon_trophy.svg` | 0 0 128 128 | Cúp vàng có ngôi sao | Nút LEADERBOARD, màn kết quả | ☑ | ☐ |
+| A14 | `icon_history.svg` | 0 0 128 128 | Cuộn giấy kèm đồng hồ nhỏ. *Mẫu chưa có, cần thiết kế mới* | Nút HISTORY | ☑ | ☐ |
+| A15 | `icon_gear.svg` | 0 0 128 128 | Bánh răng tím như mẫu 1 | Nút SETTINGS | ☑ | ☐ |
+| A16 | `icon_help.svg` | 0 0 128 128 | Dấu hỏi vàng như mẫu 1 | Nút HELP | ☑ | ☐ |
+| A17 | `icon_crown.svg` | 0 0 128 128 | Vương miện vàng | Badge HOST, hạng 1, chữ VICTORY | ☑ | ☐ |
+| A18 | `icon_players.svg` | 0 0 128 128 | Nhóm 3 người như mẫu 4 | Tiêu đề ROOM LOBBY, ONLINE ROOMS | ☑ | ☐ |
+| A19 | `icon_star.svg` | 0 0 64 64 | Ngôi sao vàng | Điểm số | ☑ | ☐ |
+| A20 | `icon_fire.svg` | 0 0 64 64 | Ngọn lửa nhỏ màu cam | Tầm nổ trong HUD | ☑ | ☐ |
+| A21 | `icon_timer.svg` | 0 0 64 64 | Đồng hồ bấm giờ | Đồng hồ HUD | ☑ | ☐ |
+| A22 | `icon_skull.svg` | 0 0 64 64 | Đầu lâu trắng | Người chơi bị loại | ☑ | ☐ |
 
 ## 5. Nên có – 12 file
 
@@ -105,7 +105,7 @@ Icon đơn sắc (mũi tên, dấu ✔, ✖, home…) dùng font icon nên **kh�
 | B04 | `tiles/block_border.svg` | 0 0 64 80 | Phiến đá viền quanh sân như mẫu 5, thấp và phẳng hơn A06 | Dùng A06 | ☐ | ☐ |
 | B05 | `tiles/crate_debris.svg` | 0 0 32 32 | Một mảnh gỗ vỡ | Hình chữ nhật nâu | ☐ | ☐ |
 | B06 | `icons/laurel.svg` | 0 0 128 256 | Nhành nguyệt quế **bên trái**; code lật cho bên phải | Bỏ | ☐ | ☐ |
-| B07 | `bg/pattern_bomb.svg` | 0 0 160 160 | Họa tiết lặp: 3–4 quả bom và vài ngôi sao, nghiêng khác nhau, **chỉ một màu đen**, nền trong suốt. **Lặp liền mép**: hình nào cắt qua mép thì phần còn lại xuất hiện ở mép đối diện | Chỉ có gradient | ☐ | ☐ |
+| B07 | `bg/pattern_bomb.svg` | 0 0 160 160 | Họa tiết lặp: 3–4 quả bom và vài ngôi sao, nghiêng khác nhau, **chỉ một màu đen**, nền trong suốt. **Lặp liền mép**: hình nào cắt qua mép thì phần còn lại xuất hiện ở mép đối diện | Chỉ có gradient | ☑ | ☐ |
 | B08 | `deco/tree.svg` | 0 0 128 128 | Cây tán tròn như mẫu 5 | Để trống | ☐ | ☐ |
 | B09 | `deco/bush.svg` | 0 0 64 64 | Bụi cây | Để trống | ☐ | ☐ |
 | B10 | `deco/flower.svg` | 0 0 32 32 | Hoa trắng nhụy vàng | Để trống | ☐ | ☐ |

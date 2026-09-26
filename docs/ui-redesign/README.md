@@ -73,14 +73,14 @@ Khi một quyết định thay đổi, cập nhật bảng này và các file li
 ## Tiến độ
 
 - [x] Giai đoạn 1: Nền móng (2026-09-26) — chạy bằng `.\gradlew :client-fx:run`
-- [ ] Giai đoạn 2: Design system và tài nguyên
+- [x] Giai đoạn 2: Design system và tài nguyên (2026-09-26) — xem bằng `.\gradlew :client-fx:run --args="--gallery"`
 - [ ] Giai đoạn 3: Login, Home, popup
 - [ ] Giai đoạn 4: Room Browser, Room Lobby
 - [ ] Giai đoạn 5: Màn chơi
 - [ ] Giai đoạn 6: Result, Leaderboard, History
 - [ ] Giai đoạn 7: Đóng gói exe
 
-Tài nguyên: 0/22 file SVG bắt buộc, 0/2 bộ font (xem [05](05-tai-nguyen-svg-va-font.md)).
+Tài nguyên: 22/22 SVG bắt buộc đã có **bản tạm** (0/22 bản đẹp), B07 họa tiết nền có bản tạm, 2/2 bộ font (xem [05](05-tai-nguyen-svg-va-font.md)).
 
 ## Yêu cầu tổng quát
 

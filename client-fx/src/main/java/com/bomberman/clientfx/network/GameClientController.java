@@ -1,6 +1,7 @@
 package com.bomberman.clientfx.network;
 
 import com.bomberman.clientfx.state.ClientState;
+import com.bomberman.clientfx.state.Feedback;
 import com.bomberman.common.dto.CreateRoomRequest;
 import com.bomberman.common.dto.JoinRoomRequest;
 import com.bomberman.common.dto.LoginRequest;
@@ -118,19 +119,19 @@ public final class GameClientController implements AutoCloseable {
             try {
                 networkClient.connect(networkConfig.host(), networkConfig.port());
             } catch (IOException | RuntimeException exception) {
-                postFeedback("Cannot connect to " + networkConfig.displayAddress() + ".");
+                postError("Cannot connect to " + networkConfig.displayAddress() + ".");
                 return;
             }
         }
         try {
             networkClient.send(message);
         } catch (IOException | RuntimeException exception) {
-            postFeedback("Connection error: " + exception.getMessage());
+            postError("Connection error: " + exception.getMessage());
         }
     }
 
-    private void postFeedback(String feedback) {
-        uiThread.execute(() -> state.setFeedback(feedback));
+    private void postError(String message) {
+        uiThread.execute(() -> state.setFeedback(Feedback.error(message)));
     }
 
     @Override

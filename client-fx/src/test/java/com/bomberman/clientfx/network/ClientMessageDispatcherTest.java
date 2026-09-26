@@ -42,7 +42,7 @@ class ClientMessageDispatcherTest {
 
     @BeforeEach
     void setUp() {
-        state.addFeedbackListener(feedback::add);
+        state.addFeedbackListener(entry -> feedback.add(entry.message()));
         dispatcher = new ClientMessageDispatcher(state, navigator, Runnable::run);
         navigator.show(ScreenId.LOGIN);
     }

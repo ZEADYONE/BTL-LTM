@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Placeholder art: scroll with a small clock. -->
+  <g stroke="#2A1F3D" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="22" y="18" width="70" height="92" rx="8" fill="#FFF1E6"/>
+    <rect x="14" y="10" width="86" height="16" rx="8" fill="#E8D3A8"/>
+    <rect x="14" y="102" width="86" height="16" rx="8" fill="#E8D3A8"/>
+    <path d="M36 44 H78 M36 60 H78 M36 76 H62" fill="none" stroke="#B7A48A" stroke-width="6"/>
+    <circle cx="90" cy="88" r="28" fill="#5AA9FF"/>
+    <circle cx="90" cy="88" r="19" fill="#FFFFFF" stroke-width="4"/>
+    <path d="M90 76 V89 L99 95" fill="none" stroke-width="5"/>
+  </g>
+</svg>

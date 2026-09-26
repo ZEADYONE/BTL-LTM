@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80">
+  <!-- Placeholder art. Top face y 0–60, front face y 60–80; the bottom edge sits on the tile's bottom edge. -->
+  <g stroke="#2A1F3D" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="2" y="2" width="60" height="76" rx="8" fill="#7C8091"/>
+    <rect x="2" y="2" width="60" height="58" rx="8" fill="#B8BCC8"/>
+    <path d="M10 10 H38" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="3"/>
+    <path d="M44 22 L38 30 L42 36" fill="none" stroke="#8E93A3" stroke-width="2.5"/>
+    <path d="M16 44 L22 40" fill="none" stroke="#8E93A3" stroke-width="2.5"/>
+    <path d="M14 70 H26 M38 70 H50" fill="none" stroke="#5E6273" stroke-width="2.5"/>
+  </g>
+</svg>

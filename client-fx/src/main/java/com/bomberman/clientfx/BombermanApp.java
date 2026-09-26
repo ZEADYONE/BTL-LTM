@@ -1,5 +1,8 @@
 package com.bomberman.clientfx;
 
+import com.bomberman.clientfx.asset.AssetIds;
+import com.bomberman.clientfx.asset.SvgAssets;
+import com.bomberman.clientfx.asset.SvgRasterizer;
 import com.bomberman.clientfx.network.ClientMessageDispatcher;
 import com.bomberman.clientfx.network.ClientNetworkConfig;
 import com.bomberman.clientfx.network.GameClientController;
@@ -9,8 +12,10 @@ import com.bomberman.clientfx.state.UserPreferences;
 import com.bomberman.clientfx.ui.AppShell;
 import com.bomberman.clientfx.ui.ScreenId;
 import com.bomberman.clientfx.ui.ScreenNavigator;
+import com.bomberman.clientfx.ui.screen.GalleryScreen;
 import com.bomberman.clientfx.ui.screen.HomeScreen;
 import com.bomberman.clientfx.ui.screen.LoginScreen;
+import com.bomberman.clientfx.ui.theme.Fonts;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
@@ -23,22 +28,30 @@ import javafx.stage.Stage;
 
 import java.util.Objects;
 
-/** Wires state, networking and screens, then opens the window. */
+/** Wires state, networking, assets and screens, then opens the window. */
 public final class BombermanApp extends Application {
 
     private static final String TITLE = "Bomberman Online Mini";
+    private static final String GALLERY_FLAG = "--gallery";
     private static final double MIN_WIDTH = 960;
     private static final double MIN_HEIGHT = 540;
+    private static final int PATTERN_TILE = 160;
 
     private GameNetworkClient networkClient;
     private GameClientController controller;
+    private SvgAssets assets;
 
     @Override
     public void start(Stage stage) {
+        Fonts.load();
         UserPreferences preferences = UserPreferences.forCurrentUser();
         ClientState state = new ClientState();
         AppShell shell = new AppShell();
         ScreenNavigator navigator = new ScreenNavigator(shell);
+        assets = new SvgAssets(SvgRasterizer.fromClasspath());
+        assets.renderScaleProperty().bind(shell.renderScaleProperty());
+        shell.renderScaleProperty().addListener(observable -> loadBackgroundPattern(shell));
+        loadBackgroundPattern(shell);
 
         networkClient = new GameNetworkClient(
                 new ClientMessageDispatcher(state, navigator, Platform::runLater)
@@ -54,10 +67,7 @@ public final class BombermanApp extends Application {
         navigator.register(ScreenId.LOGIN, new LoginScreen(state, controller, preferences));
         navigator.register(ScreenId.HOME, new HomeScreen(state, controller, navigator));
 
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-        double width = Math.min(AppShell.DESIGN_WIDTH, screenBounds.getWidth() * 0.9);
-        double height = Math.min(width * 9 / 16, screenBounds.getHeight() * 0.9);
-        Scene scene = new Scene(shell.root(), width, height);
+        Scene scene = new Scene(shell.root(), initialWidth(), initialWidth() * 9 / 16);
         scene.getStylesheets().add(Objects.requireNonNull(
                 BombermanApp.class.getResource("/css/game-theme.css"),
                 "Missing /css/game-theme.css"
@@ -72,7 +82,7 @@ public final class BombermanApp extends Application {
         stage.setTitle(TITLE);
         stage.setMinWidth(MIN_WIDTH);
         stage.setMinHeight(MIN_HEIGHT);
-        // ESC is reserved for the in-match menu, so only F11 leaves fullscreen.
+        // ESC is reserved for popups and the in-match menu, so only F11 leaves fullscreen.
         stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
         stage.setFullScreenExitHint("");
         stage.fullScreenProperty().addListener(
@@ -80,8 +90,13 @@ public final class BombermanApp extends Application {
         );
         stage.setScene(scene);
         stage.setFullScreen(preferences.fullscreen());
+        shell.attachTo(stage);
 
-        navigator.show(ScreenId.LOGIN);
+        if (getParameters().getRaw().contains(GALLERY_FLAG)) {
+            shell.show(new GalleryScreen(assets, shell));
+        } else {
+            navigator.show(ScreenId.LOGIN);
+        }
         stage.show();
     }
 
@@ -93,5 +108,22 @@ public final class BombermanApp extends Application {
         if (networkClient != null) {
             networkClient.close();
         }
+        if (assets != null) {
+            assets.close();
+        }
+    }
+
+    private void loadBackgroundPattern(AppShell shell) {
+        int pixels = (int) Math.ceil(PATTERN_TILE * shell.renderScaleProperty().get());
+        assets.request(AssetIds.PATTERN_BOMB, null, pixels, pixels)
+                .thenAccept(tile -> Platform.runLater(() -> shell.setBackgroundPattern(tile)));
+    }
+
+    private static double initialWidth() {
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        return Math.min(
+                Math.min(AppShell.DESIGN_WIDTH, screenBounds.getWidth() * 0.9),
+                screenBounds.getHeight() * 0.9 * 16 / 9
+        );
     }
 }

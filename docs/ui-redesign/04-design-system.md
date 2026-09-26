@@ -99,7 +99,7 @@ Màu của đội Đỏ cũng là **3 màu khóa** trong file SVG nhân vật. C
 |---|---|---|
 | Badge người chơi | 250 × 72 | 1 |
 | Ô số liệu (pill) | 160 × 40 | 1 |
-| Nút menu cột trái (`MenuTileButton`) | 220 × 72, cách nhau 26 | 1 |
+| Nút menu cột trái (`MenuTileButton`) | 250 × 72, cách nhau 26, chữ 24 px (220 px không đủ cho LEADERBOARD) | 1 |
 | Vùng nhân vật lớn | 380 × 400 | 1 |
 | Thẻ ONLINE ROOMS | 400 × 110 | 1 |
 | Nút PLAY (`XL`) | 330 × 124 | 1 |

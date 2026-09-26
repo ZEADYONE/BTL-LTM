@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Placeholder art. Team-colour parts use only the key colours #E53935, #B71C1C, #FF8A80. -->
+  <g stroke="#2A1F3D" stroke-width="12" stroke-linejoin="round" stroke-linecap="round">
+    <!-- legs and shoes -->
+    <rect x="206" y="392" width="40" height="58" fill="#B71C1C"/>
+    <rect x="266" y="392" width="40" height="58" fill="#B71C1C"/>
+    <rect x="186" y="440" width="70" height="38" rx="18" fill="#FFFFFF"/>
+    <rect x="256" y="440" width="70" height="38" rx="18" fill="#FFFFFF"/>
+    <path d="M198 462 H244 M268 462 H314" fill="none" stroke="#B71C1C" stroke-width="8"/>
+    <!-- body -->
+    <rect x="186" y="288" width="140" height="118" rx="38" fill="#B71C1C"/>
+    <rect x="192" y="294" width="112" height="100" rx="32" fill="#E53935" stroke="none"/>
+    <rect x="186" y="288" width="140" height="118" rx="38" fill="none"/>
+    <rect x="188" y="362" width="136" height="24" fill="#3A3550"/>
+    <rect x="238" y="356" width="36" height="36" rx="7" fill="#FFC93C"/>
+    <!-- left arm -->
+    <path d="M200 318 Q156 330 150 372" fill="none" stroke-width="46"/>
+    <path d="M200 318 Q156 330 150 372" fill="none" stroke="#E53935" stroke-width="28"/>
+    <circle cx="150" cy="380" r="26" fill="#FFFFFF"/>
+    <!-- bomb held in the right hand -->
+    <circle cx="410" cy="318" r="50" fill="#3A3550"/>
+    <ellipse cx="392" cy="298" rx="16" ry="10" transform="rotate(-35 392 298)" fill="#FFFFFF" fill-opacity="0.45" stroke="none"/>
+    <rect x="420" y="256" width="28" height="20" rx="5" transform="rotate(30 434 266)" fill="#8C8FA3"/>
+    <path d="M444 256 Q456 232 474 230" fill="none" stroke="#E8D3A8" stroke-width="8"/>
+    <polygon points="480,210 483.4,221.7 494.1,215.9 488.3,226.6 500,230 488.3,233.4 494.1,244.1 483.4,238.3 480,250 476.6,238.3 465.9,244.1 471.7,233.4 460,230 471.7,226.6 465.9,215.9 476.6,221.7" fill="#FFD54A" stroke="#F4511E" stroke-width="4"/>
+    <!-- right arm -->
+    <path d="M312 318 Q348 334 364 330" fill="none" stroke-width="46"/>
+    <path d="M312 318 Q348 334 364 330" fill="none" stroke="#E53935" stroke-width="28"/>
+    <circle cx="370" cy="330" r="26" fill="#FFFFFF"/>
+    <!-- scarf -->
+    <ellipse cx="256" cy="298" rx="62" ry="18" fill="#3A3550"/>
+    <!-- helmet -->
+    <circle cx="256" cy="190" r="118" fill="#B71C1C"/>
+    <circle cx="248" cy="182" r="108" fill="#E53935" stroke="none"/>
+    <circle cx="256" cy="190" r="118" fill="none"/>
+    <ellipse cx="196" cy="112" rx="36" ry="17" transform="rotate(-35 196 112)" fill="#FF8A80" stroke="none"/>
+    <!-- headphones -->
+    <circle cx="142" cy="196" r="34" fill="#FFC93C"/>
+    <circle cx="142" cy="196" r="15" fill="#F29F05" stroke="none"/>
+    <circle cx="370" cy="196" r="34" fill="#FFC93C"/>
+    <circle cx="370" cy="196" r="15" fill="#F29F05" stroke="none"/>
+    <!-- face -->
+    <rect x="176" y="146" width="160" height="128" rx="50" fill="#FFE3C7"/>
+    <ellipse cx="222" cy="206" rx="13" ry="20" fill="#2A1F3D" stroke="none"/>
+    <circle cx="227" cy="198" r="5" fill="#FFFFFF" stroke="none"/>
+    <path d="M276 210 Q292 194 308 210" fill="none" stroke-width="9"/>
+    <circle cx="200" cy="238" r="12" fill="#FF9AA2" fill-opacity="0.8" stroke="none"/>
+    <circle cx="314" cy="238" r="12" fill="#FF9AA2" fill-opacity="0.8" stroke="none"/>
+    <path d="M234 234 Q256 266 282 234 Z" fill="#7A1E2B" stroke-width="7"/>
+    <ellipse cx="259" cy="251" rx="10" ry="6" fill="#FF8C94" stroke="none"/>
+    <!-- fuse and spark on top of the helmet -->
+    <rect x="236" y="62" width="40" height="22" rx="7" fill="#8C8FA3"/>
+    <path d="M256 62 Q258 38 284 32" fill="none" stroke="#E8D3A8" stroke-width="9"/>
+    <polygon points="296,12 299.4,23.7 310.1,17.9 304.3,28.6 316,32 304.3,35.4 310.1,46.1 299.4,40.3 296,52 292.6,40.3 281.9,46.1 287.7,35.4 276,32 287.7,28.6 281.9,17.9 292.6,23.7" fill="#FFD54A" stroke="#F4511E" stroke-width="4"/>
+  </g>
+</svg>

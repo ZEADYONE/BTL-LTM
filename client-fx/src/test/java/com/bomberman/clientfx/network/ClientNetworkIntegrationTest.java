@@ -102,7 +102,7 @@ class ClientNetworkIntegrationTest {
                 return current;
             }
         };
-        state.addFeedbackListener(feedback::add);
+        state.addFeedbackListener(entry -> feedback.add(entry.message()));
         networkClient = new GameNetworkClient(new ClientMessageDispatcher(state, navigator, uiThread));
         controller = new GameClientController(
                 networkClient,
