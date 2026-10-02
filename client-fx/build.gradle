@@ -66,6 +66,9 @@ tasks.register('packageApp', Exec) {
 
     inputs.file(packageIcon)
     inputs.files(configurations.runtimeClasspath)
+    // The client jar itself is not on runtimeClasspath; without this a code change
+    // leaves the app image UP-TO-DATE and a stale build gets zipped.
+    inputs.dir(jpackageInput)
     outputs.dir(packageDestination.map { it.dir(packageName) })
 
     doFirst {
@@ -100,5 +103,49 @@ tasks.register('packageApp', Exec) {
                 '--java-options', '-Dfile.encoding=UTF-8',
                 '--vendor', 'Bomberman Online',
                 '--description', 'Online multiplayer Bomberman game'
+    }
+}
+
+// The website serves downloads/ as-is: the ZIP, its .sha256 file and release.json,
+// which the download card reads so version, size and checksum always match the file.
+def releaseVersion = (findProperty('releaseVersion') ?: version.toString() - '-SNAPSHOT').toString()
+def releaseDir = rootProject.layout.projectDirectory.dir('downloads')
+
+tasks.register('packageZip', Zip) {
+    group = 'distribution'
+    description = 'Zips the Windows app image into downloads/ for the website.'
+    dependsOn tasks.named('packageApp')
+
+    from(packageDestination.map { it.dir(packageName) })
+    into(packageName)
+    destinationDirectory = releaseDir
+    archiveFileName = "${packageName}-${releaseVersion}-Windows.zip"
+    outputs.file(releaseDir.file("${packageName}-${releaseVersion}-Windows.zip.sha256"))
+    outputs.file(releaseDir.file('release.json'))
+
+    // Older versions would otherwise stay downloadable next to the current one.
+    doFirst {
+        releaseDir.asFile.listFiles()?.findAll {
+            it.name ==~ /${packageName}-.+-Windows\.zip(\.sha256)?/ || it.name == 'release.json'
+        }*.delete()
+    }
+
+    doLast {
+        File zip = archiveFile.get().asFile
+        def digest = java.security.MessageDigest.getInstance('SHA-256')
+        zip.eachByte(1 << 16) { byte[] buffer, int length -> digest.update(buffer, 0, length) }
+        String sha256 = digest.digest().encodeHex().toString()
+
+        new File(zip.parentFile, "${zip.name}.sha256").setText("${sha256}  ${zip.name}\n", 'UTF-8')
+        new File(zip.parentFile, 'release.json').setText(groovy.json.JsonOutput.prettyPrint(
+                groovy.json.JsonOutput.toJson([
+                        version  : releaseVersion,
+                        platform : 'Windows x64',
+                        file     : zip.name,
+                        sizeBytes: zip.length(),
+                        sha256   : sha256,
+                        builtAt  : java.time.Instant.now().toString()
+                ])) + '\n', 'UTF-8')
+        logger.lifecycle("Release ZIP: ${zip} (${zip.length()} bytes)\nSHA-256: ${sha256}")
     }
 }

@@ -42,7 +42,11 @@ bomberman-online/
 │       ├── state/                  presentation state
 │       └── ui/                     screen, component, popup và theme
 ├── packaging/                      icon nguồn và icon nhiều kích thước cho Windows
-├── docker-compose.yml              MySQL only
+├── website/                        landing page tĩnh (HTML/CSS/JS) + Nginx image
+├── downloads/                      bản tải Windows do :client-fx:packageZip sinh ra (không commit)
+├── Dockerfile                      Multi-stage image for the Java server
+├── docker-compose.yml              MySQL + server + website deployment stack
+├── env.template                    Environment variable template
 ├── settings.gradle
 └── build.gradle
 ```
@@ -51,50 +55,76 @@ bomberman-online/
 
 | Variable | Used by | Default | Purpose |
 |---|---|---:|---|
-| `BOMBERMAN_DB_PASSWORD` | Docker, server | required | MySQL root password |
-| `BOMBERMAN_DB_USERNAME` | server | `root` | Database username |
+| `BOMBERMAN_DB_NAME` | Docker | `bomberman_online` | Database name |
+| `BOMBERMAN_DB_USERNAME` | Docker, server | `bomberman` | Application database user |
+| `BOMBERMAN_DB_PASSWORD` | Docker, server | required | Application database password |
+| `BOMBERMAN_DB_ROOT_PASSWORD` | Docker | required | MySQL administrative password |
 | `BOMBERMAN_DB_URL` | server | local `bomberman_online` database | JDBC URL |
-| `BOMBERMAN_DB_PORT` | Docker | `3306` | Published MySQL port |
-| `BOMBERMAN_TCP_PORT` | server, clients | `8081` | Gameplay TCP port |
+| `BOMBERMAN_DB_PORT` | Docker | `3306` | MySQL port bound to host loopback only |
+| `BOMBERMAN_TCP_PORT` | Docker, server, clients | `8081` | Public gameplay TCP port |
 | `BOMBERMAN_SERVER_HOST` | clients | `127.0.0.1` | TCP server hostname/IP |
+| `BOMBERMAN_WEB_PORT` | Docker | `80` | Cổng HTTP của website |
+| `BOMBERMAN_PUBLIC_HOST` | website | hostname của URL website | HOST hiển thị cho người chơi nhập vào game |
+| `BOMBERMAN_PUBLIC_PORT` | website | `BOMBERMAN_TCP_PORT` | PORT hiển thị, chỉ đặt khi router forward cổng khác |
+| `BOMBERMAN_REPO_URL` | website | trống (ẩn link) | Link mã nguồn ở footer |
 
 Client defaults live in each module's `src/main/resources/client.properties`. They can
 also be overridden with Java system properties `bomberman.server.host` and
 `bomberman.tcp.port`. Trên client JavaFX, người chơi có thể nhập `host:port` ngay tại
 màn hình đăng nhập; địa chỉ hợp lệ gần nhất sẽ được ghi nhớ.
 
-## Start MySQL
+## Run the deployment stack
 
-PowerShell:
+Copy the environment template, replace both password placeholders in `.env`, then
+build and start the database, game server and website. Build the Windows download
+first (see [Website giới thiệu](#website-giới-thiệu)) so the website has a file to serve:
 
 ```powershell
-$env:BOMBERMAN_DB_PASSWORD = "choose-a-local-password"
-docker compose up -d
+Copy-Item env.template .env
+docker compose up -d --build
 docker compose ps
+docker compose logs -f server
 ```
 
 Linux/macOS:
 
 ```shell
-export BOMBERMAN_DB_PASSWORD='choose-a-local-password'
-docker compose up -d
+cp env.template .env
+docker compose up -d --build
 docker compose ps
+docker compose logs -f server
 ```
 
-Only MySQL is containerized. Database data is retained in the
-`bomberman_mysql_data` Docker volume.
+The game server is published on `${BOMBERMAN_TCP_PORT:-8081}`. MySQL is reachable
+from the host only through `127.0.0.1:${BOMBERMAN_DB_PORT:-3306}` and is not exposed
+to the LAN or Internet. Database data is retained in the `bomberman_mysql_data`
+Docker volume. Do not commit `.env`.
 
-## Run server
+If the volume was created by the older MySQL-only Compose configuration, the new
+application database user will not be created automatically. For disposable local
+data, recreate it once with `docker compose down -v` and then start the stack again.
+Back up important data instead of deleting its volume.
 
-Set `BOMBERMAN_DB_PASSWORD` to the same value used by Docker, then run:
+For a home deployment, forward only the configured gameplay TCP port on the router
+to the Docker host. Never forward the MySQL port.
+
+## Run server locally during development
+
+Start only MySQL from Compose:
 
 ```powershell
+docker compose up -d mysql
+$env:BOMBERMAN_DB_USERNAME = "bomberman"
+$env:BOMBERMAN_DB_PASSWORD = "the-value-from-dot-env"
 .\gradlew.bat :server:bootRun
 ```
 
 Linux/macOS:
 
 ```shell
+docker compose up -d mysql
+export BOMBERMAN_DB_USERNAME='bomberman'
+export BOMBERMAN_DB_PASSWORD='the-value-from-dot-env'
 ./gradlew :server:bootRun
 ```
 
@@ -162,6 +192,69 @@ client-fx/build/dist/BombermanOnline/
 
 Thư mục `runtime/` chứa Java dành riêng cho ứng dụng. Khi phát hành, nén và gửi
 **toàn bộ thư mục `BombermanOnline`**, không gửi riêng file `.exe`.
+
+Để nén sẵn cho website, dùng `packageZip` (tự chạy `packageApp` trước):
+
+```powershell
+.\gradlew.bat :client-fx:packageZip
+# Đặt version khác version Gradle: -PreleaseVersion=0.2.0
+```
+
+Kết quả nằm trong `downloads/`: `BombermanOnline-<version>-Windows.zip`, file
+`.sha256` và `release.json` (version, dung lượng, checksum mà website đọc để hiển
+thị). Bản ZIP cũ khác version bị xóa để website chỉ phục vụ một bản.
+
+## Website giới thiệu
+
+Landing page tĩnh trong `website/` (HTML/CSS/JS thuần, không cần Node.js) dùng chính
+màu, font và SVG của client JavaFX. Service `website` (Nginx) chạy cùng Compose:
+
+- `BOMBERMAN_PUBLIC_HOST`/`BOMBERMAN_PUBLIC_PORT` trong `.env` là địa chỉ hiển thị và
+  nút sao chép; Nginx trả về chúng qua `/config.js` khi container khởi động, nên sửa
+  `.env` rồi `docker compose up -d website` là đủ, không cần build lại image.
+- `downloads/` được mount chỉ đọc vào `/downloads/`. Cập nhật bản tải chỉ cần chạy lại
+  `packageZip`; website đọc `release.json` nên version, dung lượng và SHA-256 luôn
+  khớp file đang phục vụ.
+- Website không phụ thuộc service `server`: trang tải game vẫn mở được khi game
+  server tắt. Website không kiểm tra trạng thái server theo thời gian thực.
+
+Triển khai từ đầu trên máy Windows có JDK 21 và Docker:
+
+```powershell
+.\gradlew.bat :client-fx:packageZip
+Copy-Item env.template .env        # đặt mật khẩu, BOMBERMAN_PUBLIC_HOST
+docker compose up -d --build
+docker compose ps                  # mysql, server, website đều (healthy)
+```
+
+Kiểm tra nhanh:
+
+```powershell
+curl.exe -I http://localhost/                          # 200
+curl.exe http://localhost/config.js                    # host/port đúng .env
+curl.exe -I http://localhost/downloads/release.json    # 200
+```
+
+Cập nhật client mới: chạy lại `packageZip`, không cần restart container. Cập nhật mã
+website: `docker compose up -d --build website`. Không dùng `docker compose down -v`
+khi cập nhật vì lệnh này xóa volume MySQL.
+
+### Router, DNS và HTTPS
+
+| Dịch vụ | Cổng host | Forward trên router |
+|---|---:|---|
+| Website HTTP | `BOMBERMAN_WEB_PORT` (80) | Có |
+| Game TCP | `BOMBERMAN_TCP_PORT` (8081) | Có |
+| MySQL | `127.0.0.1:BOMBERMAN_DB_PORT` | Không bao giờ |
+
+- Có thể dùng một hostname/DDNS cho cả hai; khi đó để trống `BOMBERMAN_PUBLIC_HOST`.
+- Nếu website đi qua Cloudflare proxy, hostname game phải là bản ghi **DNS only** và
+  phải đặt vào `BOMBERMAN_PUBLIC_HOST`, vì proxy HTTP không chuyển tiếp TCP thô.
+- Kiểm tra IP WAN của router trùng IP public; nếu ISP dùng CGNAT, port forwarding
+  không hoạt động (cần IPv4 public, tunnel hoặc VPS).
+- Website hiện chạy HTTP nên Chrome/Edge cảnh báo khi tải ZIP; trang có checksum
+  SHA-256 để người chơi tự kiểm tra. Nên bổ sung HTTPS (Caddy hoặc reverse proxy có TLS) khi domain ổn định.
+- Kết nối game là TCP chưa mã hóa: người chơi nên dùng mật khẩu riêng cho game.
 
 ## Architecture
 

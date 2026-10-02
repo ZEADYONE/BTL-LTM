@@ -34,6 +34,8 @@ import java.util.List;
 /** S7 global ranking: top-three podium and a detailed table using server-assigned ranks. */
 public final class LeaderboardScreen implements Screen, ClientStateListener {
 
+    private static final int VISIBLE_TABLE_ROWS = 6;
+
     private final ClientState state;
     private final GameClientController controller;
     private final SvgAssets assets;
@@ -128,12 +130,11 @@ public final class LeaderboardScreen implements Screen, ClientStateListener {
         podium.getChildren().add(podiumEntry(top.getFirst(), 125));
         if (top.size() >= 3) podium.getChildren().add(podiumEntry(top.get(2), 75));
 
-        List<RankingEntryDto> remainder = entries.subList(top.size(), entries.size());
-        remainder.forEach(entry -> rows.getChildren().add(row(entry, false)));
+        entries.forEach(entry -> rows.getChildren().add(row(entry, false)));
         RankingEntryDto mine = entries.stream()
                 .filter(entry -> entry.userId() == state.getCurrentUserId())
                 .findFirst().orElse(null);
-        if (mine != null && entries.indexOf(mine) >= top.size() + 6) {
+        if (mine != null && entries.indexOf(mine) >= VISIBLE_TABLE_ROWS) {
             Region divider = new Region();
             divider.getStyleClass().add("pinned-divider");
             pinnedArea.getChildren().addAll(divider, row(mine, true));
