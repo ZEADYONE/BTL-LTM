@@ -1,23 +1,6 @@
+# MySQL is not part of this stack: the server connects to an existing database
+# server configured by BOMBERMAN_DB_HOST/PORT/NAME in .env.
 services:
-  mysql:
-    image: mysql:8.4
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: ${BOMBERMAN_DB_NAME:-bomberman_online}
-      MYSQL_USER: ${BOMBERMAN_DB_USERNAME:-bomberman}
-      MYSQL_PASSWORD: ${BOMBERMAN_DB_PASSWORD:?Copy env.template to .env and set BOMBERMAN_DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${BOMBERMAN_DB_ROOT_PASSWORD:?Copy env.template to .env and set BOMBERMAN_DB_ROOT_PASSWORD}
-    ports:
-      - "127.0.0.1:${BOMBERMAN_DB_PORT:-3306}:3306"
-    volumes:
-      - bomberman_mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} --silent"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-      start_period: 20s
-
   server:
     image: bomberman-server:${BOMBERMAN_IMAGE_TAG:-latest}
     build:
@@ -25,12 +8,12 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     init: true
-    depends_on:
-      mysql:
-        condition: service_healthy
+    # Lets BOMBERMAN_DB_HOST=host.docker.internal reach a MySQL running on the Docker host.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       BOMBERMAN_TCP_PORT: "8081"
-      BOMBERMAN_DB_URL: "jdbc:mysql://mysql:3306/${BOMBERMAN_DB_NAME:-bomberman_online}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      BOMBERMAN_DB_URL: "jdbc:mysql://${BOMBERMAN_DB_HOST:?Set BOMBERMAN_DB_HOST in .env to the database server host/IP}:${BOMBERMAN_DB_PORT:-3306}/${BOMBERMAN_DB_NAME:-bomberman_online}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
       BOMBERMAN_DB_USERNAME: ${BOMBERMAN_DB_USERNAME:-bomberman}
       BOMBERMAN_DB_PASSWORD: ${BOMBERMAN_DB_PASSWORD:?Copy env.template to .env and set BOMBERMAN_DB_PASSWORD}
       JAVA_TOOL_OPTIONS: ${BOMBERMAN_JAVA_OPTS:--XX:MaxRAMPercentage=75.0 -Dfile.encoding=UTF-8}
@@ -66,6 +49,3 @@ services:
       timeout: 3s
       retries: 3
       start_period: 5s
-
-volumes:
-  bomberman_mysql_data:
