@@ -37,6 +37,7 @@ import java.util.List;
 public final class RoomLobbyScreen implements Screen, ClientStateListener {
 
     private static final double PREVIEW_TILE = 16;
+    private static final double BOTTOM_ACTION_INSET = 8;
 
     private final ClientState state;
     private final GameClientController controller;
@@ -112,11 +113,11 @@ public final class RoomLobbyScreen implements Screen, ClientStateListener {
         ready.setOnAction(event -> toggleReady());
         ready.setPrefWidth(250);
         AnchorPane.setLeftAnchor(ready, 24.0);
-        AnchorPane.setBottomAnchor(ready, 20.0);
+        AnchorPane.setBottomAnchor(ready, BOTTOM_ACTION_INSET);
         start.setOnAction(event -> startGame());
         start.setPrefWidth(320);
         AnchorPane.setRightAnchor(start, 24.0);
-        AnchorPane.setBottomAnchor(start, 20.0);
+        AnchorPane.setBottomAnchor(start, BOTTOM_ACTION_INSET);
 
         root.getChildren().addAll(nameBox, slotGrid, rightColumn, ready, start, title, leave);
     }
