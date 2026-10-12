@@ -49,6 +49,10 @@ public class OnlineUserRegistry {
         return Optional.ofNullable(onlineUsers.get(userId)).map(OnlineUserPresence::status);
     }
 
+    public Optional<OnlineUserPresence> find(long userId) {
+        return Optional.ofNullable(onlineUsers.get(userId));
+    }
+
     public List<OnlineUserPresence> snapshot() {
         return onlineUsers.values().stream()
                 .sorted(Comparator.comparing(OnlineUserPresence::username))

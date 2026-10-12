@@ -37,6 +37,8 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.Locale;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Window content: a fixed 1280×720 design canvas, scaled uniformly to fit the window and
@@ -68,6 +70,7 @@ public final class AppShell {
     private final Scale scale = new Scale(1, 1, 0, 0);
     private final ReadOnlyDoubleWrapper renderScale = new ReadOnlyDoubleWrapper(this, "renderScale", 1);
     private final PauseTransition renderScaleSettle = new PauseTransition(SCALE_SETTLE);
+    private final List<Runnable> modalClosedListeners = new CopyOnWriteArrayList<>();
 
     private Screen currentScreen;
     private Stage stage;
@@ -239,8 +242,20 @@ public final class AppShell {
     }
 
     public void closeModal() {
+        boolean wasShowing = modalLayer.isVisible();
         modalLayer.setVisible(false);
         modalLayer.getChildren().clear();
+        if (wasShowing) {
+            modalClosedListeners.forEach(Runnable::run);
+        }
+    }
+
+    public void addModalClosedListener(Runnable listener) {
+        modalClosedListeners.add(listener);
+    }
+
+    public void removeModalClosedListener(Runnable listener) {
+        modalClosedListeners.remove(listener);
     }
 
     /** Used by match input to stop commands while any popup or menu covers the game. */

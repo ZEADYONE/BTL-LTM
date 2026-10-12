@@ -13,6 +13,9 @@ public enum RoomResultCode {
     ROOM_FULL,
     NOT_IN_ROOM,
     NOT_HOST,
+    TARGET_NOT_IN_ROOM,
+    CANNOT_KICK_SELF,
+    KICKED_FROM_ROOM,
     NOT_ENOUGH_PLAYERS,
     NOT_ALL_PLAYERS_READY
 }

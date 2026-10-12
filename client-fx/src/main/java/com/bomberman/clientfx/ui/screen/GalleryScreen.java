@@ -248,7 +248,7 @@ public final class GalleryScreen implements Screen {
         SlotCard you = new SlotCard(assets, 1);
         you.showPlayer("Minh Đức", false, false, true);
         SlotCard third = new SlotCard(assets, 2);
-        third.showPlayer("Momo", true, false, false);
+        third.showPlayer("Momo", true, false, false, true, false, () -> { });
         SlotCard empty = new SlotCard(assets, 3);
         FlowPane grid = new FlowPane(14, 14, host, you, third, empty);
         grid.setPrefWrapLength(SlotCard.WIDTH * 2 + 14);

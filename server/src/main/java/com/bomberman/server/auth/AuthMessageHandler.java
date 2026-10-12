@@ -11,6 +11,7 @@ import com.bomberman.common.message.NetworkMessage;
 import com.bomberman.server.lobby.LobbyService;
 import com.bomberman.server.network.ClientSession;
 import com.bomberman.server.room.RoomMessageHandler;
+import com.bomberman.server.social.FriendUpdatePublisher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -32,17 +33,20 @@ public class AuthMessageHandler {
     private final ObjectMapper objectMapper;
     private final LobbyService lobbyService;
     private final RoomMessageHandler roomMessageHandler;
+    private final FriendUpdatePublisher friendUpdatePublisher;
 
     public AuthMessageHandler(
             AuthenticationService authenticationService,
             ObjectMapper objectMapper,
             LobbyService lobbyService,
-            RoomMessageHandler roomMessageHandler
+            RoomMessageHandler roomMessageHandler,
+            FriendUpdatePublisher friendUpdatePublisher
     ) {
         this.authenticationService = authenticationService;
         this.objectMapper = objectMapper;
         this.lobbyService = lobbyService;
         this.roomMessageHandler = roomMessageHandler;
+        this.friendUpdatePublisher = friendUpdatePublisher;
     }
 
     public void handleRegister(ClientSession session, NetworkMessage message) {
@@ -107,6 +111,7 @@ public class AuthMessageHandler {
                     result.authenticatedUser().username(),
                     session.getSessionId()
             );
+            friendUpdatePublisher.publishPresenceChanged(result.authenticatedUser().userId());
             lobbyService.broadcastLobbyUpdates();
         }
     }
@@ -124,6 +129,7 @@ public class AuthMessageHandler {
         AuthenticatedUser user = session.detachAuthenticatedUser();
         if (user != null) {
             authenticationService.logout(user, session.getSessionId());
+            friendUpdatePublisher.publishPresenceChanged(user.userId());
             log.info(
                     "User offline: userId={}, username={}, sessionId={}, reason={}",
                     user.userId(),

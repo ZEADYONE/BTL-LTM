@@ -18,8 +18,10 @@ import com.bomberman.clientfx.ui.component.SlotCard;
 import com.bomberman.clientfx.ui.component.SvgView;
 import com.bomberman.clientfx.ui.component.TitleBanner;
 import com.bomberman.clientfx.ui.popup.Popups;
+import com.bomberman.clientfx.ui.popup.InviteFriendsPopup;
 import com.bomberman.common.dto.RoomPlayerDto;
 import com.bomberman.common.dto.RoomStateDto;
+import com.bomberman.common.enums.RoomStatus;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -42,6 +44,7 @@ public final class RoomLobbyScreen implements Screen, ClientStateListener {
     private final ClientState state;
     private final GameClientController controller;
     private final SvgAssets assets;
+    private final AppShell shell;
     private final AnchorPane root = new AnchorPane();
     private final Label roomName = new Label();
     private final List<SlotCard> slots = new ArrayList<>();
@@ -54,11 +57,13 @@ public final class RoomLobbyScreen implements Screen, ClientStateListener {
             icon("mdi2c-check-bold", 30));
     private final GameButton start = new GameButton("START GAME", GameButton.Tone.YELLOW, GameButton.Size.L);
     private LobbyStatus status;
+    private Long kickingUserId;
 
     public RoomLobbyScreen(ClientState state, GameClientController controller, SvgAssets assets, AppShell shell) {
         this.state = state;
         this.controller = controller;
         this.assets = assets;
+        this.shell = shell;
 
         TitleBanner title = TitleBanner.purple("ROOM LOBBY", new SvgView(assets, AssetIds.ICON_PLAYERS, 52, 52));
         AnchorPane.setLeftAnchor(title, 24.0);
@@ -69,6 +74,19 @@ public final class RoomLobbyScreen implements Screen, ClientStateListener {
                 controller::leaveRoom));
         AnchorPane.setRightAnchor(leave, 24.0);
         AnchorPane.setTopAnchor(leave, 24.0);
+
+        GameButton invite = new GameButton("INVITE FRIENDS", GameButton.Tone.GREEN, GameButton.Size.M,
+                icon("mdi2a-account-plus", 24));
+        invite.setPrefWidth(230);
+        invite.setOnAction(event -> {
+            controller.requestFriends().whenComplete((reply, failure) -> {
+                if (failure == null) {
+                    new InviteFriendsPopup(state, controller, shell).show();
+                }
+            });
+        });
+        AnchorPane.setRightAnchor(invite, 92.0);
+        AnchorPane.setTopAnchor(invite, 24.0);
 
         Label nameLabel = new Label("ROOM NAME");
         nameLabel.getStyleClass().add("info-label");
@@ -119,7 +137,7 @@ public final class RoomLobbyScreen implements Screen, ClientStateListener {
         AnchorPane.setRightAnchor(start, 24.0);
         AnchorPane.setBottomAnchor(start, BOTTOM_ACTION_INSET);
 
-        root.getChildren().addAll(nameBox, slotGrid, rightColumn, ready, start, title, leave);
+        root.getChildren().addAll(nameBox, slotGrid, rightColumn, ready, start, title, invite, leave);
     }
 
     @Override
@@ -130,6 +148,7 @@ public final class RoomLobbyScreen implements Screen, ClientStateListener {
     @Override
     public void onShow() {
         state.addListener(this);
+        kickingUserId = null;
         GameRenderer.prewarm(assets);
         ready.setLoading(false);
         start.setLoading(false);
@@ -154,11 +173,28 @@ public final class RoomLobbyScreen implements Screen, ClientStateListener {
         for (int slot = 0; slot < slots.size(); slot++) {
             if (slot < room.players().size()) {
                 RoomPlayerDto player = room.players().get(slot);
-                slots.get(slot).showPlayer(player.username(), player.ready(),
-                        player.userId() == room.hostUserId(), player.userId() == me);
+                SlotCard card = slots.get(slot);
+                boolean kickable = room.hostUserId() == me
+                        && player.userId() != me
+                        && room.status() == RoomStatus.WAITING;
+                boolean kickLoading = kickingUserId != null && kickingUserId == player.userId();
+                card.showPlayer(
+                        player.username(),
+                        player.ready(),
+                        player.userId() == room.hostUserId(),
+                        player.userId() == me,
+                        kickable,
+                        kickLoading,
+                        () -> confirmKick(card, player)
+                );
             } else {
                 slots.get(slot).showEmpty();
             }
+        }
+        if (kickingUserId != null && room.players().stream().noneMatch(
+                player -> player.userId() == kickingUserId
+        )) {
+            kickingUserId = null;
         }
         arena.showPlayers(room.players().size());
         playersValue.setText(status.players() + "/" + status.maxPlayers());
@@ -198,6 +234,31 @@ public final class RoomLobbyScreen implements Screen, ClientStateListener {
             start.setLoading(false);
             onClientStateChanged();
         });
+    }
+
+    private void confirmKick(SlotCard card, RoomPlayerDto player) {
+        Popups.confirm(
+                shell,
+                "REMOVE PLAYER",
+                "Remove " + player.username() + " from this room?",
+                "REMOVE",
+                () -> {
+                    kickingUserId = player.userId();
+                    card.showPlayer(
+                            player.username(),
+                            player.ready(),
+                            false,
+                            false,
+                            true,
+                            true,
+                            () -> confirmKick(card, player)
+                    );
+                    controller.kickRoomMember(player.userId()).whenComplete((reply, failure) -> {
+                        kickingUserId = null;
+                        onClientStateChanged();
+                    });
+                }
+        );
     }
 
     private static Node infoRow(SvgAssets assets, String iconAsset, String label, Label value) {

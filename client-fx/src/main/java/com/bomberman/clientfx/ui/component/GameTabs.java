@@ -36,6 +36,10 @@ public final class GameTabs extends HBox {
         group.selectToggle(group.getToggles().get(index));
     }
 
+    public void setLabel(int index, String label) {
+        ((ToggleButton) group.getToggles().get(index)).setText(label);
+    }
+
     public ReadOnlyIntegerProperty selectedIndexProperty() {
         return selectedIndex.getReadOnlyProperty();
     }

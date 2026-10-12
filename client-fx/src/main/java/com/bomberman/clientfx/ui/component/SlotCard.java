@@ -6,6 +6,7 @@ import com.bomberman.clientfx.ui.theme.TeamColor;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -25,6 +26,12 @@ public final class SlotCard extends StackPane {
     private final Label number = new Label();
     private final Tag hostTag;
     private final Tag youTag = new Tag("YOU", Tag.Kind.YOU);
+    private final GameButton kick = new GameButton(
+            "",
+            GameButton.Tone.RED,
+            GameButton.Size.ICON,
+            icon("mdi2c-close-thick", 19)
+    );
     private final Label name = new Label();
     private final HBox status = new HBox();
     private final Label statusText = new Label();
@@ -58,6 +65,12 @@ public final class SlotCard extends StackPane {
         StackPane.setMargin(hostTag, new Insets(8, 0, 0, 0));
         StackPane.setAlignment(youTag, Pos.TOP_RIGHT);
         StackPane.setMargin(youTag, new Insets(10));
+        kick.getStyleClass().add("slot-kick-button");
+        kick.setMinSize(42, 42);
+        kick.setPrefSize(42, 42);
+        kick.setMaxSize(42, 42);
+        StackPane.setAlignment(kick, Pos.TOP_RIGHT);
+        StackPane.setMargin(kick, new Insets(8));
 
         name.getStyleClass().add("label-name");
         HBox nameBar = new HBox(name);
@@ -79,11 +92,23 @@ public final class SlotCard extends StackPane {
         emptyInfo = new VBox(8, silhouette, waiting);
         emptyInfo.setAlignment(Pos.CENTER);
 
-        getChildren().addAll(characterLayer, emptyInfo, playerInfo, number, hostTag, youTag);
+        getChildren().addAll(characterLayer, emptyInfo, playerInfo, number, hostTag, youTag, kick);
         showEmpty();
     }
 
     public void showPlayer(String playerName, boolean ready, boolean host, boolean you) {
+        showPlayer(playerName, ready, host, you, false, false, null);
+    }
+
+    public void showPlayer(
+            String playerName,
+            boolean ready,
+            boolean host,
+            boolean you,
+            boolean kickable,
+            boolean kickLoading,
+            Runnable onKick
+    ) {
         getStyleClass().setAll("slot-card");
         setStyle("-slot-fill: linear-gradient(to bottom, " + team.light() + ", " + team.main() + ");");
         characterLayer.setVisible(true);
@@ -98,6 +123,12 @@ public final class SlotCard extends StackPane {
         statusText.setText(ready ? "READY" : "NOT READY");
         hostTag.setVisible(host);
         youTag.setVisible(you);
+        kick.setVisible(kickable);
+        kick.setManaged(kickable);
+        kick.setLoading(kickLoading);
+        kick.setTooltip(kickable ? new Tooltip("Remove " + playerName) : null);
+        kick.setAccessibleText(kickable ? "Remove " + playerName : null);
+        kick.setOnAction(kickable && onKick != null ? event -> onKick.run() : null);
     }
 
     public void showEmpty() {
@@ -108,5 +139,17 @@ public final class SlotCard extends StackPane {
         emptyInfo.setVisible(true);
         hostTag.setVisible(false);
         youTag.setVisible(false);
+        kick.setVisible(false);
+        kick.setManaged(false);
+        kick.setLoading(false);
+        kick.setTooltip(null);
+        kick.setAccessibleText(null);
+        kick.setOnAction(null);
+    }
+
+    private static FontIcon icon(String literal, int size) {
+        FontIcon icon = new FontIcon(literal);
+        icon.setIconSize(size);
+        return icon;
     }
 }

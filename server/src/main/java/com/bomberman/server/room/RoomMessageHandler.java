@@ -3,11 +3,14 @@ package com.bomberman.server.room;
 import com.bomberman.common.dto.CreateRoomRequest;
 import com.bomberman.common.dto.ErrorResponse;
 import com.bomberman.common.dto.JoinRoomRequest;
+import com.bomberman.common.dto.KickRoomMemberRequest;
 import com.bomberman.common.dto.ReadyRequest;
+import com.bomberman.common.dto.RoomMemberRemovedNotice;
 import com.bomberman.common.dto.RoomStateDto;
 import com.bomberman.common.dto.RoomStateUpdate;
 import com.bomberman.common.enums.MessageType;
 import com.bomberman.common.enums.PlayerStatus;
+import com.bomberman.common.enums.RoomRemovalReason;
 import com.bomberman.common.enums.RoomResultCode;
 import com.bomberman.common.enums.RoomStatus;
 import com.bomberman.common.message.NetworkMessage;
@@ -17,6 +20,8 @@ import com.bomberman.server.lobby.LobbyService;
 import com.bomberman.server.network.ClientSession;
 import com.bomberman.server.network.ConnectionManager;
 import com.bomberman.server.user.OnlineUserRegistry;
+import com.bomberman.server.social.FriendUpdatePublisher;
+import com.bomberman.server.social.RoomInviteManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -38,6 +43,8 @@ public class RoomMessageHandler {
     private final LobbyService lobbyService;
     private final ObjectMapper objectMapper;
     private final GameSessionManager gameSessionManager;
+    private final FriendUpdatePublisher friendUpdatePublisher;
+    private final RoomInviteManager roomInviteManager;
 
     public RoomMessageHandler(
             RoomManager roomManager,
@@ -46,7 +53,9 @@ public class RoomMessageHandler {
             ConnectionManager connectionManager,
             LobbyService lobbyService,
             ObjectMapper objectMapper,
-            GameSessionManager gameSessionManager
+            GameSessionManager gameSessionManager,
+            FriendUpdatePublisher friendUpdatePublisher,
+            RoomInviteManager roomInviteManager
     ) {
         this.roomManager = roomManager;
         this.roomDtoMapper = roomDtoMapper;
@@ -55,6 +64,8 @@ public class RoomMessageHandler {
         this.lobbyService = lobbyService;
         this.objectMapper = objectMapper;
         this.gameSessionManager = gameSessionManager;
+        this.friendUpdatePublisher = friendUpdatePublisher;
+        this.roomInviteManager = roomInviteManager;
     }
 
     public void handleCreateRoom(ClientSession session, NetworkMessage message) {
@@ -77,7 +88,9 @@ public class RoomMessageHandler {
             return;
         }
 
+        roomInviteManager.cancelForUser(user.userId());
         onlineUserRegistry.updateStatus(user.userId(), PlayerStatus.IN_ROOM);
+        friendUpdatePublisher.publishPresenceChanged(user.userId());
         log.info(
                 "Room created: roomId={}, roomName={}, hostUserId={}",
                 result.room().roomId(),
@@ -108,7 +121,12 @@ public class RoomMessageHandler {
             return;
         }
 
+        roomInviteManager.cancelForUser(user.userId());
+        if (result.room().players().size() >= result.room().maxPlayers()) {
+            roomInviteManager.cancelByRoom(result.room().roomId());
+        }
         onlineUserRegistry.updateStatus(user.userId(), PlayerStatus.IN_ROOM);
+        friendUpdatePublisher.publishPresenceChanged(user.userId());
         log.info("Room joined: roomId={}, userId={}", result.room().roomId(), user.userId());
         publishRoomState(result.room(), session.getSessionId(), message.requestId());
         lobbyService.broadcastLobbyUpdates();
@@ -130,7 +148,12 @@ public class RoomMessageHandler {
             return;
         }
 
+        roomInviteManager.cancelForUser(user.userId());
+        if (result.room() == null && currentRoom != null) {
+            roomInviteManager.cancelByRoom(currentRoom.roomId());
+        }
         onlineUserRegistry.updateStatus(user.userId(), PlayerStatus.FREE);
+        friendUpdatePublisher.publishPresenceChanged(user.userId());
         sendRoomState(session, message.requestId(), false, result.room());
         publishRoomState(result.room(), null, null);
         lobbyService.broadcastLobbyUpdates();
@@ -154,6 +177,55 @@ public class RoomMessageHandler {
         publishRoomState(result.room(), session.getSessionId(), message.requestId());
     }
 
+    public void handleKickMember(ClientSession session, NetworkMessage message) {
+        AuthenticatedUser user = requireUser(session, message.requestId());
+        KickRoomMemberRequest request = readPayload(message, KickRoomMemberRequest.class);
+        if (user == null || request == null || request.targetUserId() <= 0) {
+            if (user != null) {
+                sendError(session, message.requestId(), RoomResultCode.INVALID_REQUEST);
+            }
+            return;
+        }
+
+        RoomMemberRemovalResult result = roomManager.kickMember(
+                user.userId(),
+                request.targetUserId()
+        );
+        if (!result.isSuccess()) {
+            sendError(session, message.requestId(), result.result());
+            return;
+        }
+
+        RoomPlayerSnapshot removed = result.removedPlayer();
+        roomInviteManager.cancelForUser(removed.userId());
+        onlineUserRegistry.updateStatus(removed.userId(), PlayerStatus.FREE);
+        friendUpdatePublisher.publishPresenceChanged(removed.userId());
+
+        publishRoomState(result.room(), session.getSessionId(), message.requestId());
+        connectionManager.find(removed.sessionId()).ifPresent(targetSession -> {
+            RoomMemberRemovedNotice notice = new RoomMemberRemovedNotice(
+                    result.room().roomId(),
+                    result.room().roomName(),
+                    RoomRemovalReason.HOST_KICK,
+                    user.userId(),
+                    user.username()
+            );
+            send(targetSession, new NetworkMessage(
+                    MessageType.ROOM_MEMBER_REMOVED,
+                    null,
+                    objectMapper.valueToTree(notice)
+            ));
+            sendRoomState(targetSession, null, false, null);
+        });
+        log.info(
+                "Room member kicked: roomId={}, hostUserId={}, targetUserId={}",
+                result.room().roomId(),
+                user.userId(),
+                removed.userId()
+        );
+        lobbyService.broadcastLobbyUpdates();
+    }
+
     public void handleStartGame(ClientSession session, NetworkMessage message) {
         AuthenticatedUser user = requireUser(session, message.requestId());
         if (user == null) {
@@ -166,8 +238,12 @@ public class RoomMessageHandler {
             return;
         }
 
+        roomInviteManager.cancelByRoom(result.room().roomId());
         result.room().players().forEach(player ->
                 onlineUserRegistry.updateStatus(player.userId(), PlayerStatus.PLAYING)
+        );
+        friendUpdatePublisher.publishPresenceChanged(
+                result.room().players().stream().map(RoomPlayerSnapshot::userId).toList()
         );
         gameSessionManager.startGame(result.room());
         log.info(
@@ -192,6 +268,12 @@ public class RoomMessageHandler {
         }
         log.info("Room prepared for rematch: roomId={}, userId={}",
                 result.room().roomId(), user.userId());
+        result.room().players().forEach(player ->
+                onlineUserRegistry.updateStatus(player.userId(), PlayerStatus.IN_ROOM)
+        );
+        friendUpdatePublisher.publishPresenceChanged(
+                result.room().players().stream().map(RoomPlayerSnapshot::userId).toList()
+        );
         publishRoomState(result.room(), session.getSessionId(), message.requestId());
         lobbyService.broadcastLobbyUpdates();
     }
@@ -207,6 +289,7 @@ public class RoomMessageHandler {
             gameSessionManager.enqueueDisconnect(user.userId());
         }
         RoomOperationResult result = roomManager.leaveRoom(user.userId());
+        roomInviteManager.cancelForUser(user.userId());
         if (result.isSuccess()) {
             log.info(
                     "Session left room: userId={}, roomId={}, roomStatus={}",
@@ -215,6 +298,9 @@ public class RoomMessageHandler {
                     currentRoom == null ? null : currentRoom.status()
             );
             publishRoomState(result.room(), null, null);
+            if (result.room() == null && currentRoom != null) {
+                roomInviteManager.cancelByRoom(currentRoom.roomId());
+            }
         }
     }
 
@@ -226,7 +312,7 @@ public class RoomMessageHandler {
         return user;
     }
 
-    private void publishRoomState(
+    public void publishRoomState(
             RoomSnapshot room,
             String requestingSessionId,
             String requestId
@@ -299,7 +385,10 @@ public class RoomMessageHandler {
             case ROOM_NOT_FINISHED -> "The current game has not finished";
             case ROOM_FULL -> "Room is full";
             case NOT_IN_ROOM -> "User is not in a room";
-            case NOT_HOST -> "Only the host can start the game";
+            case NOT_HOST -> "Only the room host can do that";
+            case TARGET_NOT_IN_ROOM -> "That player is not in your room";
+            case CANNOT_KICK_SELF -> "The host cannot remove themselves";
+            case KICKED_FROM_ROOM -> "You were removed from this room";
             case NOT_ENOUGH_PLAYERS -> "At least two players are required";
             case NOT_ALL_PLAYERS_READY -> "All players must be ready";
             default -> "Invalid room request";
