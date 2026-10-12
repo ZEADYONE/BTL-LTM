@@ -53,20 +53,20 @@ bomberman-online/
 
 ## Configuration
 
-| Variable | Used by | Default | Purpose |
-|---|---|---:|---|
-| `BOMBERMAN_DB_HOST` | Docker | required | Host/IP của MySQL server riêng |
-| `BOMBERMAN_DB_PORT` | Docker | `3306` | Cổng của MySQL server riêng |
-| `BOMBERMAN_DB_NAME` | Docker | `bomberman_online` | Database name |
-| `BOMBERMAN_DB_USERNAME` | Docker, server | `bomberman` | Application database user |
-| `BOMBERMAN_DB_PASSWORD` | Docker, server | required | Application database password |
-| `BOMBERMAN_DB_URL` | server | local `bomberman_online` database | JDBC URL (Compose ghép từ các biến `BOMBERMAN_DB_*`) |
-| `BOMBERMAN_TCP_PORT` | Docker, server, clients | `8081` | Public gameplay TCP port |
-| `BOMBERMAN_SERVER_HOST` | clients | `127.0.0.1` | TCP server hostname/IP |
-| `BOMBERMAN_WEB_PORT` | Docker | `80` | Cổng HTTP của website |
-| `BOMBERMAN_PUBLIC_HOST` | website | hostname của URL website | HOST hiển thị cho người chơi nhập vào game |
-| `BOMBERMAN_PUBLIC_PORT` | website | `BOMBERMAN_TCP_PORT` | PORT hiển thị, chỉ đặt khi router forward cổng khác |
-| `BOMBERMAN_REPO_URL` | website | trống (ẩn link) | Link mã nguồn ở footer |
+| Variable                  | Used by                 |                            Default | Purpose                                                    |
+| ------------------------- | ----------------------- | ---------------------------------: | ---------------------------------------------------------- |
+| `BOMBERMAN_DB_HOST`     | Docker                  |                           required | Host/IP của MySQL server riêng                           |
+| `BOMBERMAN_DB_PORT`     | Docker                  |                           `3306` | Cổng của MySQL server riêng                             |
+| `BOMBERMAN_DB_NAME`     | Docker                  |               `bomberman_online` | Database name                                              |
+| `BOMBERMAN_DB_USERNAME` | Docker, server          |                      `bomberman` | Application database user                                  |
+| `BOMBERMAN_DB_PASSWORD` | Docker, server          |                           required | Application database password                              |
+| `BOMBERMAN_DB_URL`      | server                  | local`bomberman_online` database | JDBC URL (Compose ghép từ các biến`BOMBERMAN_DB_*`)  |
+| `BOMBERMAN_TCP_PORT`    | Docker, server, clients |                           `8081` | Public gameplay TCP port                                   |
+| `BOMBERMAN_SERVER_HOST` | clients                 |                      `127.0.0.1` | TCP server hostname/IP                                     |
+| `BOMBERMAN_WEB_PORT`    | Docker                  |                             `80` | Cổng HTTP của website                                    |
+| `BOMBERMAN_PUBLIC_HOST` | website                 |          hostname của URL website | HOST hiển thị cho người chơi nhập vào game          |
+| `BOMBERMAN_PUBLIC_PORT` | website                 |             `BOMBERMAN_TCP_PORT` | PORT hiển thị, chỉ đặt khi router forward cổng khác |
+| `BOMBERMAN_REPO_URL`    | website                 |                  trống (ẩn link) | Link mã nguồn ở footer                                  |
 
 Client defaults live in each module's `src/main/resources/client.properties`. They can
 also be overridden with Java system properties `bomberman.server.host` and
@@ -156,6 +156,9 @@ Mở gallery component và tài nguyên giao diện:
 Để kết nối server từ xa hoặc trong mạng LAN, chọn **Server Address** trên màn hình
 đăng nhập rồi nhập `host:port`, ví dụ `192.168.1.20:8081`.
 
+Sau khi đăng nhập, mở **Settings** để chỉnh riêng Master, Music, SFX hoặc tắt toàn bộ
+âm thanh bằng Mute. Các mức âm lượng được lưu cho lần mở ứng dụng tiếp theo.
+
 Client libGDX cũ vẫn có thể chạy bằng `.\gradlew.bat :client:run` để kiểm tra tương
 thích giao thức.
 
@@ -167,13 +170,11 @@ thích giao thức.
    ```powershell
    .\gradlew.bat :client-fx:installDist
    ```
-
 3. Open four terminals and run this command once in each terminal:
 
    ```powershell
    .\client-fx\build\install\client-fx\bin\client-fx.bat
    ```
-
 4. Register four different accounts and log in.
 5. Client 1 creates a room; clients 2–4 join it.
 6. All players press Ready; the host presses Start Game.
@@ -249,10 +250,10 @@ server riêng nên không bị ảnh hưởng khi build lại hay xóa container
 
 ### Router, DNS và HTTPS
 
-| Dịch vụ | Cổng host | Forward trên router |
-|---|---:|---|
-| Website HTTP | `BOMBERMAN_WEB_PORT` (80) | Có |
-| Game TCP | `BOMBERMAN_TCP_PORT` (8081) | Có |
+| Dịch vụ             |                          Cổng host | Forward trên router                            |
+| --------------------- | ----------------------------------: | ----------------------------------------------- |
+| Website HTTP          |         `BOMBERMAN_WEB_PORT` (80) | Có                                             |
+| Game TCP              |       `BOMBERMAN_TCP_PORT` (8081) | Có                                             |
 | MySQL (server riêng) | `BOMBERMAN_DB_PORT` trên máy DB | Không bao giờ; chỉ cho máy Docker truy cập |
 
 - Có thể dùng một hostname/DDNS cho cả hai; khi đó để trống `BOMBERMAN_PUBLIC_HOST`.
@@ -347,10 +348,10 @@ JSON payload size is 1 MiB.
 Scores are stored as integer half-point units to avoid floating-point errors:
 
 | Result | Stored units | Displayed score |
-|---|---:|---:|
-| WIN | 2 | 1.0 |
-| DRAW | 1 | 0.5 |
-| LOSS | 0 | 0.0 |
+| ------ | -----------: | --------------: |
+| WIN    |            2 |             1.0 |
+| DRAW   |            1 |             0.5 |
+| LOSS   |            0 |             0.0 |
 
 Ranking order is `totalScore DESC`, then `totalWins DESC`.
 

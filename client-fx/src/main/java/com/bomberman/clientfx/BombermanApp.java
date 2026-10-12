@@ -3,6 +3,11 @@ package com.bomberman.clientfx;
 import com.bomberman.clientfx.asset.AssetIds;
 import com.bomberman.clientfx.asset.SvgAssets;
 import com.bomberman.clientfx.asset.SvgRasterizer;
+import com.bomberman.clientfx.audio.AudioCue;
+import com.bomberman.clientfx.audio.AudioManager;
+import com.bomberman.clientfx.audio.GameplayAudio;
+import com.bomberman.clientfx.audio.JavaFxAudioOutput;
+import com.bomberman.clientfx.audio.ResultAudio;
 import com.bomberman.clientfx.network.ClientMessageDispatcher;
 import com.bomberman.clientfx.network.ClientNetworkConfig;
 import com.bomberman.clientfx.network.GameClientController;
@@ -29,8 +34,10 @@ import com.bomberman.clientfx.ui.popup.Popups;
 import com.bomberman.clientfx.ui.theme.Fonts;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.control.ButtonBase;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
@@ -54,6 +61,7 @@ public final class BombermanApp extends Application {
     private GameClientController controller;
     private PendingRequests pendingRequests;
     private SvgAssets assets;
+    private AudioManager audioManager;
 
     @Override
     public void start(Stage stage) {
@@ -63,6 +71,10 @@ public final class BombermanApp extends Application {
         AppShell shell = new AppShell();
         ScreenNavigator navigator = new ScreenNavigator(shell);
         MatchTracker matchTracker = new MatchTracker();
+        audioManager = new AudioManager(new JavaFxAudioOutput(), preferences);
+        GameplayAudio gameplayAudio = new GameplayAudio(audioManager);
+        ResultAudio resultAudio = new ResultAudio(audioManager);
+        navigator.setScreenChangeListener(audioManager::onScreenChanged);
         assets = new SvgAssets(SvgRasterizer.fromClasspath());
         assets.renderScaleProperty().bind(shell.renderScaleProperty());
         shell.renderScaleProperty().addListener(observable -> loadBackgroundPattern(shell));
@@ -81,14 +93,20 @@ public final class BombermanApp extends Application {
                 pendingRequests,
                 Platform::runLater
         );
-        state.addFeedbackListener(shell::showToast);
+        state.addFeedbackListener(feedback -> {
+            shell.showToast(feedback);
+            audioManager.playFeedback(feedback);
+        });
 
         navigator.register(ScreenId.LOGIN, new LoginScreen(state, controller, preferences, assets, shell));
-        navigator.register(ScreenId.HOME, new HomeScreen(state, controller, navigator, assets, shell, stage));
+        navigator.register(ScreenId.HOME,
+                new HomeScreen(state, controller, navigator, assets, shell, stage, audioManager));
         navigator.register(ScreenId.ROOM_BROWSER, new RoomBrowserScreen(state, controller, navigator, assets));
         navigator.register(ScreenId.ROOM_LOBBY, new RoomLobbyScreen(state, controller, assets, shell));
-        navigator.register(ScreenId.GAME, new GameScreen(state, controller, navigator, assets, shell, matchTracker));
-        navigator.register(ScreenId.RESULT, new ResultScreen(state, controller, navigator, assets, matchTracker));
+        navigator.register(ScreenId.GAME,
+                new GameScreen(state, controller, navigator, assets, shell, matchTracker, gameplayAudio));
+        navigator.register(ScreenId.RESULT,
+                new ResultScreen(state, controller, navigator, assets, matchTracker, resultAudio));
         navigator.register(ScreenId.LEADERBOARD, new LeaderboardScreen(state, controller, navigator, assets));
         navigator.register(ScreenId.HISTORY, new HistoryScreen(state, controller, navigator, assets));
         navigator.setFallback(id -> switch (id) {
@@ -105,6 +123,11 @@ public final class BombermanApp extends Application {
             if (event.getCode() == KeyCode.F11) {
                 stage.setFullScreen(!stage.isFullScreen());
                 event.consume();
+            }
+        });
+        scene.addEventFilter(ActionEvent.ACTION, event -> {
+            if (event.getTarget() instanceof ButtonBase) {
+                audioManager.play(AudioCue.UI_CLICK);
             }
         });
 
@@ -146,6 +169,9 @@ public final class BombermanApp extends Application {
         }
         if (assets != null) {
             assets.close();
+        }
+        if (audioManager != null) {
+            audioManager.close();
         }
     }
 

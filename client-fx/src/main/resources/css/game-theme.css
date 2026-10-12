@@ -667,6 +667,40 @@
     -fx-font-size: 20px;
     -fx-text-fill: -color-outline;
 }
+.audio-control {
+    -fx-min-height: 32px;
+    -fx-pref-height: 32px;
+    -fx-max-height: 32px;
+}
+.audio-slider {
+    -fx-padding: 4 0;
+}
+.audio-slider .track {
+    -fx-background-color: -color-outline, #D9CCF5;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 6, 3;
+    -fx-pref-height: 12px;
+}
+.audio-slider .thumb {
+    -fx-background-color: -color-outline, -color-gold;
+    -fx-background-insets: 0, 3;
+    -fx-background-radius: 12, 9;
+    -fx-pref-width: 24px;
+    -fx-pref-height: 24px;
+}
+.audio-slider:focused .thumb {
+    -fx-effect: dropshadow(gaussian, rgba(108, 69, 201, 0.55), 10, 0.25, 0, 0);
+}
+.audio-volume-value {
+    -fx-font-family: "Nunito Black";
+    -fx-font-size: 17px;
+    -fx-text-fill: -color-outline;
+    -fx-alignment: center-right;
+}
+.settings-popup .panel-body {
+    -fx-padding: 12 20 16 20;
+    -fx-spacing: 10px;
+}
 .keycap {
     -fx-background-color: -color-outline, white;
     -fx-background-insets: 0, 2 2 5 2;

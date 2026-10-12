@@ -1,6 +1,6 @@
 # Kế hoạch bổ sung âm thanh cho Bomberman Online Mini
 
-> **Trạng thái:** Phase 0 đã tạo asset và hoàn tất kiểm tra kỹ thuật ngày 2026-10-12; chờ nghe thử/chốt phong cách trước Phase 1  
+> **Trạng thái:** Phase 0–3 đã triển khai ngày 2026-10-12; test tự động đã pass, còn chờ QA multiplayer/nghe thử thủ công ở Phase 4
 > **Phạm vi chính:** JavaFX client (`client-fx`)  
 > **Mục tiêu:** Bổ sung nhạc nền, hiệu ứng gameplay, phản hồi UI và cài đặt âm lượng mà không thay đổi server hoặc giao thức mạng.
 
@@ -289,6 +289,13 @@ Thêm key và getter/setter:
 
 **Hoàn thành khi:** test chạy không cần loa; app khởi động được cả khi một asset bị thiếu.
 
+**Kết quả thực hiện (2026-10-12):**
+
+- Đã thêm JavaFX `media`, `AudioCue`, `MusicTrack`, `AudioOutput`, `JavaFxAudioOutput` và `AudioManager`.
+- Đã preload SFX, lazy-load/cross-fade music, xử lý resource lỗi theo hướng fail-soft và giải phóng player khi thoát.
+- Đã thêm preferences cho master/music/SFX/mute cùng validation và clamp.
+- Đã thêm test policy, cooldown, persistence và kiểm tra toàn bộ resource trên classpath.
+
 ### Phase 2 — UI settings và âm thanh chung
 
 1. Thêm slider/mute vào `SettingsPopup`.
@@ -299,6 +306,15 @@ Thêm key và getter/setter:
 
 **Hoàn thành khi:** chỉnh volume có hiệu lực tức thời, restart app vẫn giữ giá trị, mute không làm mất volume đã chọn.
 
+**Kết quả thực hiện (2026-10-12):**
+
+- `SettingsPopup` đã có slider master/music/SFX và nút mute, cập nhật/lưu tức thời.
+- Mọi JavaFX button phát `UI_CLICK` qua một scene event filter chung.
+- Feedback success/error phát cue tương ứng; info được giữ im lặng để tránh spam.
+- `ScreenNavigator` chuyển `MENU_LOOP`/`BATTLE_LOOP`; màn Result fade nhạc và chờ stinger của Phase 3.
+- Đã thêm CSS slider/focus và cập nhật tài liệu UI.
+- `:client-fx:test` pass; còn cần smoke test bằng loa/tai nghe và thao tác trực tiếp popup.
+
 ### Phase 3 — Gameplay và kết quả trận
 
 1. Tạo `GameplayAudio` từ `FrameEvents`.
@@ -307,6 +323,16 @@ Thêm key và getter/setter:
 4. Áp dụng cooldown/polyphony và kiểm tra trận 4 người nhiều bom.
 
 **Hoàn thành khi:** mỗi sự kiện logic chỉ tạo đúng cue dự kiến, không phát âm thanh giả khi command bị reject và không lặp result cue.
+
+**Kết quả thực hiện (2026-10-12):**
+
+- Đã tạo `GameplayAudio`, nhận `MatchTracker.FrameEvents` thay vì input bàn phím.
+- Bom của mình được ưu tiên nếu một batch có cả bom mình và bom người khác; mỗi batch chỉ phát một bomb cue.
+- Mọi explosion trong cùng snapshot được gom thành một cue; người chơi hiện tại chỉ phát defeated cue một lần mỗi trận.
+- `MatchTracker.matchSequence` cung cấp định danh trận cục bộ tăng đơn điệu mà không đổi protocol.
+- Đã tạo `ResultAudio` để phát WIN/LOSS/DRAW đúng một lần cho mỗi cặp match/result.
+- Đã thêm test cho mapping gameplay, batch aggregation, reset giữa trận và result deduplication.
+- Còn chờ kiểm thử thực tế với 2–4 client trong Phase 4 để tinh chỉnh gain/cooldown theo cảm nhận.
 
 ### Phase 4 — QA, đóng gói và tài liệu
 

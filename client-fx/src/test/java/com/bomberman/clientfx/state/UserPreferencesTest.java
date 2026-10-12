@@ -28,6 +28,10 @@ class UserPreferencesTest {
         assertEquals(Optional.empty(), preferences.savedServer());
         assertEquals("", preferences.lastUsername());
         assertFalse(preferences.fullscreen());
+        assertEquals(0.80, preferences.audioMasterVolume());
+        assertEquals(0.45, preferences.audioMusicVolume());
+        assertEquals(0.80, preferences.audioSfxVolume());
+        assertFalse(preferences.audioMuted());
     }
 
     @Test
@@ -35,11 +39,19 @@ class UserPreferencesTest {
         preferences.saveServer(new ClientNetworkConfig("192.168.1.20", 9000));
         preferences.setLastUsername("Minh Đức");
         preferences.setFullscreen(true);
+        preferences.setAudioMasterVolume(0.65);
+        preferences.setAudioMusicVolume(0.35);
+        preferences.setAudioSfxVolume(0.90);
+        preferences.setAudioMuted(true);
 
         UserPreferences reloaded = new UserPreferences(node);
         assertEquals(Optional.of(new ClientNetworkConfig("192.168.1.20", 9000)), reloaded.savedServer());
         assertEquals("Minh Đức", reloaded.lastUsername());
         assertTrue(reloaded.fullscreen());
+        assertEquals(0.65, reloaded.audioMasterVolume());
+        assertEquals(0.35, reloaded.audioMusicVolume());
+        assertEquals(0.90, reloaded.audioSfxVolume());
+        assertTrue(reloaded.audioMuted());
     }
 
     @Test
@@ -57,5 +69,24 @@ class UserPreferencesTest {
         node.putInt("serverPort", 70_000);
 
         assertEquals(Optional.empty(), preferences.savedServer());
+    }
+
+    @Test
+    void invalidAudioValuesFallBackAndSettersClamp() {
+        node.putDouble("audioMasterVolume", Double.NaN);
+        node.putDouble("audioMusicVolume", 1.5);
+        node.putDouble("audioSfxVolume", -0.2);
+
+        assertEquals(0.80, preferences.audioMasterVolume());
+        assertEquals(0.45, preferences.audioMusicVolume());
+        assertEquals(0.80, preferences.audioSfxVolume());
+
+        preferences.setAudioMasterVolume(2.0);
+        preferences.setAudioMusicVolume(-1.0);
+        preferences.setAudioSfxVolume(Double.NaN);
+
+        assertEquals(1.0, preferences.audioMasterVolume());
+        assertEquals(0.0, preferences.audioMusicVolume());
+        assertEquals(0.0, preferences.audioSfxVolume());
     }
 }

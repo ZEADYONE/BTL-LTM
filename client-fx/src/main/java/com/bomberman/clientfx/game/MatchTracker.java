@@ -53,10 +53,12 @@ public final class MatchTracker {
     private final Set<String> seenBombIds = new HashSet<>();
     private GameStateDto previous;
     private FrameEvents latestEvents = FrameEvents.empty();
+    private long matchSequence;
 
     public FrameEvents accept(GameStateDto snapshot) {
         boolean newMatch = previous == null || snapshot.tick() < previous.tick();
         if (newMatch) {
+            matchSequence++;
             clearDerivedState();
             for (int slot = 0; slot < snapshot.players().size(); slot++) {
                 GamePlayerStateDto player = snapshot.players().get(slot);
@@ -115,6 +117,11 @@ public final class MatchTracker {
 
     public FrameEvents latestEvents() {
         return latestEvents;
+    }
+
+    /** Monotonic client-local identity used to deduplicate presentation events per match. */
+    public long matchSequence() {
+        return matchSequence;
     }
 
     /**

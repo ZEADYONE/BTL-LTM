@@ -319,9 +319,13 @@ Mọi popup dùng khuôn panel: tiêu đề tối, thân màu kem (lấy từ m�
 |---|---|
 | SERVER | `host:port` chỉ đọc, kèm chấm trạng thái kết nối |
 | DISPLAY | Công tắc Fullscreen (tương đương F11) |
+| MASTER | Thanh âm lượng tổng 0–100% |
+| MUSIC | Thanh âm lượng nhạc nền 0–100% |
+| SFX | Thanh âm lượng hiệu ứng 0–100% |
+| MUTE | Tắt/bật toàn bộ âm thanh mà không làm mất các mức âm lượng đã chọn |
 | ACCOUNT | Nút LOG OUT (đỏ) → xác nhận → gửi `LOGOUT` → S1 |
 
-Không có mục âm thanh vì app chưa có âm thanh.
+Các giá trị âm thanh được áp dụng tức thời và lưu bằng `UserPreferences` cho lần mở ứng dụng tiếp theo.
 
 ### 4.2 Server Address (mở từ nút bánh răng ở Login)
 - Ô HOST (không rỗng), ô PORT (1–65535). Nút RESET (về giá trị mặc định), CANCEL, SAVE.

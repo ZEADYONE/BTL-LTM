@@ -13,6 +13,13 @@ public final class UserPreferences {
     private static final String SERVER_PORT = "serverPort";
     private static final String LAST_USERNAME = "lastUsername";
     private static final String FULLSCREEN = "fullscreen";
+    private static final String AUDIO_MASTER_VOLUME = "audioMasterVolume";
+    private static final String AUDIO_MUSIC_VOLUME = "audioMusicVolume";
+    private static final String AUDIO_SFX_VOLUME = "audioSfxVolume";
+    private static final String AUDIO_MUTED = "audioMuted";
+    private static final double DEFAULT_MASTER_VOLUME = 0.80;
+    private static final double DEFAULT_MUSIC_VOLUME = 0.45;
+    private static final double DEFAULT_SFX_VOLUME = 0.80;
 
     private final Preferences node;
 
@@ -60,5 +67,49 @@ public final class UserPreferences {
 
     public void setFullscreen(boolean fullscreen) {
         node.putBoolean(FULLSCREEN, fullscreen);
+    }
+
+    public double audioMasterVolume() {
+        return readVolume(AUDIO_MASTER_VOLUME, DEFAULT_MASTER_VOLUME);
+    }
+
+    public void setAudioMasterVolume(double volume) {
+        node.putDouble(AUDIO_MASTER_VOLUME, clamp(volume));
+    }
+
+    public double audioMusicVolume() {
+        return readVolume(AUDIO_MUSIC_VOLUME, DEFAULT_MUSIC_VOLUME);
+    }
+
+    public void setAudioMusicVolume(double volume) {
+        node.putDouble(AUDIO_MUSIC_VOLUME, clamp(volume));
+    }
+
+    public double audioSfxVolume() {
+        return readVolume(AUDIO_SFX_VOLUME, DEFAULT_SFX_VOLUME);
+    }
+
+    public void setAudioSfxVolume(double volume) {
+        node.putDouble(AUDIO_SFX_VOLUME, clamp(volume));
+    }
+
+    public boolean audioMuted() {
+        return node.getBoolean(AUDIO_MUTED, false);
+    }
+
+    public void setAudioMuted(boolean muted) {
+        node.putBoolean(AUDIO_MUTED, muted);
+    }
+
+    private double readVolume(String key, double fallback) {
+        double value = node.getDouble(key, fallback);
+        return Double.isFinite(value) && value >= 0 && value <= 1 ? value : fallback;
+    }
+
+    private static double clamp(double value) {
+        if (!Double.isFinite(value)) {
+            return 0;
+        }
+        return Math.max(0, Math.min(1, value));
     }
 }

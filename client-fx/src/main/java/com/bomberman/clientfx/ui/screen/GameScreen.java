@@ -2,6 +2,7 @@ package com.bomberman.clientfx.ui.screen;
 
 import com.bomberman.clientfx.ServerRules;
 import com.bomberman.clientfx.asset.SvgAssets;
+import com.bomberman.clientfx.audio.GameplayAudio;
 import com.bomberman.clientfx.game.GameRenderer;
 import com.bomberman.clientfx.game.InputController;
 import com.bomberman.clientfx.game.MatchTracker;
@@ -58,6 +59,7 @@ public final class GameScreen implements Screen {
     private final List<HudPlayerCard> cards = new ArrayList<>();
     private final Set<KeyCode> heldKeys = EnumSet.noneOf(KeyCode.class);
     private final MatchTracker tracker;
+    private final GameplayAudio gameplayAudio;
     private final GameRenderer renderer;
     private final InputController input;
     private final AnimationTimer timer;
@@ -76,13 +78,14 @@ public final class GameScreen implements Screen {
     private double displayedFps;
 
     public GameScreen(ClientState state, GameClientController controller, Navigator navigator,
-                      SvgAssets assets, AppShell shell, MatchTracker tracker) {
+                      SvgAssets assets, AppShell shell, MatchTracker tracker, GameplayAudio gameplayAudio) {
         this.state = state;
         this.controller = controller;
         this.navigator = navigator;
         this.shell = shell;
         this.assets = assets;
         this.tracker = tracker;
+        this.gameplayAudio = gameplayAudio;
         renderer = new GameRenderer(canvas, assets, tracker);
         input = new InputController(controller::move, controller::placeBomb, this::inputAllowed);
 
@@ -134,6 +137,7 @@ public final class GameScreen implements Screen {
     @Override
     public void onShow() {
         tracker.reset();
+        gameplayAudio.reset();
         renderer.reset();
         cards.forEach(card -> hud.getChildren().remove(card));
         cards.clear();
@@ -167,6 +171,7 @@ public final class GameScreen implements Screen {
         GameStateDto current = state.getGameState();
         if (current != null && current != renderedSnapshot) {
             MatchTracker.FrameEvents events = tracker.accept(current);
+            gameplayAudio.accept(events, state.getCurrentUserId());
             renderer.acceptSnapshot(current, events, nowNanos);
             renderedSnapshot = current;
             updateHud(current, events.newMatch());
