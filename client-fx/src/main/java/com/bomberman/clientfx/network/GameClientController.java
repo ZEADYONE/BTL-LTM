@@ -8,6 +8,10 @@ import com.bomberman.common.dto.LoginRequest;
 import com.bomberman.common.dto.MoveRequest;
 import com.bomberman.common.dto.ReadyRequest;
 import com.bomberman.common.dto.RegisterRequest;
+import com.bomberman.common.dto.CancelFriendRequest;
+import com.bomberman.common.dto.RemoveFriendRequest;
+import com.bomberman.common.dto.RespondFriendRequest;
+import com.bomberman.common.dto.SendFriendRequest;
 import com.bomberman.common.enums.Direction;
 import com.bomberman.common.enums.MessageType;
 import com.bomberman.common.message.NetworkMessage;
@@ -84,6 +88,37 @@ public final class GameClientController implements AutoCloseable {
     public void requestLobbyState() {
         send(MessageType.ONLINE_USERS_REQUEST, null);
         send(MessageType.ROOM_LIST_REQUEST, null);
+    }
+
+    public void requestFriends() {
+        send(MessageType.FRIEND_LIST_REQUEST, null);
+    }
+
+    public CompletableFuture<NetworkMessage> sendFriendRequest(String username) {
+        return request(MessageType.FRIEND_REQUEST_SEND, new SendFriendRequest(username), false);
+    }
+
+    public CompletableFuture<NetworkMessage> respondFriendRequest(
+            long relationshipId,
+            boolean accept
+    ) {
+        return request(
+                MessageType.FRIEND_REQUEST_RESPOND,
+                new RespondFriendRequest(relationshipId, accept),
+                false
+        );
+    }
+
+    public CompletableFuture<NetworkMessage> cancelFriendRequest(long relationshipId) {
+        return request(
+                MessageType.FRIEND_REQUEST_CANCEL,
+                new CancelFriendRequest(relationshipId),
+                false
+        );
+    }
+
+    public CompletableFuture<NetworkMessage> removeFriend(long friendUserId) {
+        return request(MessageType.FRIEND_REMOVE, new RemoveFriendRequest(friendUserId), false);
     }
 
     public CompletableFuture<NetworkMessage> createRoom(String roomName) {

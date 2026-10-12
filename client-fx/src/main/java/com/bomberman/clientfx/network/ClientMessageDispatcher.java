@@ -14,6 +14,8 @@ import com.bomberman.common.dto.RankingResponse;
 import com.bomberman.common.dto.RegisterResponse;
 import com.bomberman.common.dto.RoomListUpdate;
 import com.bomberman.common.dto.RoomStateUpdate;
+import com.bomberman.common.dto.FriendListUpdate;
+import com.bomberman.common.dto.FriendRequestDto;
 import com.bomberman.common.enums.AuthResultCode;
 import com.bomberman.common.enums.GameCommandResultCode;
 import com.bomberman.common.enums.MessageType;
@@ -24,6 +26,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -90,6 +94,10 @@ public final class ClientMessageDispatcher implements ServerListener {
                 case REGISTER_RESPONSE -> handleRegister(read(message, RegisterResponse.class));
                 case LOGIN_RESPONSE -> handleLogin(read(message, LoginResponse.class));
                 case ONLINE_USERS_UPDATE -> state.setOnlineUsers(read(message, OnlineUsersUpdate.class).users());
+                case FRIEND_LIST_UPDATE -> handleFriendList(
+                        message,
+                        read(message, FriendListUpdate.class)
+                );
                 case ROOM_LIST_UPDATE -> state.setRooms(read(message, RoomListUpdate.class).rooms());
                 case ROOM_STATE -> handleRoomState(read(message, RoomStateUpdate.class));
                 case GAME_OVER -> state.setGameOver(read(message, GameOverDto.class));
@@ -114,6 +122,22 @@ public final class ClientMessageDispatcher implements ServerListener {
         state.setFeedback(response.success()
                 ? Feedback.success("Account created. You can log in now.")
                 : Feedback.error(describe(response.result())));
+    }
+
+    private void handleFriendList(NetworkMessage message, FriendListUpdate update) {
+        Set<Long> previousIncoming = state.getIncomingFriendRequests().stream()
+                .map(FriendRequestDto::relationshipId)
+                .collect(Collectors.toSet());
+        state.setFriendList(update);
+        if (message.requestId() != null) {
+            return;
+        }
+        update.incomingRequests().stream()
+                .filter(request -> !previousIncoming.contains(request.relationshipId()))
+                .findFirst()
+                .ifPresent(request -> state.setFeedback(
+                        Feedback.info("Friend request from " + request.username())
+                ));
     }
 
     private void handleLogin(LoginResponse response) {

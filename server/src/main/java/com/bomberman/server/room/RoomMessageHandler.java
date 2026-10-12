@@ -17,6 +17,7 @@ import com.bomberman.server.lobby.LobbyService;
 import com.bomberman.server.network.ClientSession;
 import com.bomberman.server.network.ConnectionManager;
 import com.bomberman.server.user.OnlineUserRegistry;
+import com.bomberman.server.social.FriendUpdatePublisher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ public class RoomMessageHandler {
     private final LobbyService lobbyService;
     private final ObjectMapper objectMapper;
     private final GameSessionManager gameSessionManager;
+    private final FriendUpdatePublisher friendUpdatePublisher;
 
     public RoomMessageHandler(
             RoomManager roomManager,
@@ -46,7 +48,8 @@ public class RoomMessageHandler {
             ConnectionManager connectionManager,
             LobbyService lobbyService,
             ObjectMapper objectMapper,
-            GameSessionManager gameSessionManager
+            GameSessionManager gameSessionManager,
+            FriendUpdatePublisher friendUpdatePublisher
     ) {
         this.roomManager = roomManager;
         this.roomDtoMapper = roomDtoMapper;
@@ -55,6 +58,7 @@ public class RoomMessageHandler {
         this.lobbyService = lobbyService;
         this.objectMapper = objectMapper;
         this.gameSessionManager = gameSessionManager;
+        this.friendUpdatePublisher = friendUpdatePublisher;
     }
 
     public void handleCreateRoom(ClientSession session, NetworkMessage message) {
@@ -78,6 +82,7 @@ public class RoomMessageHandler {
         }
 
         onlineUserRegistry.updateStatus(user.userId(), PlayerStatus.IN_ROOM);
+        friendUpdatePublisher.publishPresenceChanged(user.userId());
         log.info(
                 "Room created: roomId={}, roomName={}, hostUserId={}",
                 result.room().roomId(),
@@ -109,6 +114,7 @@ public class RoomMessageHandler {
         }
 
         onlineUserRegistry.updateStatus(user.userId(), PlayerStatus.IN_ROOM);
+        friendUpdatePublisher.publishPresenceChanged(user.userId());
         log.info("Room joined: roomId={}, userId={}", result.room().roomId(), user.userId());
         publishRoomState(result.room(), session.getSessionId(), message.requestId());
         lobbyService.broadcastLobbyUpdates();
@@ -131,6 +137,7 @@ public class RoomMessageHandler {
         }
 
         onlineUserRegistry.updateStatus(user.userId(), PlayerStatus.FREE);
+        friendUpdatePublisher.publishPresenceChanged(user.userId());
         sendRoomState(session, message.requestId(), false, result.room());
         publishRoomState(result.room(), null, null);
         lobbyService.broadcastLobbyUpdates();
@@ -169,6 +176,9 @@ public class RoomMessageHandler {
         result.room().players().forEach(player ->
                 onlineUserRegistry.updateStatus(player.userId(), PlayerStatus.PLAYING)
         );
+        friendUpdatePublisher.publishPresenceChanged(
+                result.room().players().stream().map(RoomPlayerSnapshot::userId).toList()
+        );
         gameSessionManager.startGame(result.room());
         log.info(
                 "Game started: roomId={}, hostUserId={}, players={}",
@@ -192,6 +202,12 @@ public class RoomMessageHandler {
         }
         log.info("Room prepared for rematch: roomId={}, userId={}",
                 result.room().roomId(), user.userId());
+        result.room().players().forEach(player ->
+                onlineUserRegistry.updateStatus(player.userId(), PlayerStatus.IN_ROOM)
+        );
+        friendUpdatePublisher.publishPresenceChanged(
+                result.room().players().stream().map(RoomPlayerSnapshot::userId).toList()
+        );
         publishRoomState(result.room(), session.getSessionId(), message.requestId());
         lobbyService.broadcastLobbyUpdates();
     }

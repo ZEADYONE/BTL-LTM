@@ -323,12 +323,21 @@ JSON payload size is 1 MiB.
   `LOGIN_RESPONSE`, `LOGOUT`
 - Lobby: `ONLINE_USERS_REQUEST`, `ONLINE_USERS_UPDATE`, `ROOM_LIST_REQUEST`,
   `ROOM_LIST_UPDATE`
-- Room: `CREATE_ROOM`, `JOIN_ROOM`, `LEAVE_ROOM`, `ROOM_STATE`, `READY`, `START_GAME`
+- Friends: `FRIEND_LIST_REQUEST`, `FRIEND_LIST_UPDATE`, `FRIEND_REQUEST_SEND`,
+  `FRIEND_REQUEST_RESPOND`, `FRIEND_REQUEST_CANCEL`, `FRIEND_REMOVE`
+- Room: `CREATE_ROOM`, `JOIN_ROOM`, `LEAVE_ROOM`, `ROOM_STATE`, `READY`, `START_GAME`,
+  `KICK_ROOM_MEMBER`, `ROOM_MEMBER_REMOVED`
+- Room invitations: `ROOM_INVITE_SEND`, `ROOM_INVITE_RECEIVED`,
+  `ROOM_INVITE_RESPOND`, `ROOM_INVITE_STATUS`
 - Gameplay input: `MOVE`, `PLACE_BOMB`
 - Gameplay output: `GAME_STATE`, `PLAYER_DIED`, `GAME_OVER`
 - Post-game: `PLAY_AGAIN`
 - Ranking: `RANKING_REQUEST`, `RANKING_RESPONSE`
 - History: `HISTORY_REQUEST`, `HISTORY_RESPONSE`
+
+The social and room-moderation contract is specified in
+[`docs/social-protocol.md`](docs/social-protocol.md). Friend persistence and server handlers are
+implemented; the JavaFX social UI, room invitations and host kick are delivered in later phases.
 
 ## Authoritative gameplay and concurrency
 
