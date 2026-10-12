@@ -22,6 +22,7 @@ import com.bomberman.clientfx.ui.ScreenId;
 import com.bomberman.clientfx.ui.ScreenNavigator;
 import com.bomberman.clientfx.ui.screen.GalleryScreen;
 import com.bomberman.clientfx.ui.screen.GameScreen;
+import com.bomberman.clientfx.ui.screen.FriendsScreen;
 import com.bomberman.clientfx.ui.screen.HomeScreen;
 import com.bomberman.clientfx.ui.screen.HistoryScreen;
 import com.bomberman.clientfx.ui.screen.LeaderboardScreen;
@@ -101,6 +102,8 @@ public final class BombermanApp extends Application {
         navigator.register(ScreenId.LOGIN, new LoginScreen(state, controller, preferences, assets, shell));
         navigator.register(ScreenId.HOME,
                 new HomeScreen(state, controller, navigator, assets, shell, stage, audioManager));
+        navigator.register(ScreenId.FRIENDS,
+                new FriendsScreen(state, controller, navigator, assets, shell));
         navigator.register(ScreenId.ROOM_BROWSER, new RoomBrowserScreen(state, controller, navigator, assets));
         navigator.register(ScreenId.ROOM_LOBBY, new RoomLobbyScreen(state, controller, assets, shell));
         navigator.register(ScreenId.GAME,

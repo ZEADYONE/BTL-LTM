@@ -1,7 +1,7 @@
 # Social and room-moderation protocol
 
 > Contract version: Phase 0, 2026-10-12  
-> Implementation status: friend persistence/server handlers are available; JavaFX UI, room invitations and host kick follow in later phases.
+> Implementation status: friend persistence, server handlers and JavaFX friend UI are available; room invitations and host kick follow in later phases.
 
 This document is the implementation contract for friends, room invitations and host kick.
 The server remains authoritative. A client sends an intent and only changes domain state after
@@ -85,6 +85,8 @@ The following server behavior tests are the implementation skeleton for later ph
 | 1 ✅ | `FriendServiceIntegrationTest` | self request, unknown user, duplicate, reverse auto-accept, permissions, lifecycle, concurrent pair creation |
 | 1 ✅ | `FriendMessageHandlerIntegrationTest` | correlation IDs, two-party pushes, `FREE/IN_ROOM/OFFLINE` presence and full add/accept/remove lifecycle |
 | 1 ✅ | `SocialRateLimiterTest` | per-user isolation, request ceiling and window expiry |
+| 2 ✅ | `ClientStateSocialTest` | defensive snapshots, listener notification and logout cleanup |
+| 2 ✅ | `ClientMessageDispatcherTest` | apply snapshot before completing request; notify only for a new unsolicited incoming request |
 | 3 | `RoomManagerModerationTest` | host/non-host, self/unknown target, room status, kick ban, host reinvite exception, leave/start races |
 | 4 | `RoomInviteManagerTest` | duplicate, expiry, one-time consume, cleanup by room/user |
 | 4 | `RoomInviteIntegrationTest` | friend/presence validation, full/start/delete races, accept joins exactly once |

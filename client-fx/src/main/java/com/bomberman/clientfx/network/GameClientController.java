@@ -90,8 +90,8 @@ public final class GameClientController implements AutoCloseable {
         send(MessageType.ROOM_LIST_REQUEST, null);
     }
 
-    public void requestFriends() {
-        send(MessageType.FRIEND_LIST_REQUEST, null);
+    public CompletableFuture<NetworkMessage> requestFriends() {
+        return request(MessageType.FRIEND_LIST_REQUEST, null, false);
     }
 
     public CompletableFuture<NetworkMessage> sendFriendRequest(String username) {

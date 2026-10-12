@@ -1,6 +1,6 @@
 # Kế hoạch tính năng bạn bè và tương tác phòng
 
-> **Trạng thái:** Phase 0–1 đã triển khai ngày 2026-10-12; Phase 2–5 chưa triển khai  
+> **Trạng thái:** Phase 0–2 đã triển khai ngày 2026-10-12; Phase 3–5 chưa triển khai
 > **Ngày lập:** 2026-10-12  
 > **Phạm vi chính:** `common`, `server`, JavaFX client `client-fx`  
 > **Mục tiêu:** Bổ sung danh sách bạn bè, gửi/duyệt lời mời kết bạn, mời bạn vào phòng và quyền kick thành viên của host mà vẫn giữ server là nguồn trạng thái authoritative.
@@ -593,15 +593,23 @@ thấy presence `FREE/IN_ROOM/OFFLINE` và remove friend. Dữ liệu dùng JPA/
 nên không mất theo vòng đời TCP/server process. `gradlew test` pass: `common` 15, `server` 70,
 `client-fx` 95 và `client` 1 test; không có failure, error hoặc skipped test.
 
-### Phase 2 — Friends UI JavaFX
+### Phase 2 — Friends UI JavaFX ✅
 
-- Thêm state/controller/dispatcher.
-- Tạo Friends screen, tabs, add field và action loading.
-- Thêm Home tile + incoming badge.
-- Empty/loading/error states và CSS.
-- Unit test state/dispatcher; smoke test layout 1280×720 và cửa sổ tối thiểu 960×540.
+- [x] Thêm state/controller/dispatcher.
+- [x] Tạo Friends screen, tabs, add field và action loading.
+- [x] Thêm Home tile + incoming badge.
+- [x] Empty/loading/error states và CSS.
+- [x] Unit test state/dispatcher; kiểm tra build/package trên khung logic 1280×720 có scale xuống cửa sổ tối thiểu 960×540.
 
 **Exit gate:** Người dùng thêm, duyệt, hủy và xóa bạn từ UI; trạng thái online đổi realtime mà không refresh thủ công.
+
+**Kết quả Phase 2 (2026-10-12):** JavaFX client lưu snapshot bạn bè trong `ClientState`,
+áp dụng `FRIEND_LIST_UPDATE` trên UI thread và chỉ thông báo khi push chứa yêu cầu đến mới.
+Màn Friends hỗ trợ add theo username, accept/decline, cancel, remove có xác nhận, presence
+`OFFLINE/FREE/IN_ROOM/PLAYING`, empty/loading/error state; Home có tile Friends và badge số
+yêu cầu đến. Help được chuyển thành nút icon trên header để menu không tràn khung 1280×720.
+`gradlew test :client-fx:packageApp` pass: `common` 15, `server` 70, `client-fx` 99 và
+`client` 1 test; không có failure, error hoặc skipped test. Windows app image được tạo thành công.
 
 ### Phase 3 — Kick trong Room Lobby
 

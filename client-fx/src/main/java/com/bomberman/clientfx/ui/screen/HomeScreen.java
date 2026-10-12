@@ -26,6 +26,7 @@ import com.bomberman.clientfx.ui.theme.TeamColor;
 import com.bomberman.common.dto.RankingEntryDto;
 import com.bomberman.common.dto.RoomSummaryDto;
 import com.bomberman.common.enums.MessageType;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
@@ -33,6 +34,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -55,6 +57,7 @@ public final class HomeScreen implements Screen, ClientStateListener {
     private final HeroCharacter hero;
     private final Label roomsSubtitle = new Label();
     private final GameButton play;
+    private final Label friendRequestBadge = new Label();
 
     public HomeScreen(ClientState state, GameClientController controller, Navigator navigator,
                       SvgAssets assets, AppShell shell, Stage stage, AudioManager audioManager) {
@@ -73,6 +76,15 @@ public final class HomeScreen implements Screen, ClientStateListener {
         AnchorPane.setRightAnchor(pills, 24.0);
         AnchorPane.setTopAnchor(pills, 26.0);
 
+        MenuTileButton friends = new MenuTileButton("FRIENDS", assets, AssetIds.ICON_PLAYERS);
+        friends.setOnAction(event -> navigator.show(ScreenId.FRIENDS));
+        friendRequestBadge.getStyleClass().add("request-count-badge");
+        friendRequestBadge.setMouseTransparent(true);
+        StackPane.setAlignment(friendRequestBadge, Pos.TOP_RIGHT);
+        StackPane.setMargin(friendRequestBadge, new Insets(-7, -9, 0, 0));
+        StackPane friendsTile = new StackPane(friends, friendRequestBadge);
+        friendsTile.setMaxWidth(StackPane.USE_PREF_SIZE);
+
         MenuTileButton leaderboard = new MenuTileButton("LEADERBOARD", assets, AssetIds.ICON_TROPHY);
         leaderboard.setOnAction(event -> navigator.show(ScreenId.LEADERBOARD));
         MenuTileButton history = new MenuTileButton("HISTORY", assets, AssetIds.ICON_HISTORY);
@@ -80,11 +92,21 @@ public final class HomeScreen implements Screen, ClientStateListener {
         MenuTileButton settings = new MenuTileButton("SETTINGS", assets, AssetIds.ICON_GEAR);
         settings.setOnAction(event -> SettingsPopup.show(
                 shell, stage, state, controller, navigator, audioManager));
-        MenuTileButton help = new MenuTileButton("HELP", assets, AssetIds.ICON_HELP);
-        help.setOnAction(event -> HelpPopup.show(shell));
-        VBox menu = new VBox(26, leaderboard, history, settings, help);
+        VBox menu = new VBox(26, friendsTile, leaderboard, history, settings);
+        menu.setFillWidth(false);
         AnchorPane.setLeftAnchor(menu, 44.0);
         AnchorPane.setTopAnchor(menu, 150.0);
+
+        GameButton help = new GameButton(
+                "",
+                GameButton.Tone.BLUE,
+                GameButton.Size.ICON,
+                new SvgView(assets, AssetIds.ICON_HELP, 38, 38)
+        );
+        help.setTooltip(new javafx.scene.control.Tooltip("Help"));
+        help.setOnAction(event -> HelpPopup.show(shell));
+        AnchorPane.setRightAnchor(help, 24.0);
+        AnchorPane.setTopAnchor(help, 94.0);
 
         hero = new HeroCharacter(assets, TeamColor.RED, 400);
         AnchorPane.setLeftAnchor(hero, 400.0);
@@ -102,7 +124,7 @@ public final class HomeScreen implements Screen, ClientStateListener {
         AnchorPane.setRightAnchor(bottom, 20.0);
         AnchorPane.setBottomAnchor(bottom, 20.0);
 
-        root.getChildren().addAll(hero, badge, pills, menu, bottom);
+        root.getChildren().addAll(hero, badge, pills, menu, bottom, help);
     }
 
     @Override
@@ -119,6 +141,7 @@ public final class HomeScreen implements Screen, ClientStateListener {
         onClientStateChanged();
         controller.requestLobbyState();
         controller.requestRanking();
+        controller.requestFriends();
     }
 
     @Override
@@ -146,6 +169,10 @@ public final class HomeScreen implements Screen, ClientStateListener {
         onlinePill.setValue(online + " ONLINE");
         int open = QuickPlay.candidates(state.getRooms()).size();
         roomsSubtitle.setText(open + " OPEN · " + online + " ONLINE");
+        int requests = state.getIncomingFriendRequests().size();
+        friendRequestBadge.setText(Integer.toString(requests));
+        friendRequestBadge.setVisible(requests > 0);
+        friendRequestBadge.setManaged(requests > 0);
     }
 
     /** H-11: join the fullest open room, retry once on a race, otherwise create a room. */

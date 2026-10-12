@@ -615,6 +615,56 @@
     -fx-border-radius: 6;
 }
 .play-button { -fx-min-width: 330px; }
+.request-count-badge {
+    -fx-background-color: -color-outline, -color-red;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 999, 999;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-alignment: center;
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 17px;
+    -fx-text-fill: white;
+}
+
+/* ---------- Friends ---------- */
+.friends-summary {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 18px;
+    -fx-text-fill: white;
+}
+.friends-list-area {
+    -fx-background-color: rgba(42, 31, 61, 0.28);
+    -fx-background-radius: 18;
+    -fx-padding: 12;
+}
+.friends-list { -fx-padding: 2 6 8 2; }
+.friends-list .empty-state { -fx-text-fill: rgba(255, 255, 255, 0.82); }
+.friend-row {
+    -fx-background-color: -color-outline, -color-panel-cream;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 14, 12;
+    -fx-padding: 8 14;
+}
+.friend-name {
+    -fx-font-family: "Nunito Black";
+    -fx-font-size: 20px;
+    -fx-text-fill: -color-outline;
+}
+.friend-presence {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 14px;
+    -fx-text-fill: #8C8FA3;
+}
+.friend-presence.presence-free { -fx-text-fill: #38A83A; }
+.friend-presence.presence-in_room { -fx-text-fill: #D9910B; }
+.friend-presence.presence-playing { -fx-text-fill: #E23C3C; }
+.friend-section {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 20px;
+    -fx-text-fill: white;
+    -fx-padding: 2 8;
+}
 
 /* ---------- Room Browser ---------- */
 .empty-state {

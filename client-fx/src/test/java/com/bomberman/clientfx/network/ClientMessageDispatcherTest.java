@@ -5,6 +5,9 @@ import com.bomberman.clientfx.ui.Navigator;
 import com.bomberman.clientfx.ui.ScreenId;
 import com.bomberman.common.dto.ErrorResponse;
 import com.bomberman.common.dto.GameStateDto;
+import com.bomberman.common.dto.FriendDto;
+import com.bomberman.common.dto.FriendListUpdate;
+import com.bomberman.common.dto.FriendRequestDto;
 import com.bomberman.common.dto.LoginResponse;
 import com.bomberman.common.dto.OnlineUserDto;
 import com.bomberman.common.dto.OnlineUsersUpdate;
@@ -14,6 +17,7 @@ import com.bomberman.common.dto.RoomStateDto;
 import com.bomberman.common.dto.RoomStateUpdate;
 import com.bomberman.common.enums.AuthResultCode;
 import com.bomberman.common.enums.GameStatus;
+import com.bomberman.common.enums.FriendPresenceStatus;
 import com.bomberman.common.enums.MessageType;
 import com.bomberman.common.enums.PlayerStatus;
 import com.bomberman.common.enums.RoomStatus;
@@ -88,6 +92,67 @@ class ClientMessageDispatcherTest {
                 new OnlineUsersUpdate(List.of(new OnlineUserDto(1L, "alex", PlayerStatus.FREE)))));
 
         assertEquals(1, state.getOnlineUsers().size());
+    }
+
+    @Test
+    void friendListUpdateReplacesStateAndOnlyNewPushRequestsAnnounce() {
+        FriendListUpdate first = friends(
+                List.of(new FriendDto(2, "alice", FriendPresenceStatus.FREE)),
+                List.of(new FriendRequestDto(
+                        11,
+                        3,
+                        "bob",
+                        FriendPresenceStatus.OFFLINE,
+                        1_760_000_000_000L
+                ))
+        );
+
+        dispatcher.onMessage(message(MessageType.FRIEND_LIST_UPDATE, first));
+        dispatcher.onMessage(message(MessageType.FRIEND_LIST_UPDATE, first));
+
+        assertEquals(1, state.getFriends().size());
+        assertEquals(1, state.getIncomingFriendRequests().size());
+        assertEquals(List.of("Friend request from bob"), feedback);
+
+        FriendListUpdate correlated = friends(
+                first.friends(),
+                List.of(
+                        first.incomingRequests().getFirst(),
+                        new FriendRequestDto(
+                                12,
+                                4,
+                                "carol",
+                                FriendPresenceStatus.FREE,
+                                1_760_000_001_000L
+                        )
+                )
+        );
+        dispatcher.onMessage(new NetworkMessage(
+                MessageType.FRIEND_LIST_UPDATE,
+                "friends-1",
+                objectMapper.valueToTree(correlated)
+        ));
+
+        assertEquals(2, state.getIncomingFriendRequests().size());
+        assertEquals(List.of("Friend request from bob"), feedback);
+    }
+
+    @Test
+    void friendReplyCompletesAfterSocialStateIsApplied() {
+        CompletableFuture<NetworkMessage> reply = pendingRequests.register("friends-1", false);
+        reply.thenRun(() -> assertEquals(1, state.getFriends().size()));
+        FriendListUpdate update = friends(
+                List.of(new FriendDto(2, "alice", FriendPresenceStatus.FREE)),
+                List.of()
+        );
+
+        dispatcher.onMessage(new NetworkMessage(
+                MessageType.FRIEND_LIST_UPDATE,
+                "friends-1",
+                objectMapper.valueToTree(update)
+        ));
+
+        assertTrue(reply.isDone());
     }
 
     @Test
@@ -213,6 +278,13 @@ class ClientMessageDispatcherTest {
 
     private NetworkMessage message(MessageType type, Object payload) {
         return new NetworkMessage(type, null, objectMapper.valueToTree(payload));
+    }
+
+    private FriendListUpdate friends(
+            List<FriendDto> friends,
+            List<FriendRequestDto> incoming
+    ) {
+        return new FriendListUpdate(friends, incoming, List.of());
     }
 
     private static final class RecordingNavigator implements Navigator {
