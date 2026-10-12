@@ -1,0 +1,112 @@
+{
+  "generator": "client-fx/audio-tools/generate_audio.py",
+  "sampleRate": 44100,
+  "sfxTargetPeakDbfs": -1.0,
+  "musicSourceTargetPeakDbfs": -3.5,
+  "assets": [
+    {
+      "path": "music/battle-loop.mp3",
+      "durationSeconds": 18.0,
+      "sampleRate": 44100,
+      "channels": 2,
+      "sizeBytes": 361578,
+      "sha256": "36ead7149f1c2f7c915c5a07740e340c876041817330cb459d983ffce53840d1"
+    },
+    {
+      "path": "music/menu-loop.mp3",
+      "durationSeconds": 16.0,
+      "sampleRate": 44100,
+      "channels": 2,
+      "sizeBytes": 321350,
+      "sha256": "d2240a52f0d66491ef6567902db1480014385179a7a8d70dd1eac88090e66898"
+    },
+    {
+      "path": "sfx/bomb-place-soft.wav",
+      "durationSeconds": 0.22,
+      "sampleRate": 44100,
+      "channels": 1,
+      "sizeBytes": 19448,
+      "sha256": "e1b58a7a61e482d3a28c81c53feef7bbb772e4f94d1a1da1c5d164a45e325238"
+    },
+    {
+      "path": "sfx/bomb-place.wav",
+      "durationSeconds": 0.25,
+      "sampleRate": 44100,
+      "channels": 1,
+      "sizeBytes": 22094,
+      "sha256": "848d3efd14ae916bc487da74e9008de47e9c3b8b6ae0f842b86999ef45c10516"
+    },
+    {
+      "path": "sfx/defeat.wav",
+      "durationSeconds": 1.55,
+      "sampleRate": 44100,
+      "channels": 1,
+      "sizeBytes": 136754,
+      "sha256": "77b6f53cf2dacb6eb3d258da70e44e2b5890ab348fbe2332d770990e9e540905"
+    },
+    {
+      "path": "sfx/draw.wav",
+      "durationSeconds": 1.35,
+      "sampleRate": 44100,
+      "channels": 1,
+      "sizeBytes": 119116,
+      "sha256": "32f8e0a3548233475fb754ba06e8a744734549bb5f6254b477ac46bf805e9b44"
+    },
+    {
+      "path": "sfx/explosion.wav",
+      "durationSeconds": 0.78,
+      "sampleRate": 44100,
+      "channels": 1,
+      "sizeBytes": 68840,
+      "sha256": "beda1e543f4fe797ad7af51b2a26758c8c55b729cedcab58f2ad46b073a1bf5a"
+    },
+    {
+      "path": "sfx/match-start.wav",
+      "durationSeconds": 1.18,
+      "sampleRate": 44100,
+      "channels": 1,
+      "sizeBytes": 104120,
+      "sha256": "10e981efb1adadcc3b4a95280518419bf133119a1f434e7d75d962b9cd5422fb"
+    },
+    {
+      "path": "sfx/player-defeated.wav",
+      "durationSeconds": 0.95,
+      "sampleRate": 44100,
+      "channels": 1,
+      "sizeBytes": 83834,
+      "sha256": "9185234009875a507e4b77dd7cc65b14ae2c407fd777b270af88d8fff3f67f54"
+    },
+    {
+      "path": "sfx/ui-click.wav",
+      "durationSeconds": 0.085,
+      "sampleRate": 44100,
+      "channels": 1,
+      "sizeBytes": 7542,
+      "sha256": "8a6d906346191238472a6c930b3ca8ce5de66c3f24ac938d639d735fc498b02b"
+    },
+    {
+      "path": "sfx/ui-error.wav",
+      "durationSeconds": 0.34,
+      "sampleRate": 44100,
+      "channels": 1,
+      "sizeBytes": 30034,
+      "sha256": "3321440becf4bdee0640463f6fb16096c5a6872cec819291ebd7bf31d24e4e6c"
+    },
+    {
+      "path": "sfx/ui-success.wav",
+      "durationSeconds": 0.44,
+      "sampleRate": 44100,
+      "channels": 1,
+      "sizeBytes": 38852,
+      "sha256": "00d6ad840253c6d2d5bce53e87c25c4ea56a5174cd1aacfe82aae6aa6d37397d"
+    },
+    {
+      "path": "sfx/victory.wav",
+      "durationSeconds": 1.85,
+      "sampleRate": 44100,
+      "channels": 1,
+      "sizeBytes": 163214,
+      "sha256": "431487fe9268fab33e97060103f93113d05443d18a3579429bb743ed6cc1f878"
+    }
+  ]
+}

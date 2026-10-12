@@ -2,6 +2,7 @@ package com.bomberman.clientfx.ui.screen;
 
 import com.bomberman.clientfx.asset.AssetIds;
 import com.bomberman.clientfx.asset.SvgAssets;
+import com.bomberman.clientfx.audio.ResultAudio;
 import com.bomberman.clientfx.game.GameFormats;
 import com.bomberman.clientfx.game.MatchTracker;
 import com.bomberman.clientfx.network.GameClientController;
@@ -45,6 +46,7 @@ public final class ResultScreen implements Screen, ClientStateListener {
     private final Navigator navigator;
     private final SvgAssets assets;
     private final MatchTracker tracker;
+    private final ResultAudio resultAudio;
     private final AnchorPane root = new AnchorPane();
     private final StackPane titleHolder = new StackPane();
     private final SunRays rays = new SunRays(210);
@@ -59,12 +61,13 @@ public final class ResultScreen implements Screen, ClientStateListener {
     private boolean rematchAvailable;
 
     public ResultScreen(ClientState state, GameClientController controller, Navigator navigator,
-                        SvgAssets assets, MatchTracker tracker) {
+                        SvgAssets assets, MatchTracker tracker, ResultAudio resultAudio) {
         this.state = state;
         this.controller = controller;
         this.navigator = navigator;
         this.assets = assets;
         this.tracker = tracker;
+        this.resultAudio = resultAudio;
         root.getStyleClass().add("result-screen");
 
         AnchorPane.setLeftAnchor(titleHolder, 0.0);
@@ -155,6 +158,9 @@ public final class ResultScreen implements Screen, ClientStateListener {
                 .filter(player -> player.userId() == state.getCurrentUserId())
                 .findFirst().orElse(null);
         GameResult myResult = mine == null ? GameResult.DRAW : mine.result();
+        if (gameOver != null) {
+            resultAudio.announce(tracker.matchSequence(), myResult);
+        }
         OutlinedText title = new OutlinedText(title(myResult), OutlinedText.Style.DISPLAY, fill(myResult));
         if (myResult == GameResult.WIN) {
             HBox crownedTitle = new HBox(14, new SvgView(assets, AssetIds.ICON_CROWN, 74, 74), title);

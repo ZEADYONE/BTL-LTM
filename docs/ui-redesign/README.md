@@ -17,7 +17,8 @@ Bộ tài liệu gồm kế hoạch và yêu cầu cho việc làm lại giao di
 |---|---|
 | Module mới `client-fx` viết bằng JavaFX | Sửa `server` và `common` |
 | Giao diện cho mọi chức năng **server đã có** | Các chức năng server chưa có (xem [01](01-doi-chieu-mau-thiet-ke.md), mục "Tổng hợp phần bị ẩn") |
-| Đóng gói exe bằng `jpackage` | Bản web, âm thanh |
+| Đóng gói exe bằng `jpackage` | Bản web |
+| Nhạc nền, hiệu ứng UI/gameplay và cài đặt âm lượng | Thay đổi giao thức mạng để phục vụ âm thanh |
 | Giữ client libGDX cũ cho tới khi client mới xong | Đổi giao thức mạng |
 
 ## Nguyên tắc

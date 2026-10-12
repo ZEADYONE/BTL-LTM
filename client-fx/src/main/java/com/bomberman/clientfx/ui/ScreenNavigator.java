@@ -4,6 +4,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Consumer;
 
 /** {@link Navigator} backed by the {@link AppShell}; unregistered screens come from a fallback factory. */
 public final class ScreenNavigator implements Navigator {
@@ -11,6 +12,7 @@ public final class ScreenNavigator implements Navigator {
     private final AppShell shell;
     private final Map<ScreenId, Screen> screens = new EnumMap<>(ScreenId.class);
     private Function<ScreenId, Screen> fallback;
+    private Consumer<ScreenId> screenChangeListener = ignored -> { };
     private ScreenId current;
 
     public ScreenNavigator(AppShell shell) {
@@ -26,6 +28,11 @@ public final class ScreenNavigator implements Navigator {
         this.fallback = fallback;
     }
 
+    /** Receives successful screen changes, including the first screen shown. */
+    public void setScreenChangeListener(Consumer<ScreenId> listener) {
+        screenChangeListener = Objects.requireNonNull(listener, "listener must not be null");
+    }
+
     @Override
     public void show(ScreenId screen) {
         if (screen == current) {
@@ -38,6 +45,7 @@ public final class ScreenNavigator implements Navigator {
         }
         current = screen;
         shell.show(target);
+        screenChangeListener.accept(screen);
     }
 
     @Override

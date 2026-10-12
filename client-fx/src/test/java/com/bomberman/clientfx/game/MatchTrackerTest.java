@@ -66,6 +66,18 @@ class MatchTrackerTest {
 
         assertTrue(events.newMatch());
         assertTrue(tracker.eliminationTicks().isEmpty());
+        assertEquals(2, tracker.matchSequence());
+    }
+
+    @Test
+    void resetKeepsMonotonicMatchIdentity() {
+        MatchTracker tracker = new MatchTracker();
+        tracker.accept(snapshot(2, players(true, true), map(TileType.EMPTY), List.of(), List.of()));
+
+        tracker.reset();
+        tracker.accept(snapshot(2, players(true, true), map(TileType.EMPTY), List.of(), List.of()));
+
+        assertEquals(2, tracker.matchSequence());
     }
 
     @Test

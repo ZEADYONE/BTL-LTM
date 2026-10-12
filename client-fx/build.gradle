@@ -16,7 +16,7 @@ def javafxPlatform = osName.contains('win') ? 'win'
 
 dependencies {
     implementation project(':common')
-    ['base', 'graphics', 'controls'].each { module ->
+    ['base', 'graphics', 'controls', 'media'].each { module ->
         implementation "org.openjfx:javafx-${module}:${javafxVersion}:${javafxPlatform}"
     }
     implementation 'com.github.weisj:jsvg:2.2.0'

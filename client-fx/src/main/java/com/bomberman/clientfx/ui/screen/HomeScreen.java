@@ -2,6 +2,7 @@ package com.bomberman.clientfx.ui.screen;
 
 import com.bomberman.clientfx.asset.AssetIds;
 import com.bomberman.clientfx.asset.SvgAssets;
+import com.bomberman.clientfx.audio.AudioManager;
 import com.bomberman.clientfx.game.QuickPlay;
 import com.bomberman.clientfx.network.GameClientController;
 import com.bomberman.clientfx.state.ClientState;
@@ -56,7 +57,7 @@ public final class HomeScreen implements Screen, ClientStateListener {
     private final GameButton play;
 
     public HomeScreen(ClientState state, GameClientController controller, Navigator navigator,
-                      SvgAssets assets, AppShell shell, Stage stage) {
+                      SvgAssets assets, AppShell shell, Stage stage, AudioManager audioManager) {
         this.state = state;
         this.controller = controller;
 
@@ -77,7 +78,8 @@ public final class HomeScreen implements Screen, ClientStateListener {
         MenuTileButton history = new MenuTileButton("HISTORY", assets, AssetIds.ICON_HISTORY);
         history.setOnAction(event -> navigator.show(ScreenId.HISTORY));
         MenuTileButton settings = new MenuTileButton("SETTINGS", assets, AssetIds.ICON_GEAR);
-        settings.setOnAction(event -> SettingsPopup.show(shell, stage, state, controller, navigator));
+        settings.setOnAction(event -> SettingsPopup.show(
+                shell, stage, state, controller, navigator, audioManager));
         MenuTileButton help = new MenuTileButton("HELP", assets, AssetIds.ICON_HELP);
         help.setOnAction(event -> HelpPopup.show(shell));
         VBox menu = new VBox(26, leaderboard, history, settings, help);

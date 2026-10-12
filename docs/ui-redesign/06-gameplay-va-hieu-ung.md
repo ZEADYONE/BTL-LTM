@@ -116,6 +116,21 @@ Ví dụ (tầm nổ 2):
 | Bom mới | `bombId` chưa từng thấy |
 | Dữ liệu cho màn kết quả | Tên, slot, thứ tự bị loại → xếp hạng theo [02](02-man-hinh-va-dieu-huong.md) mục 3.6 |
 
+### 8.1 Âm thanh gameplay
+
+Âm thanh chỉ được kích hoạt từ `MatchTracker.FrameEvents`, không phát trực tiếp khi nhấn phím. Vì vậy lệnh đặt bom bị server từ chối sẽ không tạo âm thanh giả.
+
+| Event authoritative | Âm thanh | Quy tắc |
+|---|---|---|
+| Snapshot đầu tiên của trận | `MATCH_START` | Một lần mỗi trận |
+| `newBombs` có bom của mình | `BOMB_PLACE_SELF` | Một lần cho cả batch |
+| `newBombs` chỉ có bom người khác | `BOMB_PLACE_OTHER` | Một lần cho cả batch, gain thấp hơn |
+| `newExplosions` không rỗng | `EXPLOSION` | Một lần mỗi snapshot, không phát theo từng ô lửa |
+| Mình xuất hiện trong `eliminatedPlayers` | `PLAYER_DEFEATED` | Một lần cho tới khi bắt đầu trận mới |
+| Kết quả WIN/LOSS/DRAW | `VICTORY`/`DEFEAT`/`DRAW` | Một lần theo `matchSequence`, không lặp khi UI render lại |
+
+`matchSequence` là số thứ tự trận cục bộ tăng đơn điệu trong `MatchTracker`; nó không thay đổi protocol và không được gửi lên server.
+
 ## 9. Hiệu năng
 
 - Mục tiêu 60 FPS, thời gian vẽ mỗi frame dưới 4 ms trên GPU tích hợp.
