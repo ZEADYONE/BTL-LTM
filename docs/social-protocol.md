@@ -1,7 +1,7 @@
 # Social and room-moderation protocol
 
 > Contract version: Phase 0, 2026-10-12  
-> Implementation status: friend persistence, server handlers and JavaFX friend UI are available; room invitations and host kick follow in later phases.
+> Implementation status: friends, host kick and room invitations are available end-to-end through Phase 4.
 
 This document is the implementation contract for friends, room invitations and host kick.
 The server remains authoritative. A client sends an intent and only changes domain state after
@@ -87,9 +87,10 @@ The following server behavior tests are the implementation skeleton for later ph
 | 1 ✅ | `SocialRateLimiterTest` | per-user isolation, request ceiling and window expiry |
 | 2 ✅ | `ClientStateSocialTest` | defensive snapshots, listener notification and logout cleanup |
 | 2 ✅ | `ClientMessageDispatcherTest` | apply snapshot before completing request; notify only for a new unsolicited incoming request |
-| 3 | `RoomManagerModerationTest` | host/non-host, self/unknown target, room status, kick ban, host reinvite exception, leave/start races |
-| 4 | `RoomInviteManagerTest` | duplicate, expiry, one-time consume, cleanup by room/user |
-| 4 | `RoomInviteIntegrationTest` | friend/presence validation, full/start/delete races, accept joins exactly once |
+| 3 ✅ | `RoomManagerModerationTest` | host/non-host, self/unknown target, room status, kick ban and leave/start races |
+| 3 ✅ | `RoomModerationIntegrationTest` | correlated host snapshot, target notice/home state, `FREE` presence and blocked direct rejoin |
+| 4 ✅ | `RoomInviteManagerTest` | duplicate, expiry, one-time consume, cleanup by room/user |
+| 4 ✅ | `RoomInviteIntegrationTest` | real two-client accept/join, decline and replay rejection |
 
 These test classes should be created with the production service in their phase rather than kept
 as disabled tests, so the suite never reports intentionally skipped social tests.

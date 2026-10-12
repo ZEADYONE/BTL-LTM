@@ -28,6 +28,22 @@ class SocialRateLimiterTest {
         assertTrue(limiter.allowFriendRequest(1));
     }
 
+    @Test
+    void roomInviteLimitIsIndependentForEachSenderRecipientPair() {
+        MutableClock clock = new MutableClock(Instant.parse("2026-10-12T00:00:00Z"));
+        SocialRateLimiter limiter = new SocialRateLimiter(clock);
+
+        for (int attempt = 0; attempt < SocialRateLimiter.MAX_ROOM_INVITES_PER_PAIR_WINDOW; attempt++) {
+            assertTrue(limiter.allowRoomInvite(1, 2));
+        }
+        assertFalse(limiter.allowRoomInvite(1, 2));
+        assertTrue(limiter.allowRoomInvite(1, 3));
+        assertTrue(limiter.allowRoomInvite(2, 1));
+
+        clock.advance(SocialRateLimiter.ROOM_INVITE_WINDOW.plusMillis(1));
+        assertTrue(limiter.allowRoomInvite(1, 2));
+    }
+
     private static final class MutableClock extends Clock {
 
         private Instant instant;

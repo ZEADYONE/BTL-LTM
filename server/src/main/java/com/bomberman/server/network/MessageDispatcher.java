@@ -9,6 +9,7 @@ import com.bomberman.server.match.HistoryMessageHandler;
 import com.bomberman.server.ranking.RankingMessageHandler;
 import com.bomberman.server.room.RoomMessageHandler;
 import com.bomberman.server.social.FriendMessageHandler;
+import com.bomberman.server.social.RoomInviteMessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,7 @@ public class MessageDispatcher {
     private final LobbyMessageHandler lobbyMessageHandler;
     private final RoomMessageHandler roomMessageHandler;
     private final FriendMessageHandler friendMessageHandler;
+    private final RoomInviteMessageHandler roomInviteMessageHandler;
     private final GameMessageHandler gameMessageHandler;
     private final RankingMessageHandler rankingMessageHandler;
     private final HistoryMessageHandler historyMessageHandler;
@@ -37,6 +39,7 @@ public class MessageDispatcher {
             LobbyMessageHandler lobbyMessageHandler,
             RoomMessageHandler roomMessageHandler,
             FriendMessageHandler friendMessageHandler,
+            RoomInviteMessageHandler roomInviteMessageHandler,
             GameMessageHandler gameMessageHandler,
             RankingMessageHandler rankingMessageHandler,
             HistoryMessageHandler historyMessageHandler
@@ -45,6 +48,7 @@ public class MessageDispatcher {
         this.lobbyMessageHandler = lobbyMessageHandler;
         this.roomMessageHandler = roomMessageHandler;
         this.friendMessageHandler = friendMessageHandler;
+        this.roomInviteMessageHandler = roomInviteMessageHandler;
         this.gameMessageHandler = gameMessageHandler;
         this.rankingMessageHandler = rankingMessageHandler;
         this.historyMessageHandler = historyMessageHandler;
@@ -65,12 +69,15 @@ public class MessageDispatcher {
             case FRIEND_REQUEST_RESPOND -> friendMessageHandler.handleRespond(session, message);
             case FRIEND_REQUEST_CANCEL -> friendMessageHandler.handleCancel(session, message);
             case FRIEND_REMOVE -> friendMessageHandler.handleRemove(session, message);
+            case ROOM_INVITE_SEND -> roomInviteMessageHandler.handleSend(session, message);
+            case ROOM_INVITE_RESPOND -> roomInviteMessageHandler.handleRespond(session, message);
             case ROOM_LIST_REQUEST -> lobbyMessageHandler.handleRoomListRequest(session, message);
             case CREATE_ROOM -> roomMessageHandler.handleCreateRoom(session, message);
             case JOIN_ROOM -> roomMessageHandler.handleJoinRoom(session, message);
             case LEAVE_ROOM -> roomMessageHandler.handleLeaveRoom(session, message);
             case READY -> roomMessageHandler.handleReady(session, message);
             case START_GAME -> roomMessageHandler.handleStartGame(session, message);
+            case KICK_ROOM_MEMBER -> roomMessageHandler.handleKickMember(session, message);
             case MOVE -> gameMessageHandler.handleMove(session, message);
             case PLACE_BOMB -> gameMessageHandler.handlePlaceBomb(session, message);
             case PLAY_AGAIN -> roomMessageHandler.handlePlayAgain(session, message);

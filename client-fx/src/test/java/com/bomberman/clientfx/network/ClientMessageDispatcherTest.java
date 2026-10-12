@@ -12,15 +12,20 @@ import com.bomberman.common.dto.LoginResponse;
 import com.bomberman.common.dto.OnlineUserDto;
 import com.bomberman.common.dto.OnlineUsersUpdate;
 import com.bomberman.common.dto.RegisterResponse;
+import com.bomberman.common.dto.RoomMemberRemovedNotice;
 import com.bomberman.common.dto.RoomPlayerDto;
 import com.bomberman.common.dto.RoomStateDto;
 import com.bomberman.common.dto.RoomStateUpdate;
+import com.bomberman.common.dto.RoomInviteDto;
+import com.bomberman.common.dto.RoomInviteStatusUpdate;
 import com.bomberman.common.enums.AuthResultCode;
 import com.bomberman.common.enums.GameStatus;
 import com.bomberman.common.enums.FriendPresenceStatus;
 import com.bomberman.common.enums.MessageType;
 import com.bomberman.common.enums.PlayerStatus;
+import com.bomberman.common.enums.RoomRemovalReason;
 import com.bomberman.common.enums.RoomStatus;
+import com.bomberman.common.enums.RoomInviteStatus;
 import com.bomberman.common.enums.TileType;
 import com.bomberman.common.message.NetworkMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -167,6 +172,52 @@ class ClientMessageDispatcherTest {
         dispatcher.onMessage(roomState(false, RoomStatus.WAITING));
         assertEquals(ScreenId.HOME, navigator.current());
         assertNull(state.getRoom());
+    }
+
+    @Test
+    void roomMemberRemovedNoticeExplainsWhoKickedThePlayer() {
+        dispatcher.onMessage(message(
+                MessageType.ROOM_MEMBER_REMOVED,
+                new RoomMemberRemovedNotice(
+                        "room-1",
+                        "Bomber Party!",
+                        RoomRemovalReason.HOST_KICK,
+                        1,
+                        "alex"
+                )
+        ));
+
+        assertEquals(List.of("Host alex removed you from Bomber Party!"), feedback);
+    }
+
+    @Test
+    void incomingInviteIsStoredAndTerminalStatusRemovesIt() {
+        RoomInviteDto invite = new RoomInviteDto(
+                "invite-1", "room-1", "Bomber Party!", 2, "alice", Long.MAX_VALUE
+        );
+        dispatcher.onMessage(message(MessageType.ROOM_INVITE_RECEIVED, invite));
+        assertEquals(List.of(invite), state.getPendingRoomInvites());
+
+        dispatcher.onMessage(message(
+                MessageType.ROOM_INVITE_STATUS,
+                new RoomInviteStatusUpdate("invite-1", RoomInviteStatus.EXPIRED)
+        ));
+
+        assertTrue(state.getPendingRoomInvites().isEmpty());
+        assertEquals(List.of("Room invitation expired."), feedback);
+    }
+
+    @Test
+    void correlatedSentStatusCompletesRequestWithoutToast() {
+        CompletableFuture<NetworkMessage> reply = pendingRequests.register("invite-send", false);
+        dispatcher.onMessage(new NetworkMessage(
+                MessageType.ROOM_INVITE_STATUS,
+                "invite-send",
+                objectMapper.valueToTree(new RoomInviteStatusUpdate("invite-1", RoomInviteStatus.SENT))
+        ));
+
+        assertTrue(reply.isDone());
+        assertTrue(feedback.isEmpty());
     }
 
     @Test

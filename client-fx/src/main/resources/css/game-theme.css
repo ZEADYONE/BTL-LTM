@@ -354,6 +354,11 @@
     -fx-font-size: 22px;
     -fx-text-fill: rgba(255, 241, 230, 0.85);
 }
+.slot-kick-button {
+    -fx-padding: 0 0 5 0;
+    -fx-background-radius: 11, 8, 8, 8;
+}
+.slot-kick-button:pressed { -fx-padding: 3 0 2 0; }
 
 .room-card {
     -fx-background-color: -color-outline, -color-panel-cream;
@@ -544,6 +549,18 @@
 .checklist-text { -fx-text-fill: white; }
 
 /* ---------- Toasts and popups ---------- */
+
+.room-invite-name {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 28px;
+    -fx-text-fill: #3b275f;
+}
+
+.room-invite-countdown {
+    -fx-font-family: "Lilita One";
+    -fx-font-size: 17px;
+    -fx-text-fill: #9a6632;
+}
 .toast {
     -fx-background-color: -color-outline, -toast-fill;
     -fx-background-insets: 0, 3;

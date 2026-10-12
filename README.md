@@ -336,8 +336,8 @@ JSON payload size is 1 MiB.
 - History: `HISTORY_REQUEST`, `HISTORY_RESPONSE`
 
 The social and room-moderation contract is specified in
-[`docs/social-protocol.md`](docs/social-protocol.md). Friend persistence, server handlers and the
-JavaFX Friends screen are implemented; room invitations and host kick are delivered in later phases.
+[`docs/social-protocol.md`](docs/social-protocol.md). Friends, host kick and room invitations are
+implemented end-to-end.
 
 ## Authoritative gameplay and concurrency
 

@@ -1,6 +1,6 @@
 # Kế hoạch tính năng bạn bè và tương tác phòng
 
-> **Trạng thái:** Phase 0–2 đã triển khai ngày 2026-10-12; Phase 3–5 chưa triển khai
+> **Trạng thái:** Phase 0–4 đã triển khai ngày 2026-10-12; Phase 5 chưa triển khai
 > **Ngày lập:** 2026-10-12  
 > **Phạm vi chính:** `common`, `server`, JavaFX client `client-fx`  
 > **Mục tiêu:** Bổ sung danh sách bạn bè, gửi/duyệt lời mời kết bạn, mời bạn vào phòng và quyền kick thành viên của host mà vẫn giữ server là nguồn trạng thái authoritative.
@@ -611,26 +611,45 @@ yêu cầu đến. Help được chuyển thành nút icon trên header để me
 `gradlew test :client-fx:packageApp` pass: `common` 15, `server` 70, `client-fx` 99 và
 `client` 1 test; không có failure, error hoặc skipped test. Windows app image được tạo thành công.
 
-### Phase 3 — Kick trong Room Lobby
+### Phase 3 — Kick trong Room Lobby ✅
 
-- Thêm `kickedUserIds`, `kickMember` và result record.
-- Thêm handler/protocol notice và presence/lobby update.
-- Thêm kick button + confirm trên `SlotCard`.
-- Chặn join lại; cho phép host rời phòng/chuyển host như trước.
-- Test quyền host, state phòng, concurrent leave/kick/start.
+- [x] Thêm `kickedUserIds`, `kickMember` và result record.
+- [x] Thêm handler/protocol notice và presence/lobby update.
+- [x] Thêm kick button + confirm trên `SlotCard`.
+- [x] Chặn join lại; cho phép host rời phòng/chuyển host như trước.
+- [x] Test quyền host, state phòng, concurrent leave/kick/start.
 
 **Exit gate:** Chỉ host kick được trong `WAITING`; target về Home và không join trực tiếp lại phòng.
 
-### Phase 4 — Room invite end-to-end
+**Kết quả Phase 3 (2026-10-12):** thao tác kick chạy atomic dưới `RoomManager` lock,
+trả snapshot và session của target mà không thực hiện network I/O trong lock. Host và thành viên
+còn lại nhận `ROOM_STATE`; target nhận `ROOM_MEMBER_REMOVED`, tiếp theo là
+`ROOM_STATE(member=false)`, chuyển presence về `FREE` và bị chặn `JOIN_ROOM` trực tiếp trong
+suốt vòng đời phòng. Room Lobby chỉ hiện nút remove cho host trên slot của thành viên khác,
+có confirm và loading cho tới phản hồi authoritative.
+`gradlew test :client-fx:packageApp` pass: `common` 15, `server` 75, `client-fx` 100 và
+`client` 1 test; không có failure, error hoặc skipped test. Windows app image được tạo thành công.
 
-- Tạo invite manager TTL và invalidation hooks.
-- Implement send/respond/accept atomic.
-- Thêm invite popup trong Room Lobby.
-- Thêm global incoming popup queue.
-- Cho host mời lại người đã kick và chặn thành viên thường bypass kick.
-- Test expiry, room full/start/closed và accept race.
+### Phase 4 — Room invite end-to-end ✅
+
+- [x] Tạo invite manager TTL và invalidation hooks.
+- [x] Implement send/respond/accept atomic.
+- [x] Thêm friend picker trong Room Lobby.
+- [x] Thêm global incoming popup queue và countdown.
+- [x] Cho host mời lại người đã kick và chặn thành viên thường bypass kick.
+- [x] Test duplicate, expiry, single-use, lifecycle cleanup, quyền re-invite và luồng TCP accept/decline.
 
 **Exit gate:** Invite hoạt động với hai client thật; mọi race trả lỗi rõ ràng và không tạo membership sai.
+
+**Kết quả Phase 4 (2026-10-12):** invite được giữ trong bộ nhớ với UUID, TTL 60 giây,
+chống trùng theo room/recipient và giới hạn 3 lần/phút cho mỗi cặp sender-recipient. Server
+revalidate friendship, presence, room status, capacity và inviter membership khi accept; join và
+quyền host mời lại người bị kick được xử lý dưới cùng room lock. Invite bị hủy khi người liên quan
+đổi phòng/logout, phòng đầy/bắt đầu/bị xóa hoặc inviter rời phòng. JavaFX có friend picker,
+global popup queue không ghi đè modal đang mở, countdown và accept/decline loading. Integration
+test TCP xác nhận hai client thật accept vào phòng, decline và chặn replay.
+`gradlew test :client-fx:packageApp` pass: `common` 15, `server` 84, `client-fx` 102 và
+`client` 1 test; không có failure, error hoặc skipped test. Windows app image được tạo thành công.
 
 ### Phase 5 — Hardening, QA và tài liệu
 

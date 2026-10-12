@@ -23,6 +23,7 @@ import com.bomberman.common.dto.FriendDto;
 import com.bomberman.common.dto.FriendRequestDto;
 import com.bomberman.common.enums.FriendPresenceStatus;
 import com.bomberman.common.enums.MessageType;
+import com.bomberman.common.enums.RoomStatus;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -39,6 +40,8 @@ import javafx.scene.layout.VBox;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Optional;
+import java.util.HashSet;
+import java.util.Set;
 
 /** Friend list and incoming/outgoing request management. */
 public final class FriendsScreen implements Screen, ClientStateListener {
@@ -57,6 +60,7 @@ public final class FriendsScreen implements Screen, ClientStateListener {
     private final GameTabs tabs = new GameTabs("FRIENDS", "REQUESTS");
     private final VBox content = new VBox(10);
     private final Label summary = new Label();
+    private final Set<Long> invitedUserIds = new HashSet<>();
 
     public FriendsScreen(
             ClientState state,
@@ -139,6 +143,7 @@ public final class FriendsScreen implements Screen, ClientStateListener {
     @Override
     public void onShow() {
         state.addListener(this);
+        invitedUserIds.clear();
         add.setLoading(false);
         usernameError.setVisible(false);
         onClientStateChanged();
@@ -207,6 +212,26 @@ public final class FriendsScreen implements Screen, ClientStateListener {
 
     private Node friendRow(FriendDto friend) {
         HBox row = baseRow(friend.userId(), friend.username(), friend.presence());
+        if (canInvite(friend)) {
+            GameButton invite = action(
+                    invitedUserIds.contains(friend.userId()) ? "SENT" : "INVITE",
+                    GameButton.Tone.GREEN
+            );
+            invite.setDisable(invitedUserIds.contains(friend.userId()));
+            invite.setOnAction(event -> {
+                invite.setLoading(true);
+                controller.sendRoomInvite(friend.userId()).whenComplete((reply, failure) -> {
+                    invite.setLoading(false);
+                    if (reply != null && reply.type() == MessageType.ROOM_INVITE_STATUS) {
+                        invitedUserIds.add(friend.userId());
+                        invite.setLabelText("SENT");
+                        invite.setDisable(true);
+                        state.setFeedback(Feedback.success("Invitation sent to " + friend.username() + "."));
+                    }
+                });
+            });
+            row.getChildren().add(invite);
+        }
         GameButton remove = action("REMOVE", GameButton.Tone.RED);
         remove.setTooltip(new Tooltip("Remove " + friend.username() + " from your friends"));
         remove.setOnAction(event -> Popups.confirm(
@@ -224,6 +249,14 @@ public final class FriendsScreen implements Screen, ClientStateListener {
         ));
         row.getChildren().add(remove);
         return row;
+    }
+
+    private boolean canInvite(FriendDto friend) {
+        var room = state.getRoom();
+        return room != null
+                && room.status() == RoomStatus.WAITING
+                && friend.presence() == FriendPresenceStatus.FREE
+                && room.players().stream().noneMatch(player -> player.userId() == friend.userId());
     }
 
     private Node incomingRow(FriendRequestDto request) {

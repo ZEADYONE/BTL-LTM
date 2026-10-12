@@ -3,6 +3,7 @@ package com.bomberman.clientfx.state;
 import com.bomberman.common.dto.FriendDto;
 import com.bomberman.common.dto.FriendListUpdate;
 import com.bomberman.common.dto.FriendRequestDto;
+import com.bomberman.common.dto.RoomInviteDto;
 import com.bomberman.common.enums.FriendPresenceStatus;
 import org.junit.jupiter.api.Test;
 
@@ -58,11 +59,15 @@ class ClientStateSocialTest {
                         1_760_000_000_000L
                 ))
         ));
+        state.addRoomInvite(new RoomInviteDto(
+                "invite-1", "room-1", "Party", 2, "alice", Long.MAX_VALUE
+        ));
 
         state.logout();
 
         assertTrue(state.getFriends().isEmpty());
         assertTrue(state.getIncomingFriendRequests().isEmpty());
         assertTrue(state.getOutgoingFriendRequests().isEmpty());
+        assertTrue(state.getPendingRoomInvites().isEmpty());
     }
 }

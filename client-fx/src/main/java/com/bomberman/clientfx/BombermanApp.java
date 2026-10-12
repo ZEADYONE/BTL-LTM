@@ -32,6 +32,7 @@ import com.bomberman.clientfx.ui.screen.RoomBrowserScreen;
 import com.bomberman.clientfx.ui.screen.RoomLobbyScreen;
 import com.bomberman.clientfx.ui.screen.ResultScreen;
 import com.bomberman.clientfx.ui.popup.Popups;
+import com.bomberman.clientfx.ui.popup.RoomInviteCoordinator;
 import com.bomberman.clientfx.ui.theme.Fonts;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -63,6 +64,7 @@ public final class BombermanApp extends Application {
     private PendingRequests pendingRequests;
     private SvgAssets assets;
     private AudioManager audioManager;
+    private RoomInviteCoordinator roomInviteCoordinator;
 
     @Override
     public void start(Stage stage) {
@@ -94,6 +96,7 @@ public final class BombermanApp extends Application {
                 pendingRequests,
                 Platform::runLater
         );
+        roomInviteCoordinator = new RoomInviteCoordinator(state, controller, shell);
         state.addFeedbackListener(feedback -> {
             shell.showToast(feedback);
             audioManager.playFeedback(feedback);
@@ -161,6 +164,9 @@ public final class BombermanApp extends Application {
 
     @Override
     public void stop() {
+        if (roomInviteCoordinator != null) {
+            roomInviteCoordinator.close();
+        }
         if (controller != null) {
             controller.close();
         }

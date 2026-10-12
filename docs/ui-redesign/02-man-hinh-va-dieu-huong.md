@@ -181,7 +181,7 @@ Mọi màn         ──mất kết nối────────────�
 
 **Hành vi**
 - **Slot:** slot thứ i ứng với người thứ i trong `RoomStateDto.players` (thứ tự vào phòng). Màu slot i là màu đội thứ i (đỏ, xanh dương, xanh lá, vàng). Mọi client đều thấy giống nhau vì cùng dựa trên thứ tự của server.
-- Slot có người: số thứ tự, nhân vật (`bomber_full` cắt lấy nửa trên), tên, thanh READY (xanh lá, dấu ✔) hoặc NOT READY (xám, vòng tròn rỗng). Host có vương miện "HOST". Slot của mình có nhãn "YOU".
+- Slot có người: số thứ tự, nhân vật (`bomber_full` cắt lấy nửa trên), tên, thanh READY (xanh lá, dấu ✔) hoặc NOT READY (xám, vòng tròn rỗng). Host có vương miện "HOST". Slot của mình có nhãn "YOU". Khi phòng `WAITING`, host thấy nút remove đỏ trên slot của các thành viên khác.
 - Slot trống (R-08): viền nét đứt, bóng nhân vật mờ, "WAITING…".
 - **MAP (R-10):** vẽ map mặc định bằng chính các tile trong trận. Map này cố định (công thức ở [06](06-gameplay-va-hieu-ung.md) mục 1). Đánh dấu điểm xuất phát bằng đầu nhân vật màu slot: slot 1 góc trên trái, 2 trên phải, 3 dưới trái, 4 dưới phải.
 - **INFO:** MODE "CLASSIC", WIN "LAST ONE STANDING", PLAYERS "n/4".
@@ -192,12 +192,17 @@ Mọi màn         ──mất kết nối────────────�
 - **READY/UNREADY (R-17):** gửi `READY` với giá trị ngược lại trạng thái hiện tại.
 - **START GAME (R-18):** chỉ host thấy nút vàng, sáng khi n ≥ 2 và tất cả READY. Người khác thấy nút xám "WAITING FOR HOST".
 - **X (R-19):** popup xác nhận "Leave this room?" rồi gửi `LEAVE_ROOM`.
+- **Remove member:** bấm nút đỏ mở confirm "Remove <username> from this room?". Sau khi xác nhận, gửi `KICK_ROOM_MEMBER`; nút loading cho tới snapshot/error và UI không tự xóa slot trước phản hồi server.
+- **Invite Friends:** mở danh sách bạn bè chưa có trong phòng. Chỉ bạn đang `FREE` có nút INVITE khả dụng; gửi thành công đổi nút thành SENT.
+- **Lời mời đến:** được xếp hàng toàn cục, không ghi đè popup đang mở. Popup không tự dismiss, hiển thị tên người mời, phòng và đếm ngược; Accept vào phòng trực tiếp bằng phản hồi authoritative, Decline tiêu thụ lời mời.
 - Host rời phòng: server chuyển host cho người vào sớm nhất còn lại. UI chỉ cần đọc lại `hostUserId`. Người đứng sau người vừa rời sẽ lùi slot và đổi màu theo; đây là hành vi chấp nhận được vì mọi client thấy giống nhau.
 
 **Nghiệm thu**
 - [ ] Hai client: tạo phòng, vào phòng, READY, host START → cả hai sang S5.
 - [ ] START bị khóa khi có 1 người hoặc còn người chưa READY.
 - [ ] Host rời phòng → người còn lại thành host, có vương miện.
+- [x] Chỉ host có nút remove; target nhận notice, về Home và không thể JOIN trực tiếp lại phòng.
+- [x] Hai client thật có thể gửi/nhận/accept/decline invite; invite hết hạn hoặc đã dùng không dùng lại được.
 - [ ] Điểm xuất phát trên map preview trùng với vị trí thật khi vào trận.
 
 ### 3.5 S5 · Game (mẫu 5)
@@ -415,6 +420,7 @@ Tiêu đề "CONNECTION LOST", nội dung "Lost connection to <host>:<port>.", n
 | `FRIEND_LIST_UPDATE` | `friends`, `incomingFriendRequests`, `outgoingFriendRequests` | Cập nhật S2, S9; push có request đến mới hiện toast info |
 | `ROOM_LIST_UPDATE` | `rooms` | Cập nhật S2, S3 |
 | `ROOM_STATE`, `member = false` | `room = null` | → S2 (nếu đang ở S4/S5/S6) |
+| `ROOM_MEMBER_REMOVED` | | Toast info cho biết host và tên phòng; chờ `ROOM_STATE(member=false)` để về S2 |
 | `ROOM_STATE`, `member = true`, `WAITING` | `room` | → S4, **trừ khi** đang ở S6: ở lại và bật cờ rematch (mục 3.6) |
 | `ROOM_STATE`, `member = true`, `PLAYING` | `room`; bắt đầu theo dõi trận mới (06 mục 8) | → S5 |
 | `ROOM_STATE`, `member = true`, `FINISHED` | `room` | Không chuyển màn |

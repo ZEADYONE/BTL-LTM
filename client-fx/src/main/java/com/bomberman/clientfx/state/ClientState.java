@@ -10,6 +10,7 @@ import com.bomberman.common.dto.RoomSummaryDto;
 import com.bomberman.common.dto.FriendDto;
 import com.bomberman.common.dto.FriendListUpdate;
 import com.bomberman.common.dto.FriendRequestDto;
+import com.bomberman.common.dto.RoomInviteDto;
 import com.bomberman.common.enums.GameStatus;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public final class ClientState {
     private List<FriendDto> friends = List.of();
     private List<FriendRequestDto> incomingFriendRequests = List.of();
     private List<FriendRequestDto> outgoingFriendRequests = List.of();
+    private List<RoomInviteDto> pendingRoomInvites = List.of();
     private RoomStateDto room;
     private List<RankingEntryDto> rankingEntries = List.of();
     private List<MatchHistoryEntryDto> matchHistory = List.of();
@@ -54,6 +56,7 @@ public final class ClientState {
         friends = List.of();
         incomingFriendRequests = List.of();
         outgoingFriendRequests = List.of();
+        pendingRoomInvites = List.of();
         room = null;
         rankingEntries = List.of();
         matchHistory = List.of();
@@ -91,6 +94,24 @@ public final class ClientState {
     public void setRoom(RoomStateDto room) {
         this.room = room;
         notifyListeners();
+    }
+
+    public void addRoomInvite(RoomInviteDto invite) {
+        List<RoomInviteDto> updated = new java.util.ArrayList<>(pendingRoomInvites);
+        updated.removeIf(existing -> existing.inviteId().equals(invite.inviteId()));
+        updated.add(invite);
+        pendingRoomInvites = List.copyOf(updated);
+        notifyListeners();
+    }
+
+    public void removeRoomInvite(String inviteId) {
+        List<RoomInviteDto> updated = pendingRoomInvites.stream()
+                .filter(invite -> !invite.inviteId().equals(inviteId))
+                .toList();
+        if (updated.size() != pendingRoomInvites.size()) {
+            pendingRoomInvites = updated;
+            notifyListeners();
+        }
     }
 
     public void setRankingEntries(List<RankingEntryDto> rankingEntries) {
@@ -177,6 +198,10 @@ public final class ClientState {
 
     public List<FriendRequestDto> getOutgoingFriendRequests() {
         return outgoingFriendRequests;
+    }
+
+    public List<RoomInviteDto> getPendingRoomInvites() {
+        return pendingRoomInvites;
     }
 
     public RoomStateDto getRoom() {
