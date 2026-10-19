@@ -29,6 +29,7 @@ public class TcpGameServer implements SmartLifecycle {
     private static final int SHUTDOWN_TIMEOUT_SECONDS = 5;
 
     private final int configuredPort;
+    private final int idleTimeoutMillis;
     private final ConnectionManager connectionManager;
     private final MessageDispatcher dispatcher;
     private final MessageEncoder encoder;
@@ -41,6 +42,7 @@ public class TcpGameServer implements SmartLifecycle {
 
     public TcpGameServer(
             @Value("${bomberman.tcp.port}") int configuredPort,
+            @Value("${bomberman.tcp.idle-timeout-ms:15000}") int idleTimeoutMillis,
             ConnectionManager connectionManager,
             MessageDispatcher dispatcher,
             ObjectMapper objectMapper
@@ -48,7 +50,11 @@ public class TcpGameServer implements SmartLifecycle {
         if (configuredPort < 0 || configuredPort > 65_535) {
             throw new IllegalArgumentException("TCP port must be between 0 and 65535");
         }
+        if (idleTimeoutMillis < 0) {
+            throw new IllegalArgumentException("TCP idle timeout must not be negative");
+        }
         this.configuredPort = configuredPort;
+        this.idleTimeoutMillis = idleTimeoutMillis;
         this.connectionManager = connectionManager;
         this.dispatcher = dispatcher;
         this.encoder = new MessageEncoder(objectMapper);
@@ -142,6 +148,7 @@ public class TcpGameServer implements SmartLifecycle {
         try {
             ClientSession session = new ClientSession(
                     clientSocket,
+                    idleTimeoutMillis,
                     encoder,
                     decoder,
                     dispatcher,
