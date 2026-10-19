@@ -5,7 +5,9 @@ import com.bomberman.clientfx.asset.SvgAssets;
 import com.bomberman.clientfx.audio.GameplayAudio;
 import com.bomberman.clientfx.game.GameRenderer;
 import com.bomberman.clientfx.game.InputController;
+import com.bomberman.clientfx.game.LocalPrediction;
 import com.bomberman.clientfx.game.MatchTracker;
+import com.bomberman.clientfx.game.SnapshotBuffer;
 import com.bomberman.clientfx.network.GameClientController;
 import com.bomberman.clientfx.state.ClientState;
 import com.bomberman.clientfx.state.Feedback;
@@ -18,6 +20,7 @@ import com.bomberman.clientfx.ui.popup.MatchMenuPopup;
 import com.bomberman.common.dto.GameOverDto;
 import com.bomberman.common.dto.GamePlayerStateDto;
 import com.bomberman.common.dto.GameStateDto;
+import com.bomberman.common.dto.PositionDto;
 import com.bomberman.common.enums.Direction;
 import com.bomberman.common.enums.GameStatus;
 import javafx.animation.AnimationTimer;
@@ -62,6 +65,8 @@ public final class GameScreen implements Screen {
     private final GameplayAudio gameplayAudio;
     private final GameRenderer renderer;
     private final InputController input;
+    private final LocalPrediction prediction = new LocalPrediction();
+    private final SnapshotBuffer remotePlayers = new SnapshotBuffer();
     private final AnimationTimer timer;
     private final ChangeListener<Boolean> focusListener = (observable, hadFocus, hasFocus) -> {
         if (!hasFocus) clearKeys();
@@ -87,7 +92,7 @@ public final class GameScreen implements Screen {
         this.tracker = tracker;
         this.gameplayAudio = gameplayAudio;
         renderer = new GameRenderer(canvas, assets, tracker);
-        input = new InputController(controller::move, controller::placeBomb, this::inputAllowed);
+        input = new InputController(this::sendMove, controller::placeBomb, this::inputAllowed);
 
         root.setMinSize(AppShell.DESIGN_WIDTH, AppShell.DESIGN_HEIGHT);
         root.setPrefSize(AppShell.DESIGN_WIDTH, AppShell.DESIGN_HEIGHT);
@@ -145,6 +150,8 @@ public final class GameScreen implements Screen {
         outBanner.setVisible(false);
         outBanner.setManaged(false);
         renderedSnapshot = null;
+        prediction.reset();
+        remotePlayers.reset();
         lastFrameNanos = 0;
         gameOverStartedNanos = Long.MIN_VALUE;
         fpsWindowNanos = 0;
@@ -168,9 +175,14 @@ public final class GameScreen implements Screen {
         double elapsed = lastFrameNanos == 0 ? 0 : Math.min(0.05, (nowNanos - lastFrameNanos) / 1_000_000_000.0);
         lastFrameNanos = nowNanos;
 
+        state.drainArrivedGameStates(arrived -> remotePlayers.add(arrived.state(), arrived.receivedNanos()));
         GameStateDto current = state.getGameState();
         if (current != null && current != renderedSnapshot) {
             MatchTracker.FrameEvents events = tracker.accept(current);
+            if (events.newMatch()) {
+                prediction.reset();
+            }
+            prediction.accept(current, state.getCurrentUserId());
             gameplayAudio.accept(events, state.getCurrentUserId());
             renderer.acceptSnapshot(current, events, nowNanos);
             renderedSnapshot = current;
@@ -178,6 +190,9 @@ public final class GameScreen implements Screen {
         }
 
         input.update(nowNanos);
+        if (renderedSnapshot != null) {
+            updatePlayerTargets(renderedSnapshot, nowNanos);
+        }
         GameOverDto gameOver = state.getGameOver();
         if (gameOver != null) {
             renderer.showWinner(gameOver.winnerUserId(), nowNanos);
@@ -218,6 +233,28 @@ public final class GameScreen implements Screen {
         boolean out = me != null && !me.alive();
         outBanner.setVisible(out);
         outBanner.setManaged(out);
+    }
+
+    /** The local player walks where prediction puts it; the others as of {@link SnapshotBuffer#DELAY_NANOS} ago. */
+    private void updatePlayerTargets(GameStateDto current, long nowNanos) {
+        GameStateDto delayed = remotePlayers.sample(nowNanos);
+        if (delayed == null || delayed.tick() > current.tick()) {
+            delayed = current; // Buffer still holds the previous match.
+        }
+        long me = state.getCurrentUserId();
+        for (GamePlayerStateDto player : delayed.players()) {
+            if (player.userId() != me) {
+                renderer.setPlayerTarget(player.userId(), player.position());
+            }
+        }
+        PositionDto predicted = prediction.position();
+        if (predicted != null) {
+            renderer.setPlayerTarget(me, predicted);
+        }
+    }
+
+    private void sendMove(Direction direction) {
+        controller.move(direction, prediction.predictMove(direction));
     }
 
     private boolean inputAllowed() {
@@ -310,7 +347,12 @@ public final class GameScreen implements Screen {
             displayedFps = fpsFrames * 1_000_000_000.0 / elapsed;
             fpsFrames = 0;
             fpsWindowNanos = nowNanos;
-            diagnostics.setText("FPS %.0f  ·  %.2f ms".formatted(displayedFps, renderer.lastRenderMillis()));
+            long ping = controller.roundTripMillis();
+            diagnostics.setText("FPS %.0f  ·  %.2f ms  ·  ping %s  ·  unacked %d".formatted(
+                    displayedFps,
+                    renderer.lastRenderMillis(),
+                    ping < 0 ? "-" : ping + " ms",
+                    prediction.pendingCount()));
         }
     }
 

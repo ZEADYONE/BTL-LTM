@@ -21,6 +21,8 @@ public final class RoomGameLoop implements AutoCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(RoomGameLoop.class);
     private static final long TICK_PERIOD_MILLIS = 1_000 / TICKS_PER_SECOND;
+    /** The map is resent at least this often even when unchanged, as a safety keyframe. */
+    private static final int MAP_KEYFRAME_TICKS = TICKS_PER_SECOND;
 
     private final String roomId;
     private final BombermanGame game;
@@ -32,6 +34,7 @@ public final class RoomGameLoop implements AutoCloseable {
     private final AtomicBoolean running = new AtomicBoolean();
 
     private long tick;
+    private int sentMapVersion = -1;
 
     public RoomGameLoop(
             String roomId,
@@ -87,9 +90,16 @@ public final class RoomGameLoop implements AutoCloseable {
             drainCommands(tickTime);
             GameTickResult result = game.tick(tickTime);
             tick++;
-            if (tick % 2 == 0 || result.outcome() != null) {
-                listener.onGameState(roomId, game.createSnapshot(tick, tickTime));
+            // Every tick (20 Hz) so movement reaches clients evenly; the map, most of the
+            // payload, only when a crate broke or as a periodic keyframe.
+            int mapVersion = game.mapVersion();
+            boolean includeMap = mapVersion != sentMapVersion
+                    || tick % MAP_KEYFRAME_TICKS == 0
+                    || result.outcome() != null;
+            if (includeMap) {
+                sentMapVersion = mapVersion;
             }
+            listener.onGameState(roomId, game.createSnapshot(tick, tickTime, includeMap));
             if (result.outcome() != null && running.compareAndSet(true, false)) {
                 listener.onGameOver(roomId, game, result.outcome());
                 executor.shutdown();
@@ -105,5 +115,6 @@ public final class RoomGameLoop implements AutoCloseable {
         while ((command = commandQueue.poll()) != null) {
             command.execute(game, tickTime);
         }
+        game.processQueuedInputs(tickTime);
     }
 }

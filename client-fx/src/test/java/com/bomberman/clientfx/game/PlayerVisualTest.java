@@ -14,7 +14,7 @@ class PlayerVisualTest {
         PlayerVisual visual = new PlayerVisual(new PositionDto(1, 1));
         visual.setTarget(new PositionDto(2, 1));
 
-        visual.advance(0.130);
+        visual.advance(PlayerVisual.VISUAL_TILE_MILLIS / 1_000);
 
         assertEquals(2, visual.x(), 0.001);
         assertEquals(PlayerVisual.Facing.RIGHT, visual.facing());
@@ -26,7 +26,7 @@ class PlayerVisualTest {
         PlayerVisual visual = new PlayerVisual(new PositionDto(1, 1));
         visual.setTarget(new PositionDto(3, 1));
 
-        visual.advance(0.065);
+        visual.advance(PlayerVisual.VISUAL_TILE_MILLIS / 2 / 1_000);
 
         assertEquals(2, visual.x(), 0.001);
         assertTrue(visual.moving());

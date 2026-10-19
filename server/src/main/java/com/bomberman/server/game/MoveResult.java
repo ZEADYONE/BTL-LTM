@@ -8,5 +8,6 @@ public enum MoveResult {
     OUT_OF_BOUNDS,
     BLOCKED_BY_WALL,
     BLOCKED_BY_BOMB,
-    BLOCKED_BY_PLAYER
+    BLOCKED_BY_PLAYER,
+    TOO_FAST
 }

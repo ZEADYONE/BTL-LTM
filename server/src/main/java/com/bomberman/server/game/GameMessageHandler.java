@@ -52,7 +52,7 @@ public class GameMessageHandler {
         handleEnqueueResult(
                 session,
                 message.requestId(),
-                gameSessionManager.enqueueMove(user.userId(), request.direction())
+                gameSessionManager.enqueueMove(user.userId(), request.direction(), request.seq())
         );
     }
 

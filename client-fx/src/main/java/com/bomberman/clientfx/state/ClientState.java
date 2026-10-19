@@ -10,6 +10,7 @@ import com.bomberman.common.dto.RoomSummaryDto;
 import com.bomberman.common.enums.GameStatus;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -19,6 +20,13 @@ import java.util.function.Consumer;
  * JavaFX application thread; the snapshot is published by the network thread.
  */
 public final class ClientState {
+
+    /** A snapshot with its arrival time on the {@link System#nanoTime()} clock. */
+    public record ArrivedGameState(GameStateDto state, long receivedNanos) {
+    }
+
+    /** Bounds the arrival queue if the render loop is not draining it (game screen hidden). */
+    private static final int MAX_ARRIVED_GAME_STATES = 64;
 
     private final List<ClientStateListener> listeners = new CopyOnWriteArrayList<>();
     private final List<Consumer<Feedback>> feedbackListeners = new CopyOnWriteArrayList<>();
@@ -32,6 +40,8 @@ public final class ClientState {
     private List<RankingEntryDto> rankingEntries = List.of();
     private List<MatchHistoryEntryDto> matchHistory = List.of();
     private final AtomicReference<GameStateDto> latestGameState = new AtomicReference<>();
+    /** Every snapshot, not just the latest, so the render loop sees two that arrived within one frame. */
+    private final ConcurrentLinkedQueue<ArrivedGameState> arrivedGameStates = new ConcurrentLinkedQueue<>();
     private final AtomicReference<GameOverDto> latestGameOver = new AtomicReference<>();
 
     public void login(long userId, String username) {
@@ -49,6 +59,7 @@ public final class ClientState {
         rankingEntries = List.of();
         matchHistory = List.of();
         latestGameState.set(null);
+        arrivedGameStates.clear();
         latestGameOver.set(null);
         notifyListeners();
     }
@@ -93,6 +104,10 @@ public final class ClientState {
      */
     public void setLatestGameState(GameStateDto gameState) {
         latestGameState.set(gameState);
+        arrivedGameStates.add(new ArrivedGameState(gameState, System.nanoTime()));
+        while (arrivedGameStates.size() > MAX_ARRIVED_GAME_STATES) {
+            arrivedGameStates.poll();
+        }
         if (gameState.gameStatus() == GameStatus.RUNNING) {
             latestGameOver.set(null);
         }
@@ -165,6 +180,14 @@ public final class ClientState {
 
     public GameStateDto getGameState() {
         return latestGameState.get();
+    }
+
+    /** Hands every snapshot received since the last call to {@code consumer}, oldest first. */
+    public void drainArrivedGameStates(Consumer<ArrivedGameState> consumer) {
+        ArrivedGameState arrived;
+        while ((arrived = arrivedGameStates.poll()) != null) {
+            consumer.accept(arrived);
+        }
     }
 
     public GameOverDto getGameOver() {

@@ -15,9 +15,12 @@ import com.bomberman.common.dto.RoomStateUpdate;
 import com.bomberman.common.dto.RankingResponse;
 import com.bomberman.common.dto.HistoryResponse;
 import com.bomberman.common.enums.RoomStatus;
+import com.bomberman.common.enums.TileType;
 import com.bomberman.common.message.NetworkMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.List;
 
 /** Marshals server callbacks onto the libGDX application thread before changing UI state. */
 public final class ClientMessageDispatcher implements ServerListener {
@@ -25,6 +28,8 @@ public final class ClientMessageDispatcher implements ServerListener {
     private final ClientState state;
     private final ClientNavigator navigator;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    /** Last map received; only the network thread touches it. */
+    private List<List<TileType>> lastMap;
 
     public ClientMessageDispatcher(ClientState state, ClientNavigator navigator) {
         this.state = state;
@@ -115,12 +120,24 @@ public final class ClientMessageDispatcher implements ServerListener {
 
     private void handleGameStateFromNetworkThread(NetworkMessage message) {
         try {
-            GameStateDto gameState = read(message, GameStateDto.class);
+            GameStateDto gameState = withKnownMap(read(message, GameStateDto.class));
+            if (gameState == null) {
+                return;
+            }
             state.setLatestGameState(gameState);
             postToUiThread(navigator::showGame);
         } catch (JsonProcessingException | IllegalArgumentException exception) {
             postToUiThread(() -> state.setFeedback("Invalid server message: " + message.type()));
         }
+    }
+
+    /** Fills in a map the server left out because it had not changed; null until a map arrived. */
+    private GameStateDto withKnownMap(GameStateDto snapshot) {
+        if (snapshot.map() != null) {
+            lastMap = snapshot.map();
+            return snapshot;
+        }
+        return lastMap == null ? null : snapshot.withMap(lastMap);
     }
 
     private <T> T read(NetworkMessage message, Class<T> type) throws JsonProcessingException {

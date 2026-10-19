@@ -26,9 +26,13 @@ public final class ServerRules {
     public static final int MAP_COLUMNS = 13;
     public static final int MAP_ROWS = 11;
 
-    /** RoomGameLoop.TICKS_PER_SECOND; snapshots currently arrive every second tick. */
+    /** RoomGameLoop.TICKS_PER_SECOND; a snapshot arrives every tick. */
     public static final int TICKS_PER_SECOND = 20;
-    public static final int SNAPSHOTS_PER_SECOND = 10;
+    public static final int SNAPSHOTS_PER_SECOND = 20;
+    public static final long TICK_MILLIS = 1_000 / TICKS_PER_SECOND;
+
+    /** BomberPlayer.STEP_INTERVAL; also the client's held-key repeat. */
+    public static final long STEP_INTERVAL_MILLIS = 140;
 
     /** BombermanGame.BOMB_FUSE / EXPLOSION_DURATION. */
     public static final long BOMB_FUSE_MILLIS = 3_000;

@@ -32,7 +32,10 @@ import java.util.Map;
 import java.util.OptionalInt;
 import java.util.Random;
 
-/** Canvas renderer for the live match. It only renders authoritative snapshots. */
+/**
+ * Canvas renderer for the live match. Map, bombs and explosions come from the latest authoritative
+ * snapshot; player positions are supplied per frame through {@link #setPlayerTarget}.
+ */
 public final class GameRenderer {
 
     private static final double BLOCK_HEIGHT_RATIO = 80.0 / 64.0;
@@ -106,9 +109,9 @@ public final class GameRenderer {
             winnerStartedNanos = Long.MIN_VALUE;
             goStartedNanos = nowNanos;
         }
+        // Positions come from setPlayerTarget: predicted for the local player, delayed for the others.
         for (GamePlayerStateDto player : next.players()) {
             PlayerVisual visual = visuals.computeIfAbsent(player.userId(), ignored -> new PlayerVisual(player.position()));
-            visual.setTarget(player.position());
             visual.setAlive(player.alive(), nowNanos);
         }
         for (PositionDto cell : events.brokenCrates()) {
@@ -122,6 +125,14 @@ public final class GameRenderer {
         }
         if (!events.newExplosions().isEmpty()) {
             shakeStartedNanos = nowNanos;
+        }
+    }
+
+    /** Where a player should walk to; called every frame for each player of the current snapshot. */
+    public void setPlayerTarget(long userId, PositionDto position) {
+        PlayerVisual visual = visuals.get(userId);
+        if (visual != null) {
+            visual.setTarget(position);
         }
     }
 

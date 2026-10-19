@@ -4,7 +4,10 @@ import com.bomberman.common.enums.GameStatus;
 
 import java.util.List;
 
-/** Immutable internal snapshot captured by the single game-loop thread. */
+/**
+ * Immutable internal snapshot captured by the single game-loop thread.
+ * {@code map} is null when it was left out because it has not changed.
+ */
 public record BombermanSnapshot(
         long tick,
         GameStatus status,
@@ -16,7 +19,7 @@ public record BombermanSnapshot(
 ) {
 
     public BombermanSnapshot {
-        map = map.stream().map(List::copyOf).toList();
+        map = map == null ? null : map.stream().map(List::copyOf).toList();
         players = List.copyOf(players);
         bombs = List.copyOf(bombs);
         explosions = List.copyOf(explosions);
@@ -29,7 +32,8 @@ public record BombermanSnapshot(
             boolean alive,
             int bombCapacity,
             int activeBombs,
-            int bombRange
+            int bombRange,
+            long lastMoveSeq
     ) {
     }
 

@@ -38,6 +38,7 @@ import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(properties = "bomberman.tcp.port=0")
@@ -92,6 +93,13 @@ class GameStateBroadcastIntegrationTest {
                     RoomStateUpdate.class
             );
 
+            List<GameStateDto> firstStates = clients.stream()
+                    .map(client -> client.awaitGameState(state -> true))
+                    .toList();
+            assertAllEqual(firstStates);
+            assertEquals(GameMap.ROWS, firstStates.getFirst().map().size());
+            assertEquals(GameMap.COLUMNS, firstStates.getFirst().map().getFirst().size());
+
             List<GameStateDto> initialStates = clients.stream()
                     .map(client -> client.awaitGameState(state -> state.tick() >= 6))
                     .toList();
@@ -101,12 +109,12 @@ class GameStateBroadcastIntegrationTest {
             assertEquals(GameStatus.RUNNING, initial.gameStatus());
             assertEquals(4, initial.players().size());
             assertEquals(4, initial.remainingPlayers());
-            assertEquals(GameMap.ROWS, initial.map().size());
-            assertEquals(GameMap.COLUMNS, initial.map().getFirst().size());
+            // Unchanged map is left out between keyframes; clients reuse the one they have.
+            assertNull(initial.map());
 
             long movingUserId = clients.getFirst().userId();
             long bombingUserId = clients.get(1).userId();
-            clients.getFirst().send(MessageType.MOVE, new MoveRequest(Direction.RIGHT));
+            clients.getFirst().send(MessageType.MOVE, new MoveRequest(Direction.RIGHT, 42));
             clients.get(1).send(MessageType.PLACE_BOMB, null);
 
             Predicate<GameStateDto> containsProcessedCommands = state ->
@@ -120,6 +128,9 @@ class GameStateBroadcastIntegrationTest {
 
             assertAllEqual(updatedStates);
             assertFalse(updatedStates.getFirst().bombs().isEmpty());
+            // The mover's client matches this against its predicted steps.
+            assertEquals(42, player(updatedStates.getFirst(), movingUserId).lastMoveSeq());
+            assertEquals(0, player(updatedStates.getFirst(), bombingUserId).lastMoveSeq());
         } finally {
             for (TestGameClient client : clients) {
                 client.close();

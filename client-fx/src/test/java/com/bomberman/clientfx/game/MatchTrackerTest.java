@@ -134,7 +134,7 @@ class MatchTrackerTest {
     }
 
     private static GamePlayerStateDto player(long id, int column, int row, boolean alive) {
-        return new GamePlayerStateDto(id, "p" + id, new PositionDto(column, row), alive, 1, 0, 2);
+        return new GamePlayerStateDto(id, "p" + id, new PositionDto(column, row), alive, 1, 0, 2, 0);
     }
 
     private static GameOverPlayerDto result(long userId, GameResult result) {

@@ -18,12 +18,14 @@ import com.bomberman.common.enums.AuthResultCode;
 import com.bomberman.common.enums.GameCommandResultCode;
 import com.bomberman.common.enums.MessageType;
 import com.bomberman.common.enums.RoomStatus;
+import com.bomberman.common.enums.TileType;
 import com.bomberman.common.message.NetworkMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -42,6 +44,8 @@ public final class ClientMessageDispatcher implements ServerListener {
     private final PendingRequests pendingRequests;
     private final Runnable onConnectionLost;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    /** Last map received; only the network thread touches it. */
+    private List<List<TileType>> lastMap;
 
     /** @param onConnectionLost runs on the UI thread after an established connection drops */
     public ClientMessageDispatcher(
@@ -155,7 +159,11 @@ public final class ClientMessageDispatcher implements ServerListener {
 
     private void handleGameStateFromNetworkThread(NetworkMessage message) {
         try {
-            state.setLatestGameState(read(message, GameStateDto.class));
+            GameStateDto snapshot = withKnownMap(read(message, GameStateDto.class));
+            if (snapshot == null) {
+                return;
+            }
+            state.setLatestGameState(snapshot);
             uiThread.execute(() -> {
                 ScreenId current = navigator.current();
                 // The server keeps sending snapshots to a player who just left until the match ends;
@@ -167,6 +175,15 @@ public final class ClientMessageDispatcher implements ServerListener {
         } catch (JsonProcessingException | IllegalArgumentException exception) {
             uiThread.execute(() -> state.setFeedback(Feedback.error("Invalid server message: " + message.type())));
         }
+    }
+
+    /** Fills in a map the server left out because it had not changed; null until a map arrived. */
+    private GameStateDto withKnownMap(GameStateDto snapshot) {
+        if (snapshot.map() != null) {
+            lastMap = snapshot.map();
+            return snapshot;
+        }
+        return lastMap == null ? null : snapshot.withMap(lastMap);
     }
 
     private <T> T read(NetworkMessage message, Class<T> type) throws JsonProcessingException {

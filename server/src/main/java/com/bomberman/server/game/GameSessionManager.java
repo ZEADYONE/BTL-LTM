@@ -109,9 +109,10 @@ public class GameSessionManager {
 
     public GameCommandEnqueueResult enqueueMove(
             long userId,
-            com.bomberman.common.enums.Direction direction
+            com.bomberman.common.enums.Direction direction,
+            long seq
     ) {
-        return enqueue(userId, new MoveGameCommand(userId, direction));
+        return enqueue(userId, new MoveGameCommand(userId, direction, seq));
     }
 
     public GameCommandEnqueueResult enqueuePlaceBomb(long userId) {

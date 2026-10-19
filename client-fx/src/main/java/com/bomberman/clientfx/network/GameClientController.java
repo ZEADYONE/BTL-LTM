@@ -55,6 +55,11 @@ public final class GameClientController implements AutoCloseable {
         return networkConfig;
     }
 
+    /** Latest measured round trip to the server, or -1 when not known yet. */
+    public long roundTripMillis() {
+        return networkClient.isConnected() ? networkClient.roundTripMillis() : -1;
+    }
+
     /**
      * Points the client at another server (Server Address popup, logged out only).
      * An open connection to the old address is dropped; the next command connects to the new one.
@@ -111,8 +116,9 @@ public final class GameClientController implements AutoCloseable {
         return request(MessageType.START_GAME, null, false);
     }
 
-    public void move(Direction direction) {
-        send(MessageType.MOVE, new MoveRequest(direction));
+    /** @param seq from {@code LocalPrediction.predictMove}, echoed back as {@code lastMoveSeq} */
+    public void move(Direction direction, long seq) {
+        send(MessageType.MOVE, new MoveRequest(direction, seq));
     }
 
     public void placeBomb() {

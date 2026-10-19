@@ -86,6 +86,108 @@ public final class BombermanGame {
         return new BombermanGame(map, players);
     }
 
+    public int mapVersion() {
+        stateLock.lock();
+        try {
+            return gameMap.version();
+        } finally {
+            stateLock.unlock();
+        }
+    }
+
+    /** Network entry point for MOVE; applied later by {@link #processQueuedInputs(Instant)}. */
+    public void queueMove(long userId, Direction direction, long seq) {
+        Objects.requireNonNull(direction, "direction must not be null");
+        stateLock.lock();
+        try {
+            BomberPlayer player = players.get(userId);
+            if (player != null) {
+                player.queueStep(direction, seq);
+            }
+        } finally {
+            stateLock.unlock();
+        }
+    }
+
+    /** Network entry point for PLACE_BOMB; queued behind earlier steps so it lands where the client expects. */
+    public void queueBomb(long userId) {
+        stateLock.lock();
+        try {
+            BomberPlayer player = players.get(userId);
+            if (player != null) {
+                player.queueBomb();
+            }
+        } finally {
+            stateLock.unlock();
+        }
+    }
+
+    /**
+     * Applies each player's queued input in arrival order: bombs at once, steps at the walking
+     * pace (at most one per tick). A burst after lag therefore plays out at normal speed instead
+     * of teleporting. Called by the room loop once per tick, before {@link #tick(Instant)}.
+     */
+    public void processQueuedInputs(Instant now) {
+        Objects.requireNonNull(now, "now must not be null");
+        stateLock.lock();
+        try {
+            for (BomberPlayer player : players.values()) {
+                processQueuedInputs(player, now);
+            }
+        } finally {
+            stateLock.unlock();
+        }
+    }
+
+    private void processQueuedInputs(BomberPlayer player, Instant now) {
+        while (true) {
+            if (outcome != null || !player.isAlive()) {
+                player.discardQueuedInputs();
+                return;
+            }
+            switch (player.peekQueuedInput()) {
+                case null -> {
+                    return;
+                }
+                case BomberPlayer.QueuedInput.PlaceBomb ignored -> {
+                    player.pollQueuedInput();
+                    placeBomb(player.getUserId(), now);
+                }
+                case BomberPlayer.QueuedInput.Step step -> {
+                    // Also false right after a step this tick; a bomb queued behind it still goes now.
+                    if (!player.canStepAt(now)) {
+                        return;
+                    }
+                    player.pollQueuedInput();
+                    movePlayer(player.getUserId(), step.direction(), now);
+                    player.acknowledgeMove(step.seq());
+                }
+            }
+        }
+    }
+
+    /**
+     * Like {@link #movePlayer(long, Direction)} but enforces the walking
+     * pace, so the client cannot move faster by sending MOVE more often.
+     */
+    public MoveResult movePlayer(long userId, Direction direction, Instant now) {
+        Objects.requireNonNull(now, "now must not be null");
+        stateLock.lock();
+        try {
+            BomberPlayer player = players.get(userId);
+            if (player != null && player.isAlive() && outcome == null && !player.canStepAt(now)) {
+                return MoveResult.TOO_FAST;
+            }
+            MoveResult result = movePlayer(userId, direction);
+            if (result == MoveResult.MOVED) {
+                player.recordStep(now);
+            }
+            return result;
+        } finally {
+            stateLock.unlock();
+        }
+    }
+
     /**
      * Moves one tile if authoritative collision checks allow it. A bomb blocks
      * entry immediately, while a player standing on a newly placed bomb may move away.
@@ -275,6 +377,11 @@ public final class BombermanGame {
     }
 
     public BombermanSnapshot createSnapshot(long tick, Instant now) {
+        return createSnapshot(tick, now, true);
+    }
+
+    /** @param includeMap false leaves the map out; clients keep the last one they received */
+    public BombermanSnapshot createSnapshot(long tick, Instant now, boolean includeMap) {
         Objects.requireNonNull(now, "now must not be null");
         stateLock.lock();
         try {
@@ -286,7 +393,8 @@ public final class BombermanGame {
                             player.isAlive(),
                             player.getBombCapacity(),
                             player.getActiveBombs(),
-                            player.getBombRange()
+                            player.getBombRange(),
+                            player.getLastMoveSeq()
                     ))
                     .toList();
             List<BombermanSnapshot.BombSnapshot> bombSnapshots = bombs.values().stream()
@@ -312,7 +420,7 @@ public final class BombermanGame {
             return new BombermanSnapshot(
                     tick,
                     outcome == null ? GameStatus.RUNNING : GameStatus.FINISHED,
-                    gameMap.snapshotTiles(),
+                    includeMap ? gameMap.snapshotTiles() : null,
                     playerSnapshots,
                     bombSnapshots,
                     explosionSnapshots,

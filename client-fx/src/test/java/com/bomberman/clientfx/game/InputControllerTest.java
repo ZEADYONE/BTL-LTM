@@ -32,8 +32,53 @@ class InputControllerTest {
         InputController input = new InputController(moves::add, () -> { }, () -> true);
 
         input.pressDirection(Direction.RIGHT, ms(0));
-        input.pressDirection(Direction.UP, ms(10));
-        input.releaseDirection(Direction.UP, ms(20));
+        input.pressDirection(Direction.UP, ms(200));
+        input.releaseDirection(Direction.UP, ms(400));
+
+        assertEquals(List.of(Direction.RIGHT, Direction.UP, Direction.RIGHT), moves);
+    }
+
+    @Test
+    void turningInsideTheRepeatWindowWaitsInsteadOfSendingEarly() {
+        List<Direction> moves = new ArrayList<>();
+        InputController input = new InputController(moves::add, () -> { }, () -> true);
+
+        input.pressDirection(Direction.RIGHT, ms(0));
+        input.pressDirection(Direction.UP, ms(30));
+        input.update(ms(139));
+        assertEquals(List.of(Direction.RIGHT), moves);
+
+        input.update(ms(140));
+        assertEquals(List.of(Direction.RIGHT, Direction.UP), moves);
+    }
+
+    @Test
+    void tappingFasterThanTheRepeatIsPacedButNotLost() {
+        List<Direction> moves = new ArrayList<>();
+        InputController input = new InputController(moves::add, () -> { }, () -> true);
+
+        for (int tap = 0; tap < 4; tap++) {
+            input.pressDirection(Direction.LEFT, ms(tap * 40L));
+            input.update(ms(tap * 40L + 10));
+            input.releaseDirection(Direction.LEFT, ms(tap * 40L + 20));
+        }
+        assertEquals(List.of(Direction.LEFT), moves);
+
+        input.update(ms(140));
+        input.update(ms(400));
+        assertEquals(List.of(Direction.LEFT, Direction.LEFT), moves);
+    }
+
+    @Test
+    void quickTurnWhileHoldingIsSentBeforeResumingTheHeldDirection() {
+        List<Direction> moves = new ArrayList<>();
+        InputController input = new InputController(moves::add, () -> { }, () -> true);
+
+        input.pressDirection(Direction.RIGHT, ms(0));
+        input.pressDirection(Direction.UP, ms(50));
+        input.releaseDirection(Direction.UP, ms(80));
+        input.update(ms(140));
+        input.update(ms(280));
 
         assertEquals(List.of(Direction.RIGHT, Direction.UP, Direction.RIGHT), moves);
     }

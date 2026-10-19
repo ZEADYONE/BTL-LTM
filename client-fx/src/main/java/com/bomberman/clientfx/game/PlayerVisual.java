@@ -9,7 +9,8 @@ public final class PlayerVisual {
 
     public enum Facing { DOWN, UP, LEFT, RIGHT }
 
-    public static final double VISUAL_TILE_MILLIS = 130;
+    /** Shorter than the 140ms step pace, so a walker settles on each tile before the next step lands. */
+    public static final double VISUAL_TILE_MILLIS = 110;
     public static final double SNAP_DISTANCE = 2.5;
 
     private double x;
