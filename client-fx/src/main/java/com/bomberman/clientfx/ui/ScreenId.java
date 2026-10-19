@@ -4,6 +4,7 @@ package com.bomberman.clientfx.ui;
 public enum ScreenId {
     LOGIN,
     HOME,
+    FRIENDS,
     ROOM_BROWSER,
     ROOM_LOBBY,
     GAME,

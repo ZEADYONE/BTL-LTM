@@ -22,6 +22,7 @@ import com.bomberman.clientfx.ui.ScreenId;
 import com.bomberman.clientfx.ui.ScreenNavigator;
 import com.bomberman.clientfx.ui.screen.GalleryScreen;
 import com.bomberman.clientfx.ui.screen.GameScreen;
+import com.bomberman.clientfx.ui.screen.FriendsScreen;
 import com.bomberman.clientfx.ui.screen.HomeScreen;
 import com.bomberman.clientfx.ui.screen.HistoryScreen;
 import com.bomberman.clientfx.ui.screen.LeaderboardScreen;
@@ -31,6 +32,7 @@ import com.bomberman.clientfx.ui.screen.RoomBrowserScreen;
 import com.bomberman.clientfx.ui.screen.RoomLobbyScreen;
 import com.bomberman.clientfx.ui.screen.ResultScreen;
 import com.bomberman.clientfx.ui.popup.Popups;
+import com.bomberman.clientfx.ui.popup.RoomInviteCoordinator;
 import com.bomberman.clientfx.ui.theme.Fonts;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -62,6 +64,7 @@ public final class BombermanApp extends Application {
     private PendingRequests pendingRequests;
     private SvgAssets assets;
     private AudioManager audioManager;
+    private RoomInviteCoordinator roomInviteCoordinator;
 
     @Override
     public void start(Stage stage) {
@@ -93,6 +96,7 @@ public final class BombermanApp extends Application {
                 pendingRequests,
                 Platform::runLater
         );
+        roomInviteCoordinator = new RoomInviteCoordinator(state, controller, shell);
         state.addFeedbackListener(feedback -> {
             shell.showToast(feedback);
             audioManager.playFeedback(feedback);
@@ -101,6 +105,8 @@ public final class BombermanApp extends Application {
         navigator.register(ScreenId.LOGIN, new LoginScreen(state, controller, preferences, assets, shell));
         navigator.register(ScreenId.HOME,
                 new HomeScreen(state, controller, navigator, assets, shell, stage, audioManager));
+        navigator.register(ScreenId.FRIENDS,
+                new FriendsScreen(state, controller, navigator, assets, shell));
         navigator.register(ScreenId.ROOM_BROWSER, new RoomBrowserScreen(state, controller, navigator, assets));
         navigator.register(ScreenId.ROOM_LOBBY, new RoomLobbyScreen(state, controller, assets, shell));
         navigator.register(ScreenId.GAME,
@@ -158,6 +164,9 @@ public final class BombermanApp extends Application {
 
     @Override
     public void stop() {
+        if (roomInviteCoordinator != null) {
+            roomInviteCoordinator.close();
+        }
         if (controller != null) {
             controller.close();
         }

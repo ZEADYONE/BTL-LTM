@@ -2,8 +2,10 @@ package com.bomberman.server.room;
 
 import com.bomberman.common.enums.RoomStatus;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * In-memory room aggregate. Mutation is coordinated by {@link RoomManager}.
@@ -15,6 +17,7 @@ public final class GameRoom {
     private final String roomId;
     private final String roomName;
     private final Map<Long, RoomPlayer> players = new LinkedHashMap<>();
+    private final Set<Long> kickedUserIds = new HashSet<>();
     private long hostUserId;
     private RoomStatus status = RoomStatus.WAITING;
 
@@ -34,6 +37,19 @@ public final class GameRoom {
         if (!players.isEmpty() && hostUserId == userId) {
             hostUserId = players.keySet().iterator().next();
         }
+    }
+
+    void kickPlayer(long userId) {
+        removePlayer(userId);
+        kickedUserIds.add(userId);
+    }
+
+    boolean wasKicked(long userId) {
+        return kickedUserIds.contains(userId);
+    }
+
+    void allowKickedPlayer(long userId) {
+        kickedUserIds.remove(userId);
     }
 
     RoomPlayer getPlayer(long userId) {

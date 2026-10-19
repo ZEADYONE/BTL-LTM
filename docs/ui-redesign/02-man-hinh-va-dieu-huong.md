@@ -21,6 +21,7 @@ Quy ước:
 | S6 | Result | Mẫu 6 | 1.2 giây sau khi nhận `GAME_OVER` |
 | S7 | Leaderboard | Không có | Nút LEADERBOARD ở Home |
 | S8 | History | Không có | Nút HISTORY ở Home |
+| S9 | Friends | Không có | Tile FRIENDS ở Home |
 
 ## 2. Luồng điều hướng
 
@@ -30,6 +31,7 @@ S2 Home         ──PLAY (Quick Play)────────► S4 Room Lobby
 S2 Home         ──ONLINE ROOMS / ô ONLINE──► S3 Room Browser ──JOIN / CREATE──► S4 Room Lobby
 S2 Home         ──LEADERBOARD──────────────► S7 Leaderboard  ──BACK──► S2 Home
 S2 Home         ──HISTORY──────────────────► S8 History      ──BACK──► S2 Home
+S2 Home         ──FRIENDS──────────────────► S9 Friends      ──BACK──► S2 Home
 S2 Home         ──SETTINGS › LOG OUT───────► S1 Login
 S4 Room Lobby   ──host bấm START───────────► S5 Game (cả phòng)
 S4 Room Lobby   ──X (rời phòng)────────────► S2 Home
@@ -87,21 +89,21 @@ Mọi màn         ──mất kết nối────────────�
 | [av] PLAYER_NAME                         [* 12.5] [o 5 ONLINE] |
 |      RANK #3 · 12.5 PTS                                        |
 |                                                                |
-| [icon LEADERBOARD]                                             |
-| [icon HISTORY    ]            (nhân vật lớn)                   |
-| [icon SETTINGS   ]            (bomber_full)                    |
-| [icon HELP       ]                                             |
+| [icon FRIENDS (2)]                                             |
+| [icon LEADERBOARD]            (nhân vật lớn)                   |
+| [icon HISTORY    ]            (bomber_full)                    |
+| [icon SETTINGS   ]                         [? Help ở header]    |
 |                                                                |
 |                         [map ONLINE ROOMS 3 OPEN >] [  PLAY  ] |
 +----------------------------------------------------------------+
 ```
 
-**Dữ liệu khi mở màn:** gửi `ONLINE_USERS_REQUEST`, `ROOM_LIST_REQUEST`, `RANKING_REQUEST`. Sau đó server tự đẩy cập nhật danh sách online và danh sách phòng.
+**Dữ liệu khi mở màn:** gửi `ONLINE_USERS_REQUEST`, `ROOM_LIST_REQUEST`, `RANKING_REQUEST`, `FRIEND_LIST_REQUEST`. Sau đó server tự đẩy cập nhật danh sách online, danh sách phòng và snapshot bạn bè liên quan.
 
 **Hành vi**
 - Badge (H-01, H-02): đầu nhân vật theo màu đại diện, username, dòng "RANK #n · x PTS" (hoặc "UNRANKED").
 - Ô ⭐ (H-03): tổng điểm. Ô ● (H-04): số người online, bấm vào mở S3.
-- Cột trái: LEADERBOARD → S7, HISTORY → S8, SETTINGS → popup Settings, HELP → popup Help.
+- Cột trái: FRIENDS → S9 (badge là số yêu cầu đến), LEADERBOARD → S7, HISTORY → S8, SETTINGS → popup Settings. Help là nút icon nhỏ trên header → popup Help.
 - Thẻ ONLINE ROOMS (H-10): "n OPEN · m ONLINE", với n là số phòng đang `WAITING` và còn chỗ. Bấm vào mở S3.
 - Nút PLAY (H-11) chạy **Quick Play**:
   1. Lọc các phòng có `status = WAITING` và `playerCount < maxPlayers`.
@@ -179,7 +181,7 @@ Mọi màn         ──mất kết nối────────────�
 
 **Hành vi**
 - **Slot:** slot thứ i ứng với người thứ i trong `RoomStateDto.players` (thứ tự vào phòng). Màu slot i là màu đội thứ i (đỏ, xanh dương, xanh lá, vàng). Mọi client đều thấy giống nhau vì cùng dựa trên thứ tự của server.
-- Slot có người: số thứ tự, nhân vật (`bomber_full` cắt lấy nửa trên), tên, thanh READY (xanh lá, dấu ✔) hoặc NOT READY (xám, vòng tròn rỗng). Host có vương miện "HOST". Slot của mình có nhãn "YOU".
+- Slot có người: số thứ tự, nhân vật (`bomber_full` cắt lấy nửa trên), tên, thanh READY (xanh lá, dấu ✔) hoặc NOT READY (xám, vòng tròn rỗng). Host có vương miện "HOST". Slot của mình có nhãn "YOU". Khi phòng `WAITING`, host thấy nút remove đỏ trên slot của các thành viên khác.
 - Slot trống (R-08): viền nét đứt, bóng nhân vật mờ, "WAITING…".
 - **MAP (R-10):** vẽ map mặc định bằng chính các tile trong trận. Map này cố định (công thức ở [06](06-gameplay-va-hieu-ung.md) mục 1). Đánh dấu điểm xuất phát bằng đầu nhân vật màu slot: slot 1 góc trên trái, 2 trên phải, 3 dưới trái, 4 dưới phải.
 - **INFO:** MODE "CLASSIC", WIN "LAST ONE STANDING", PLAYERS "n/4".
@@ -190,12 +192,17 @@ Mọi màn         ──mất kết nối────────────�
 - **READY/UNREADY (R-17):** gửi `READY` với giá trị ngược lại trạng thái hiện tại.
 - **START GAME (R-18):** chỉ host thấy nút vàng, sáng khi n ≥ 2 và tất cả READY. Người khác thấy nút xám "WAITING FOR HOST".
 - **X (R-19):** popup xác nhận "Leave this room?" rồi gửi `LEAVE_ROOM`.
+- **Remove member:** bấm nút đỏ mở confirm "Remove <username> from this room?". Sau khi xác nhận, gửi `KICK_ROOM_MEMBER`; nút loading cho tới snapshot/error và UI không tự xóa slot trước phản hồi server.
+- **Invite Friends:** mở danh sách bạn bè chưa có trong phòng. Chỉ bạn đang `FREE` có nút INVITE khả dụng; gửi thành công đổi nút thành SENT.
+- **Lời mời đến:** được xếp hàng toàn cục, không ghi đè popup đang mở. Popup không tự dismiss, hiển thị tên người mời, phòng và đếm ngược; Accept vào phòng trực tiếp bằng phản hồi authoritative, Decline tiêu thụ lời mời.
 - Host rời phòng: server chuyển host cho người vào sớm nhất còn lại. UI chỉ cần đọc lại `hostUserId`. Người đứng sau người vừa rời sẽ lùi slot và đổi màu theo; đây là hành vi chấp nhận được vì mọi client thấy giống nhau.
 
 **Nghiệm thu**
 - [ ] Hai client: tạo phòng, vào phòng, READY, host START → cả hai sang S5.
 - [ ] START bị khóa khi có 1 người hoặc còn người chưa READY.
 - [ ] Host rời phòng → người còn lại thành host, có vương miện.
+- [x] Chỉ host có nút remove; target nhận notice, về Home và không thể JOIN trực tiếp lại phòng.
+- [x] Hai client thật có thể gửi/nhận/accept/decline invite; invite hết hạn hoặc đã dùng không dùng lại được.
 - [ ] Điểm xuất phát trên map preview trùng với vị trí thật khi vào trận.
 
 ### 3.5 S5 · Game (mẫu 5)
@@ -308,6 +315,38 @@ Mỗi dòng: ô số hạng (1 vàng, 2 bạc, 3 đồng, còn lại tím nhạt
 - Sắp xếp mới nhất lên trên (sắp ở client theo `endedAtEpochMillis`).
 - Chưa có trận: "No matches yet. Go play!".
 
+### 3.9 S9 · Friends (không có mẫu)
+
+```
++----------------------------------------------------------------+
+| [< BACK]                  [ FRIENDS ]       3 ONLINE · 8 FRIENDS|
+|           [ exact username________________ ] [ ADD FRIEND ]     |
+|                                                                |
+| [ FRIENDS ] [ REQUESTS (2) ]                                  |
+| +------------------------------------------------------------+ |
+| | (av) ALICE     IN LOBBY                          [ REMOVE ] | |
+| +------------------------------------------------------------+ |
+| | (av) BOB       PLAYING                           [ REMOVE ] | |
+| +------------------------------------------------------------+ |
++----------------------------------------------------------------+
+```
+
+**Dữ liệu khi mở màn:** gửi `FRIEND_LIST_REQUEST`; phản hồi tương quan thay toàn bộ snapshot
+`friends`, `incomingRequests`, `outgoingRequests`.
+
+**Hành vi**
+- Ô add dùng username chính xác, kiểm tra theo cùng quy tắc username của login và chặn tự thêm mình trước khi gửi `FRIEND_REQUEST_SEND`.
+- Tab FRIENDS hiển thị avatar, username và presence `OFFLINE`, `IN LOBBY`, `IN ROOM`, `PLAYING`; REMOVE có hộp xác nhận.
+- Tab REQUESTS tách INCOMING (ACCEPT/DECLINE) và OUTGOING (CANCEL). Số yêu cầu đến xuất hiện trong nhãn tab và badge ở Home.
+- Các nút thao tác có trạng thái loading. Client không sửa danh sách lạc quan; chỉ dựng lại UI sau snapshot authoritative từ server.
+- Push `FRIEND_LIST_UPDATE` có incoming relationship ID mới tạo toast info. Phản hồi tương quan hoặc snapshot lặp lại không tạo toast trùng.
+- Danh sách rỗng hiển thị hướng dẫn phù hợp; mọi danh sách dài cuộn dọc trong vùng nội dung.
+
+**Nghiệm thu**
+- [x] Add, accept, decline, cancel và remove đều gọi đúng message, có loading/error và cập nhật từ snapshot server.
+- [x] Presence và badge thay đổi realtime khi nhận push, không cần refresh thủ công.
+- [x] Bố cục dùng khung logic 1280×720 và scale cùng `AppShell` xuống cửa sổ tối thiểu 960×540.
+
 ---
 
 ## 4. Popup và toast
@@ -378,8 +417,10 @@ Tiêu đề "CONNECTION LOST", nội dung "Lost connection to <host>:<port>.", n
 | `REGISTER_RESPONSE`, thành công | | Toast success, chuyển tab LOGIN |
 | `REGISTER_RESPONSE`, thất bại | | Toast lỗi theo mục 6.2 |
 | `ONLINE_USERS_UPDATE` | `onlineUsers` | Cập nhật S2, S3 |
+| `FRIEND_LIST_UPDATE` | `friends`, `incomingFriendRequests`, `outgoingFriendRequests` | Cập nhật S2, S9; push có request đến mới hiện toast info |
 | `ROOM_LIST_UPDATE` | `rooms` | Cập nhật S2, S3 |
 | `ROOM_STATE`, `member = false` | `room = null` | → S2 (nếu đang ở S4/S5/S6) |
+| `ROOM_MEMBER_REMOVED` | | Toast info cho biết host và tên phòng; chờ `ROOM_STATE(member=false)` để về S2 |
 | `ROOM_STATE`, `member = true`, `WAITING` | `room` | → S4, **trừ khi** đang ở S6: ở lại và bật cờ rematch (mục 3.6) |
 | `ROOM_STATE`, `member = true`, `PLAYING` | `room`; bắt đầu theo dõi trận mới (06 mục 8) | → S5 |
 | `ROOM_STATE`, `member = true`, `FINISHED` | `room` | Không chuyển màn |

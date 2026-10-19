@@ -14,6 +14,7 @@ import com.bomberman.server.network.ConnectionManager;
 import com.bomberman.server.room.RoomManager;
 import com.bomberman.server.room.RoomSnapshot;
 import com.bomberman.server.user.OnlineUserRegistry;
+import com.bomberman.server.social.FriendUpdatePublisher;
 import jakarta.annotation.PreDestroy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -46,6 +47,7 @@ public class GameSessionManager {
     private final GameStateMapper gameStateMapper;
     private final ObjectMapper objectMapper;
     private final MatchPersistenceService matchPersistenceService;
+    private final FriendUpdatePublisher friendUpdatePublisher;
     private final Clock clock = Clock.systemUTC();
 
     public GameSessionManager(
@@ -55,7 +57,8 @@ public class GameSessionManager {
             ConnectionManager connectionManager,
             GameStateMapper gameStateMapper,
             ObjectMapper objectMapper,
-            MatchPersistenceService matchPersistenceService
+            MatchPersistenceService matchPersistenceService,
+            FriendUpdatePublisher friendUpdatePublisher
     ) {
         this.roomManager = roomManager;
         this.onlineUserRegistry = onlineUserRegistry;
@@ -64,6 +67,7 @@ public class GameSessionManager {
         this.gameStateMapper = gameStateMapper;
         this.objectMapper = objectMapper;
         this.matchPersistenceService = matchPersistenceService;
+        this.friendUpdatePublisher = friendUpdatePublisher;
     }
 
     public boolean startGame(RoomSnapshot room) {
@@ -183,14 +187,15 @@ public class GameSessionManager {
                 outcome.winnerUserId()
         );
         loopsByRoom.remove(roomId);
-        roomByUser.entrySet().stream()
+        List<Long> finishedUserIds = roomByUser.entrySet().stream()
                 .filter(entry -> entry.getValue().equals(roomId))
                 .map(java.util.Map.Entry::getKey)
-                .toList()
-                .forEach(userId -> {
+                .toList();
+        finishedUserIds.forEach(userId -> {
                     roomByUser.remove(userId, roomId);
                     onlineUserRegistry.updateStatus(userId, PlayerStatus.IN_ROOM);
                 });
+        friendUpdatePublisher.publishPresenceChanged(finishedUserIds);
         roomManager.finishGame(roomId);
         sessionIdsByRoom.remove(roomId);
         lobbyService.broadcastLobbyUpdates();
