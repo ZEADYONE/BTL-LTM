@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Placeholder art. Body circle centre (30, 38) radius 24; fuse tip ends at (46, 8), where the spark is attached in code. -->
+  <g stroke="#2A1F3D" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M41 15 Q42 9 46 8" fill="none" stroke="#2A1F3D" stroke-width="6"/>
+    <path d="M41 15 Q42 9 46 8" fill="none" stroke="#E8D3A8" stroke-width="2.5"/>
+    <rect x="33" y="13" width="14" height="10" rx="2.5" transform="rotate(35 40 18)" fill="#8C8FA3"/>
+    <circle cx="30" cy="38" r="22.5" fill="#3A3550"/>
+    <ellipse cx="22" cy="29" rx="7" ry="4" transform="rotate(-40 22 29)" fill="#FFFFFF" fill-opacity="0.45" stroke="none"/>
+  </g>
+</svg>

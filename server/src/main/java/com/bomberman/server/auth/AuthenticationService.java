@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Account registration, credential verification, and online-presence rules.
@@ -69,14 +70,24 @@ public class AuthenticationService {
         if (user == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
             return new LoginResult(AuthResultCode.INVALID_CREDENTIALS, null);
         }
-        if (!onlineUserRegistry.markOnline(user.getId(), user.getUsername(), sessionId)) {
-            return new LoginResult(AuthResultCode.ACCOUNT_ALREADY_ONLINE, null);
-        }
+        return claimOnline(new AuthenticatedUser(user.getId(), user.getUsername()), sessionId);
+    }
 
-        return new LoginResult(
-                AuthResultCode.SUCCESS,
-                new AuthenticatedUser(user.getId(), user.getUsername())
-        );
+    /**
+     * Marks an already verified user online for {@code sessionId}. An
+     * {@code ACCOUNT_ALREADY_ONLINE} result still carries the verified user, so the caller can
+     * evict the session holding the account and claim it again.
+     */
+    public LoginResult claimOnline(AuthenticatedUser user, String sessionId) {
+        Objects.requireNonNull(user, "user must not be null");
+        if (!onlineUserRegistry.markOnline(user.userId(), user.username(), sessionId)) {
+            return new LoginResult(AuthResultCode.ACCOUNT_ALREADY_ONLINE, user);
+        }
+        return new LoginResult(AuthResultCode.SUCCESS, user);
+    }
+
+    public Optional<String> findOnlineSessionId(long userId) {
+        return onlineUserRegistry.findSessionId(userId);
     }
 
     public void logout(AuthenticatedUser user, String sessionId) {

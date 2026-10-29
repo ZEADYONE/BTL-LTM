@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Placeholder art, facing right (mirrored in code for left). Feet rest at y = 120. -->
+  <g stroke="#2A1F3D" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="40" y="104" width="20" height="15" rx="6" fill="#FFFFFF"/>
+    <rect x="66" y="102" width="20" height="15" rx="6" fill="#FFFFFF"/>
+    <rect x="44" y="78" width="38" height="30" rx="12" fill="#E53935"/>
+    <rect x="45" y="96" width="36" height="7" fill="#3A3550" stroke="none"/>
+    <circle cx="80" cy="92" r="8" fill="#FFFFFF"/>
+    <circle cx="62" cy="50" r="34" fill="#B71C1C"/>
+    <circle cx="60" cy="48" r="31" fill="#E53935" stroke="none"/>
+    <circle cx="62" cy="50" r="34" fill="none"/>
+    <ellipse cx="46" cy="30" rx="9" ry="5" transform="rotate(-35 46 30)" fill="#FF8A80" stroke="none"/>
+    <path d="M96 42 Q100 50 96 72 L72 74 Q66 60 72 40 Z" fill="#FFE3C7"/>
+    <ellipse cx="85" cy="55" rx="3.5" ry="5.5" fill="#2A1F3D" stroke="none"/>
+    <path d="M84 66 Q88 69 92 66" fill="none" stroke-width="3"/>
+    <circle cx="46" cy="56" r="10" fill="#FFC93C"/>
+    <circle cx="46" cy="56" r="4" fill="#F29F05" stroke="none"/>
+    <rect x="53" y="12" width="14" height="8" rx="3" fill="#8C8FA3"/>
+    <path d="M60 12 Q61 5 69 4" fill="none" stroke="#E8D3A8" stroke-width="3"/>
+  </g>
+</svg>

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -20,6 +21,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Owns the lifecycle and protocol streams of one connected TCP client.
+ *
+ * <p>Clients send {@code PING} periodically, so a socket that stays silent longer than the idle
+ * timeout is treated as dead. Without this, a peer that vanished without a FIN/RST (network
+ * change, Docker port-forward reset, ...) keeps its account marked online indefinitely.
  */
 public final class ClientSession implements Runnable, Closeable {
 
@@ -37,6 +42,7 @@ public final class ClientSession implements Runnable, Closeable {
 
     public ClientSession(
             Socket socket,
+            int idleTimeoutMillis,
             MessageEncoder encoder,
             MessageDecoder decoder,
             MessageDispatcher dispatcher,
@@ -51,6 +57,8 @@ public final class ClientSession implements Runnable, Closeable {
         );
 
         socket.setTcpNoDelay(true);
+        socket.setKeepAlive(true);
+        socket.setSoTimeout(idleTimeoutMillis);
         this.input = socket.getInputStream();
         this.writer = new SessionWriter(socket.getOutputStream(), encoder);
     }
@@ -70,6 +78,8 @@ public final class ClientSession implements Runnable, Closeable {
             }
         } catch (ProtocolException exception) {
             log.warn("Protocol violation from session {}: {}", sessionId, exception.getMessage());
+        } catch (SocketTimeoutException exception) {
+            log.info("Heartbeat timeout: sessionId={}, closing idle connection", sessionId);
         } catch (SocketException exception) {
             if (!closed.get()) {
                 log.info("Connection lost: sessionId={}, reason={}", sessionId, exception.getMessage());

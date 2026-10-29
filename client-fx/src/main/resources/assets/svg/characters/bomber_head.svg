@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Placeholder art. Team-colour parts use only the key colours #E53935, #B71C1C, #FF8A80. -->
+  <g stroke="#2A1F3D" stroke-width="8" stroke-linejoin="round" stroke-linecap="round">
+    <!-- helmet -->
+    <circle cx="128" cy="142" r="96" fill="#B71C1C"/>
+    <circle cx="121" cy="135" r="88" fill="#E53935" stroke="none"/>
+    <circle cx="128" cy="142" r="96" fill="none"/>
+    <ellipse cx="80" cy="78" rx="28" ry="13" transform="rotate(-35 80 78)" fill="#FF8A80" stroke="none"/>
+    <!-- headphones -->
+    <circle cx="36" cy="148" r="26" fill="#FFC93C"/>
+    <circle cx="36" cy="148" r="11" fill="#F29F05" stroke="none"/>
+    <circle cx="220" cy="148" r="26" fill="#FFC93C"/>
+    <circle cx="220" cy="148" r="11" fill="#F29F05" stroke="none"/>
+    <!-- face -->
+    <rect x="63" y="108" width="130" height="104" rx="40" fill="#FFE3C7"/>
+    <ellipse cx="101" cy="157" rx="10" ry="16" fill="#2A1F3D" stroke="none"/>
+    <circle cx="105" cy="151" r="4" fill="#FFFFFF" stroke="none"/>
+    <ellipse cx="155" cy="157" rx="10" ry="16" fill="#2A1F3D" stroke="none"/>
+    <circle cx="159" cy="151" r="4" fill="#FFFFFF" stroke="none"/>
+    <circle cx="82" cy="183" r="9" fill="#FF9AA2" fill-opacity="0.8" stroke="none"/>
+    <circle cx="174" cy="183" r="9" fill="#FF9AA2" fill-opacity="0.8" stroke="none"/>
+    <path d="M112 180 Q128 202 144 180 Z" fill="#7A1E2B" stroke-width="5"/>
+    <!-- fuse and spark -->
+    <rect x="112" y="36" width="32" height="18" rx="6" fill="#8C8FA3"/>
+    <path d="M128 36 Q130 18 150 13" fill="none" stroke="#E8D3A8" stroke-width="7"/>
+    <polygon points="160,0 162.6,9 170.8,4.5 166.3,12.7 175.3,15.3 166.3,17.9 170.8,26.1 162.6,21.6 160,30.6 157.4,21.6 149.2,26.1 153.7,17.9 144.7,15.3 153.7,12.7 149.2,4.5 157.4,9" fill="#FFD54A" stroke="#F4511E" stroke-width="3"/>
+  </g>
+</svg>

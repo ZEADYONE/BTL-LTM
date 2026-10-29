@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Placeholder art: three people. -->
+  <g stroke="#2A1F3D" stroke-width="6" stroke-linejoin="round">
+    <path d="M6 108 Q6 76 32 76 Q52 76 54 100 V108 Z" fill="#2F7BEA"/>
+    <circle cx="32" cy="56" r="16" fill="#5AA9FF"/>
+    <path d="M74 100 Q76 76 96 76 Q122 76 122 108 H74 Z" fill="#2F7BEA"/>
+    <circle cx="96" cy="56" r="16" fill="#5AA9FF"/>
+    <path d="M30 116 Q30 76 64 76 Q98 76 98 116 Z" fill="#F28C28"/>
+    <circle cx="64" cy="48" r="21" fill="#FFB347"/>
+  </g>
+</svg>

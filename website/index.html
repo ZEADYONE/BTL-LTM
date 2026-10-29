@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bomberman Online Mini — Tải game cho Windows</title>
+  <meta name="description" content="Game đặt bom 2–4 người chơi qua mạng cho Windows. Tải bản cài, giải nén, nhập địa chỉ server và vào phòng cùng bạn bè.">
+  <meta name="theme-color" content="#2B2140">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="vi_VN">
+  <meta property="og:site_name" content="Bomberman Online Mini">
+  <meta property="og:title" content="Bomberman Online Mini — Tải game cho Windows">
+  <meta property="og:description" content="Đặt bom, phá thùng và trở thành người cuối cùng còn đứng vững. Trận đấu 2–4 người qua mạng TCP.">
+  <meta property="og:image" content="/assets/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Sảnh chính của Bomberman Online với nhân vật bomber và nút PLAY">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" type="image/png" href="/assets/app_icon.png">
+  <link rel="apple-touch-icon" href="/assets/app_icon.png">
+  <link rel="preload" href="/fonts/LilitaOne-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/fonts/Nunito-ExtraBold.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/fonts/Nunito-Black.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="/css/site.css">
+  <script src="/config.js" defer></script>
+  <script src="/js/site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#noi-dung">Bỏ qua tới nội dung</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top">
+        <img src="/assets/svg/characters/bomber_head.svg" alt="" width="44" height="44">
+        <span class="brand-text">Bomberman <span class="brand-accent">Online</span></span>
+      </a>
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <ul>
+          <li><a href="#gioi-thieu">Giới thiệu</a></li>
+          <li><a href="#cach-choi">Cách chơi</a></li>
+          <li><a href="#cai-dat">Cài đặt</a></li>
+        </ul>
+      </nav>
+      <a class="btn btn-yellow btn-s header-cta" href="#tai-game">Tải game</a>
+    </div>
+  </header>
+
+  <main id="noi-dung">
+    <!-- Hero -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="container">
+        <div class="frame hero-frame">
+          <div class="hero-copy">
+            <p class="kicker">Đồ án Lập trình mạng · Java TCP</p>
+            <h1 id="hero-title" class="game-title">
+              <span class="game-title-main">Bomberman</span>
+              <span class="game-title-sub">Online <span class="tag tag-mini">Mini</span></span>
+            </h1>
+            <p class="lead">Đặt bom, phá thùng và trở thành người cuối cùng còn đứng vững.
+              Trận đấu 2–4 người chơi qua mạng, mọi chuyển động do server quyết định.</p>
+            <div class="cta-row">
+              <a class="btn btn-yellow btn-l" href="#tai-game" data-download-link>
+                <img class="btn-graphic" src="/assets/svg/fx/bomb.svg" alt="" width="40" height="40">
+                <span>Tải bản Windows</span>
+              </a>
+              <a class="btn btn-blue btn-m" href="#cai-dat">Xem hướng dẫn</a>
+            </div>
+            <p class="hero-meta" data-release-summary>Windows 10/11 · 64-bit</p>
+          </div>
+
+          <div class="hero-art" aria-hidden="true">
+            <div class="rays"></div>
+            <img class="hero-bomber" src="/assets/svg/characters/bomber_full.svg" alt="" width="512" height="512">
+            <div class="hero-bomb">
+              <img src="/assets/svg/fx/bomb.svg" alt="" width="64" height="64">
+              <img class="hero-spark" src="/assets/svg/fx/spark.svg" alt="" width="32" height="32">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Server address -->
+    <section class="section section-server" aria-labelledby="server-title">
+      <div class="container">
+        <div class="panel panel-purple server-card">
+          <div class="panel-header">
+            <img src="/assets/svg/icons/icon_gear.svg" alt="" width="36" height="36">
+            <h2 id="server-title" class="panel-title">Server chính</h2>
+            <span class="tag tag-dark">TCP</span>
+          </div>
+          <div class="panel-body server-body">
+            <div class="server-main">
+              <p class="label-caption">Địa chỉ server</p>
+              <div class="copy-line">
+                <code class="server-address" data-server-address>đang tải…</code>
+                <button type="button" class="btn btn-yellow btn-s" data-copy="address">Sao chép</button>
+              </div>
+              <p class="server-note">Gửi địa chỉ này cho bạn bè. Trong game, popup
+                <strong>SERVER ADDRESS</strong> có hai ô riêng: nhập phần trước dấu
+                <code>:</code> vào <strong>HOST</strong>, phần sau vào <strong>PORT</strong>.</p>
+            </div>
+            <dl class="server-fields">
+              <div class="server-field">
+                <dt>HOST</dt>
+                <dd>
+                  <code class="field-value" data-server-host>—</code>
+                  <button type="button" class="btn btn-purple btn-s" data-copy="host"
+                          aria-label="Sao chép HOST">Sao chép</button>
+                </dd>
+              </div>
+              <div class="server-field">
+                <dt>PORT</dt>
+                <dd>
+                  <code class="field-value" data-server-port>—</code>
+                  <button type="button" class="btn btn-purple btn-s" data-copy="port"
+                          aria-label="Sao chép PORT">Sao chép</button>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section" id="gioi-thieu" aria-labelledby="features-title">
+      <div class="container">
+        <h2 id="features-title" class="section-title">
+          <img src="/assets/svg/icons/icon_star.svg" alt="" width="40" height="40">
+          <span>Giới thiệu</span>
+        </h2>
+        <ul class="feature-grid">
+          <li class="panel feature-card">
+            <img src="/assets/svg/icons/icon_players.svg" alt="" width="64" height="64">
+            <h3>2–4 người mỗi phòng</h3>
+            <p>Tạo phòng hoặc vào phòng có sẵn. Trận đấu bắt đầu khi có ít nhất 2 người và tất cả đã sẵn sàng.</p>
+          </li>
+          <li class="panel feature-card">
+            <img src="/assets/svg/icons/icon_crown.svg" alt="" width="64" height="64">
+            <h3>Nhiều phòng song song</h3>
+            <p>Mỗi phòng có vòng lặp game riêng trên server, nhiều trận diễn ra cùng lúc mà không ảnh hưởng nhau.</p>
+          </li>
+          <li class="panel feature-card">
+            <img src="/assets/svg/icons/icon_timer.svg" alt="" width="64" height="64">
+            <h3>Server quyết định</h3>
+            <p>Client chỉ gửi thao tác. Server tính toán 20 lần mỗi giây rồi gửi lại trạng thái, nên không thể tự sửa vị trí.</p>
+          </li>
+          <li class="panel feature-card">
+            <img src="/assets/svg/icons/icon_trophy.svg" alt="" width="64" height="64">
+            <h3>Xếp hạng &amp; lịch sử</h3>
+            <p>Kết quả mỗi trận được lưu lại. Xem bảng xếp hạng và lịch sử các trận đã chơi ngay trong game.</p>
+          </li>
+        </ul>
+
+        <h3 class="subsection-title">Ảnh trong game</h3>
+        <ul class="gallery">
+          <li>
+            <figure class="shot">
+              <img src="/assets/screenshots/home.webp" width="1280" height="719" loading="lazy" decoding="async"
+                   alt="Sảnh chính: nhân vật bomber, các nút LEADERBOARD, HISTORY, SETTINGS, HELP, ONLINE ROOMS và PLAY">
+              <figcaption>Sảnh chính</figcaption>
+            </figure>
+          </li>
+          <li>
+            <figure class="shot">
+              <img src="/assets/screenshots/room-lobby.webp" width="1280" height="799" loading="lazy" decoding="async"
+                   alt="Phòng chờ với 4 ô người chơi, bản đồ Classic Arena và danh sách điều kiện bắt đầu">
+              <figcaption>Phòng chờ</figcaption>
+            </figure>
+          </li>
+          <li>
+            <figure class="shot">
+              <img src="/assets/screenshots/gameplay.webp" width="1280" height="799" loading="lazy" decoding="async"
+                   alt="Trận đấu hai người trên bản đồ 13×11 với khối đá và thùng gỗ">
+              <figcaption>Trận đấu</figcaption>
+            </figure>
+          </li>
+          <li>
+            <figure class="shot">
+              <img src="/assets/screenshots/leaderboard.webp" width="1280" height="799" loading="lazy" decoding="async"
+                   alt="Bảng xếp hạng với bục 3 hạng đầu và danh sách điểm">
+              <figcaption>Bảng xếp hạng</figcaption>
+            </figure>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- How to play -->
+    <section class="section" id="cach-choi" aria-labelledby="play-title">
+      <div class="container">
+        <h2 id="play-title" class="section-title">
+          <img src="/assets/svg/fx/bomb.svg" alt="" width="40" height="40">
+          <span>Cách chơi</span>
+        </h2>
+
+        <ol class="flow">
+          <li class="flow-step">
+            <span class="slot-number" aria-hidden="true">1</span>
+            <h3>Vào phòng</h3>
+            <p>Bấm <strong>PLAY</strong> để vào phòng đông nhất đang mở (hoặc tự tạo phòng mới), hay chọn
+              <strong>ONLINE ROOMS</strong> để tự chọn phòng.</p>
+          </li>
+          <li class="flow-step">
+            <span class="slot-number" aria-hidden="true">2</span>
+            <h3>Sẵn sàng</h3>
+            <p>Mỗi người bấm <strong>READY</strong>. Cần ít nhất 2 người và tất cả đều sẵn sàng.</p>
+          </li>
+          <li class="flow-step">
+            <span class="slot-number" aria-hidden="true">3</span>
+            <h3>Bắt đầu</h3>
+            <p>Chủ phòng (<strong>HOST</strong>) bấm <strong>START GAME</strong> để vào trận.</p>
+          </li>
+          <li class="flow-step">
+            <span class="slot-number" aria-hidden="true">4</span>
+            <h3>Sống sót</h3>
+            <p>Đặt bom phá thùng, né lửa. Người cuối cùng còn sống giành chiến thắng.</p>
+          </li>
+        </ol>
+
+        <div class="play-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Điều khiển</h3>
+            </div>
+            <dl class="panel-body controls">
+              <div class="control-row">
+                <dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> <span class="key-sep">hoặc</span>
+                  <kbd aria-label="Mũi tên lên">↑</kbd><kbd aria-label="Mũi tên trái">←</kbd><kbd aria-label="Mũi tên xuống">↓</kbd><kbd aria-label="Mũi tên phải">→</kbd></dt>
+                <dd>Di chuyển</dd>
+              </div>
+              <div class="control-row">
+                <dt><kbd class="kbd-wide">Space</kbd></dt>
+                <dd>Đặt bom</dd>
+              </div>
+              <div class="control-row">
+                <dt><kbd>Esc</kbd></dt>
+                <dd>Mở menu trận đấu</dd>
+              </div>
+              <div class="control-row">
+                <dt><kbd>F11</kbd></dt>
+                <dd>Bật/tắt toàn màn hình</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Luật chơi</h3>
+            </div>
+            <ul class="panel-body rules">
+              <li>
+                <img src="/assets/svg/tiles/crate.svg" alt="" width="40" height="50">
+                <p><strong>Thùng gỗ</strong> — phá được bằng bom, mở đường đến đối thủ.</p>
+              </li>
+              <li>
+                <img src="/assets/svg/tiles/block_stone.svg" alt="" width="40" height="50">
+                <p><strong>Khối đá</strong> — không thể phá, chặn cả lửa.</p>
+              </li>
+              <li>
+                <img src="/assets/svg/fx/bomb.svg" alt="" width="40" height="40">
+                <p><strong>Bom</strong> — nổ sau 3 giây hoặc ngay khi trúng lửa của quả khác; mỗi người chỉ đặt được 1 quả cùng lúc.</p>
+              </li>
+              <li>
+                <img src="/assets/svg/fx/flame_center.svg" alt="" width="40" height="40">
+                <p><strong>Lửa</strong> — lan tối đa 2 ô theo 4 hướng và dừng ở thùng gỗ; chạm vào là bị loại.</p>
+              </li>
+              <li>
+                <img src="/assets/svg/icons/icon_trophy.svg" alt="" width="40" height="40">
+                <p><strong>Điểm</strong> — thắng 1 · hòa 0,5 · thua 0. Hòa khi những người còn lại bị loại cùng lúc.</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Install guide -->
+    <section class="section" id="cai-dat" aria-labelledby="install-title">
+      <div class="container">
+        <h2 id="install-title" class="section-title">
+          <img src="/assets/svg/icons/icon_gear.svg" alt="" width="40" height="40">
+          <span>Hướng dẫn cài đặt</span>
+        </h2>
+
+        <div class="install-grid">
+          <ol class="steps">
+            <li class="step">
+              <span class="slot-number" aria-hidden="true">1</span>
+              <div class="step-body">
+                <h3>Tải file ZIP</h3>
+                <p>Bấm <a href="#tai-game" data-download-link>Tải bản Windows</a>. File có dạng
+                  <code data-release-file>BombermanOnline-…-Windows.zip</code>.</p>
+              </div>
+            </li>
+            <li class="step">
+              <span class="slot-number" aria-hidden="true">2</span>
+              <div class="step-body">
+                <h3>Giải nén toàn bộ</h3>
+                <p>Chuột phải vào file ZIP → <strong>Extract All…</strong> (Giải nén tất cả). Không chạy
+                  trực tiếp bên trong file ZIP vì game cần cả thư mục <code>app</code> và <code>runtime</code>.</p>
+              </div>
+            </li>
+            <li class="step">
+              <span class="slot-number" aria-hidden="true">3</span>
+              <div class="step-body">
+                <h3>Chạy <code>BombermanOnline.exe</code></h3>
+                <p>Mở thư mục <code>BombermanOnline</code> vừa giải nén và chạy file exe. Nếu Windows
+                  SmartScreen cảnh báo, chọn <strong>More info</strong> → <strong>Run anyway</strong>.</p>
+              </div>
+            </li>
+            <li class="step">
+              <span class="slot-number" aria-hidden="true">4</span>
+              <div class="step-body">
+                <h3>Mở <strong>SERVER ADDRESS</strong></h3>
+                <p>Ở màn hình đăng nhập, bấm nút bánh răng
+                  <img class="inline-icon" src="/assets/svg/icons/icon_gear.svg" alt="" width="22" height="22">
+                  cạnh địa chỉ server ở góc dưới bên trái.</p>
+              </div>
+            </li>
+            <li class="step">
+              <span class="slot-number" aria-hidden="true">5</span>
+              <div class="step-body">
+                <h3>Nhập HOST và PORT</h3>
+                <p class="value-row">
+                  <span class="value-label">HOST</span>
+                  <code class="chip" data-server-host>—</code>
+                  <button type="button" class="btn btn-purple btn-s" data-copy="host" aria-label="Sao chép HOST">Sao chép</button>
+                </p>
+                <p class="value-row">
+                  <span class="value-label">PORT</span>
+                  <code class="chip" data-server-port>—</code>
+                  <button type="button" class="btn btn-purple btn-s" data-copy="port" aria-label="Sao chép PORT">Sao chép</button>
+                </p>
+                <p>Bấm <strong>SAVE</strong>. Game ghi nhớ địa chỉ cho lần mở sau.</p>
+              </div>
+            </li>
+            <li class="step">
+              <span class="slot-number" aria-hidden="true">6</span>
+              <div class="step-body">
+                <h3>Đăng ký và vào phòng</h3>
+                <p>Chọn tab <strong>REGISTER</strong> để tạo tài khoản, sau đó <strong>LOGIN</strong> và
+                  bấm <strong>PLAY</strong>.</p>
+              </div>
+            </li>
+          </ol>
+
+          <figure class="shot install-shot">
+            <img src="/assets/screenshots/server-address.webp" width="1280" height="720" loading="lazy" decoding="async"
+                 alt="Popup SERVER ADDRESS trên màn hình đăng nhập với hai ô HOST và PORT cùng các nút RESET, CANCEL, SAVE">
+            <figcaption>Popup <strong>SERVER ADDRESS</strong>: HOST và PORT là hai ô riêng.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- Download -->
+    <section class="section" id="tai-game" aria-labelledby="download-title">
+      <div class="container download-layout">
+        <div class="panel download-card">
+          <div class="panel-header">
+            <img src="/assets/app_icon.png" alt="" width="40" height="40">
+            <h2 id="download-title" class="panel-title">Tải game</h2>
+          </div>
+          <div class="panel-body">
+            <dl class="release-facts">
+              <div><dt>Phiên bản</dt><dd data-release-field="version">—</dd></div>
+              <div><dt>Hệ điều hành</dt><dd>Windows 10/11 (64-bit)</dd></div>
+              <div><dt>Dung lượng</dt><dd data-release-field="size">—</dd></div>
+              <div><dt>Tên file</dt><dd><code data-release-field="file">—</code></dd></div>
+            </dl>
+
+            <a class="btn btn-yellow btn-l download-button" href="#tai-game" data-download-link>
+              <img class="btn-graphic" src="/assets/svg/fx/bomb.svg" alt="" width="40" height="40">
+              <span>Tải bản Windows</span>
+            </a>
+            <p class="release-status" data-release-status role="status">Đang lấy thông tin bản tải…</p>
+
+            <div class="checksum">
+              <p class="label-caption">SHA-256</p>
+              <div class="copy-line">
+                <code class="checksum-value" data-release-field="sha256">—</code>
+                <button type="button" class="btn btn-purple btn-s" data-copy="sha256"
+                        aria-label="Sao chép mã SHA-256" disabled>Sao chép</button>
+              </div>
+              <p class="checksum-help">Kiểm tra file sau khi tải bằng PowerShell, kết quả phải trùng mã trên
+                (<a href="#tai-game" data-checksum-link>tải file .sha256</a>):</p>
+              <pre class="command"><code data-checksum-command>Get-FileHash .\BombermanOnline-…-Windows.zip -Algorithm SHA256</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-purple requirements">
+          <div class="panel-header">
+            <h3 class="panel-title">Yêu cầu hệ thống</h3>
+          </div>
+          <ul class="panel-body checklist">
+            <li><span class="check-icon" aria-hidden="true"></span><span>Windows 10 hoặc 11, 64-bit</span></li>
+            <li><span class="check-icon" aria-hidden="true"></span><span>Khoảng 250 MB trống để tải và giải nén</span></li>
+            <li><span class="check-icon" aria-hidden="true"></span><span>Không cần cài Java — đã kèm sẵn trong thư mục <code>runtime</code></span></li>
+            <li><span class="check-icon" aria-hidden="true"></span><span>Kết nối mạng tới server qua cổng TCP <span data-server-port>—</span></span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <img src="/assets/svg/characters/bomber_head.svg" alt="" width="48" height="48">
+        <div>
+          <p class="footer-title">Bomberman Online Mini</p>
+          <p>Đồ án môn Lập trình mạng.</p>
+        </div>
+      </div>
+      <p class="footer-tech">Java 21 · Spring Boot · JavaFX · TCP socket · MySQL · Docker</p>
+      <p class="footer-links">
+        <a href="#" data-repo-link hidden>Mã nguồn</a>
+        <span>Font Lilita One &amp; Nunito theo giấy phép
+          <a href="/fonts/OFL-LilitaOne.txt">SIL OFL</a> (<a href="/fonts/OFL-Nunito.txt">Nunito</a>).</span>
+      </p>
+    </div>
+  </footer>
+
+  <div class="toast" data-toast role="status" aria-live="polite"></div>
+</body>
+</html>

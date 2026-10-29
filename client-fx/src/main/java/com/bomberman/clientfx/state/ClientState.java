@@ -1,0 +1,253 @@
+package com.bomberman.clientfx.state;
+
+import com.bomberman.common.dto.GameOverDto;
+import com.bomberman.common.dto.GameStateDto;
+import com.bomberman.common.dto.MatchHistoryEntryDto;
+import com.bomberman.common.dto.OnlineUserDto;
+import com.bomberman.common.dto.RankingEntryDto;
+import com.bomberman.common.dto.RoomStateDto;
+import com.bomberman.common.dto.RoomSummaryDto;
+import com.bomberman.common.dto.FriendDto;
+import com.bomberman.common.dto.FriendListUpdate;
+import com.bomberman.common.dto.FriendRequestDto;
+import com.bomberman.common.dto.RoomInviteDto;
+import com.bomberman.common.enums.GameStatus;
+
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+
+/**
+ * Mutable presentation state. Everything except the game snapshot is changed on the
+ * JavaFX application thread; the snapshot is published by the network thread.
+ */
+public final class ClientState {
+
+    /** A snapshot with its arrival time on the {@link System#nanoTime()} clock. */
+    public record ArrivedGameState(GameStateDto state, long receivedNanos) {
+    }
+
+    /** Bounds the arrival queue if the render loop is not draining it (game screen hidden). */
+    private static final int MAX_ARRIVED_GAME_STATES = 64;
+
+    private final List<ClientStateListener> listeners = new CopyOnWriteArrayList<>();
+    private final List<Consumer<Feedback>> feedbackListeners = new CopyOnWriteArrayList<>();
+
+    private boolean connected;
+    private String currentUsername;
+    private long currentUserId;
+    private List<OnlineUserDto> onlineUsers = List.of();
+    private List<RoomSummaryDto> rooms = List.of();
+    private List<FriendDto> friends = List.of();
+    private List<FriendRequestDto> incomingFriendRequests = List.of();
+    private List<FriendRequestDto> outgoingFriendRequests = List.of();
+    private List<RoomInviteDto> pendingRoomInvites = List.of();
+    private RoomStateDto room;
+    private List<RankingEntryDto> rankingEntries = List.of();
+    private List<MatchHistoryEntryDto> matchHistory = List.of();
+    private final AtomicReference<GameStateDto> latestGameState = new AtomicReference<>();
+    /** Every snapshot, not just the latest, so the render loop sees two that arrived within one frame. */
+    private final ConcurrentLinkedQueue<ArrivedGameState> arrivedGameStates = new ConcurrentLinkedQueue<>();
+    private final AtomicReference<GameOverDto> latestGameOver = new AtomicReference<>();
+
+    public void login(long userId, String username) {
+        currentUserId = userId;
+        currentUsername = username;
+        notifyListeners();
+    }
+
+    public void logout() {
+        currentUserId = 0;
+        currentUsername = null;
+        onlineUsers = List.of();
+        rooms = List.of();
+        friends = List.of();
+        incomingFriendRequests = List.of();
+        outgoingFriendRequests = List.of();
+        pendingRoomInvites = List.of();
+        room = null;
+        rankingEntries = List.of();
+        matchHistory = List.of();
+        latestGameState.set(null);
+        arrivedGameStates.clear();
+        latestGameOver.set(null);
+        notifyListeners();
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+        notifyListeners();
+    }
+
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setOnlineUsers(List<OnlineUserDto> onlineUsers) {
+        this.onlineUsers = List.copyOf(onlineUsers);
+        notifyListeners();
+    }
+
+    public void setRooms(List<RoomSummaryDto> rooms) {
+        this.rooms = List.copyOf(rooms);
+        notifyListeners();
+    }
+
+    public void setFriendList(FriendListUpdate update) {
+        friends = List.copyOf(update.friends());
+        incomingFriendRequests = List.copyOf(update.incomingRequests());
+        outgoingFriendRequests = List.copyOf(update.outgoingRequests());
+        notifyListeners();
+    }
+
+    public void setRoom(RoomStateDto room) {
+        this.room = room;
+        notifyListeners();
+    }
+
+    public void addRoomInvite(RoomInviteDto invite) {
+        List<RoomInviteDto> updated = new java.util.ArrayList<>(pendingRoomInvites);
+        updated.removeIf(existing -> existing.inviteId().equals(invite.inviteId()));
+        updated.add(invite);
+        pendingRoomInvites = List.copyOf(updated);
+        notifyListeners();
+    }
+
+    public void removeRoomInvite(String inviteId) {
+        List<RoomInviteDto> updated = pendingRoomInvites.stream()
+                .filter(invite -> !invite.inviteId().equals(inviteId))
+                .toList();
+        if (updated.size() != pendingRoomInvites.size()) {
+            pendingRoomInvites = updated;
+            notifyListeners();
+        }
+    }
+
+    public void setRankingEntries(List<RankingEntryDto> rankingEntries) {
+        this.rankingEntries = List.copyOf(rankingEntries);
+        notifyListeners();
+    }
+
+    public void setMatchHistory(List<MatchHistoryEntryDto> matchHistory) {
+        this.matchHistory = List.copyOf(matchHistory);
+        notifyListeners();
+    }
+
+    /**
+     * Publishes an immutable authoritative snapshot from the network thread.
+     * The render loop reads the same reference without mutating its contents.
+     */
+    public void setLatestGameState(GameStateDto gameState) {
+        latestGameState.set(gameState);
+        arrivedGameStates.add(new ArrivedGameState(gameState, System.nanoTime()));
+        while (arrivedGameStates.size() > MAX_ARRIVED_GAME_STATES) {
+            arrivedGameStates.poll();
+        }
+        if (gameState.gameStatus() == GameStatus.RUNNING) {
+            latestGameOver.set(null);
+        }
+    }
+
+    /** Drops snapshots from the previous round before the first snapshot of a new game arrives. */
+    public void beginGame() {
+        GameStateDto current = latestGameState.get();
+        // GAME_STATE is decoded on the network thread and can overtake this UI-thread ROOM_STATE.
+        // Preserve an already-arrived RUNNING snapshot unless GAME_OVER proves it belongs to the old round.
+        if (latestGameOver.get() != null || current == null || current.gameStatus() != GameStatus.RUNNING) {
+            latestGameState.set(null);
+        }
+        latestGameOver.set(null);
+    }
+
+    public void setGameOver(GameOverDto gameOver) {
+        latestGameOver.set(gameOver);
+        notifyListeners();
+    }
+
+    /** Announces a one-off message (result or error) to the player. */
+    public void setFeedback(Feedback feedback) {
+        feedbackListeners.forEach(listener -> listener.accept(feedback));
+    }
+
+    public void addListener(ClientStateListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(ClientStateListener listener) {
+        listeners.remove(listener);
+    }
+
+    public void addFeedbackListener(Consumer<Feedback> listener) {
+        feedbackListeners.add(listener);
+    }
+
+    public boolean isLoggedIn() {
+        return currentUsername != null;
+    }
+
+    public String getCurrentUsername() {
+        return currentUsername;
+    }
+
+    public long getCurrentUserId() {
+        return currentUserId;
+    }
+
+    public List<OnlineUserDto> getOnlineUsers() {
+        return onlineUsers;
+    }
+
+    public List<RoomSummaryDto> getRooms() {
+        return rooms;
+    }
+
+    public List<FriendDto> getFriends() {
+        return friends;
+    }
+
+    public List<FriendRequestDto> getIncomingFriendRequests() {
+        return incomingFriendRequests;
+    }
+
+    public List<FriendRequestDto> getOutgoingFriendRequests() {
+        return outgoingFriendRequests;
+    }
+
+    public List<RoomInviteDto> getPendingRoomInvites() {
+        return pendingRoomInvites;
+    }
+
+    public RoomStateDto getRoom() {
+        return room;
+    }
+
+    public List<RankingEntryDto> getRankingEntries() {
+        return rankingEntries;
+    }
+
+    public List<MatchHistoryEntryDto> getMatchHistory() {
+        return matchHistory;
+    }
+
+    public GameStateDto getGameState() {
+        return latestGameState.get();
+    }
+
+    /** Hands every snapshot received since the last call to {@code consumer}, oldest first. */
+    public void drainArrivedGameStates(Consumer<ArrivedGameState> consumer) {
+        ArrivedGameState arrived;
+        while ((arrived = arrivedGameStates.poll()) != null) {
+            consumer.accept(arrived);
+        }
+    }
+
+    public GameOverDto getGameOver() {
+        return latestGameOver.get();
+    }
+
+    private void notifyListeners() {
+        listeners.forEach(ClientStateListener::onClientStateChanged);
+    }
+}

@@ -17,6 +17,8 @@ public final class GameMap {
     );
 
     private final Tile[][] tiles;
+    /** Bumped on every tile change so snapshots can skip an unchanged map. */
+    private int version;
 
     private GameMap(Tile[][] tiles) {
         this.tiles = copyAndValidate(tiles);
@@ -73,7 +75,12 @@ public final class GameMap {
             return false;
         }
         tiles[position.row()][position.column()] = Tile.EMPTY;
+        version++;
         return true;
+    }
+
+    public int version() {
+        return version;
     }
 
     public List<Position> getSpawnPositions() {

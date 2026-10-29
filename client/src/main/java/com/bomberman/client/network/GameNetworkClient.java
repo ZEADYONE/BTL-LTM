@@ -1,5 +1,6 @@
 package com.bomberman.client.network;
 
+import com.bomberman.common.enums.MessageType;
 import com.bomberman.common.message.NetworkMessage;
 import com.bomberman.common.message.codec.MessageDecoder;
 import com.bomberman.common.message.codec.MessageEncoder;
@@ -10,6 +11,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -18,6 +20,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public final class GameNetworkClient implements Closeable {
 
     private static final int CONNECT_TIMEOUT_MILLIS = 3_000;
+    /** The server drops connections that stay silent for 15s, so PING well within that. */
+    private static final long HEARTBEAT_INTERVAL_MILLIS = 5_000;
+    /** The server answers every PING, so this much silence means the connection is dead. */
+    private static final int READ_TIMEOUT_MILLIS = 15_000;
 
     private final ServerListener listener;
     private final MessageEncoder encoder = new MessageEncoder();
@@ -40,9 +46,11 @@ public final class GameNetworkClient implements Closeable {
         try {
             newSocket.connect(new InetSocketAddress(host, port), CONNECT_TIMEOUT_MILLIS);
             newSocket.setTcpNoDelay(true);
+            newSocket.setSoTimeout(READ_TIMEOUT_MILLIS);
             socket = newSocket;
             connected.set(true);
             Thread.ofVirtual().name("server-listener").start(() -> readMessages(newSocket));
+            Thread.ofVirtual().name("server-heartbeat").start(() -> sendHeartbeats(newSocket));
         } catch (IOException exception) {
             newSocket.close();
             throw exception;
@@ -83,7 +91,10 @@ public final class GameNetworkClient implements Closeable {
     private void readMessages(Socket connectionSocket) {
         try {
             while (connected.get() && socket == connectionSocket) {
-                listener.onMessage(decoder.decode(connectionSocket.getInputStream()));
+                NetworkMessage message = decoder.decode(connectionSocket.getInputStream());
+                if (message.type() != MessageType.PONG) {
+                    listener.onMessage(message);
+                }
             }
         } catch (IOException exception) {
             if (connected.get() && socket == connectionSocket) {
@@ -94,6 +105,20 @@ public final class GameNetworkClient implements Closeable {
             if (wasConnected) {
                 listener.onDisconnected();
             }
+        }
+    }
+
+    private void sendHeartbeats(Socket connectionSocket) {
+        try {
+            while (true) {
+                Thread.sleep(HEARTBEAT_INTERVAL_MILLIS);
+                if (!connected.get() || socket != connectionSocket) {
+                    return;
+                }
+                send(NetworkMessage.withoutPayload(MessageType.PING, UUID.randomUUID().toString()));
+            }
+        } catch (IOException | InterruptedException ignored) {
+            // The read loop notices the broken connection and reports it.
         }
     }
 

@@ -133,8 +133,154 @@ class BombermanMovementTest {
         assertEquals(new Position(11, 9), game.getPlayer(4).getPosition());
     }
 
+    @Test
+    void pacedMoveTakesAtMostOneStepPerTick() {
+        BomberPlayer player = player(1, new Position(5, 5));
+        BombermanGame game = game(emptyMap(), player, player(2, new Position(10, 9)));
+        Instant tick = Instant.parse("2026-01-01T00:00:00Z");
+
+        assertEquals(MoveResult.MOVED, game.movePlayer(1, Direction.RIGHT, tick));
+        assertEquals(MoveResult.TOO_FAST, game.movePlayer(1, Direction.RIGHT, tick));
+        assertEquals(new Position(6, 5), player.getPosition());
+    }
+
+    @Test
+    void burstOfMovesAfterLagGainsAtMostOneExtraTile() {
+        BomberPlayer player = player(1, new Position(1, 5));
+        BombermanGame game = game(emptyMap(), player, player(2, new Position(10, 9)));
+        Instant start = Instant.parse("2026-01-01T00:00:00Z");
+
+        for (long millis = 0; millis <= 100; millis += 50) {
+            for (int queued = 0; queued < 5; queued++) {
+                game.movePlayer(1, Direction.RIGHT, start.plusMillis(millis));
+            }
+        }
+
+        assertEquals(new Position(3, 5), player.getPosition());
+    }
+
+    @Test
+    void steadyClientPaceIsNeverRejectedDespiteTickQuantization() {
+        BomberPlayer player = player(1, new Position(5, 5));
+        BombermanGame game = game(emptyMap(), player, player(2, new Position(10, 9)));
+        Instant start = Instant.parse("2026-01-01T00:00:00Z");
+        long tickMillis = 1_000 / RoomGameLoop.TICKS_PER_SECOND;
+        long stepMillis = BomberPlayer.STEP_INTERVAL.toMillis();
+
+        for (int step = 0; step < 20; step++) {
+            long sentAt = step * stepMillis;
+            long processedAt = (sentAt + tickMillis - 1) / tickMillis * tickMillis;
+            Direction direction = step % 2 == 0 ? Direction.RIGHT : Direction.LEFT;
+
+            assertEquals(MoveResult.MOVED, game.movePlayer(1, direction, start.plusMillis(processedAt)),
+                    "step " + step);
+        }
+    }
+
+    @Test
+    void queuedBurstPlaysOutAtWalkingPaceAndIsAcknowledgedInOrder() {
+        BomberPlayer player = player(1, new Position(1, 5));
+        BombermanGame game = game(emptyMap(), player, player(2, new Position(10, 9)));
+        Instant start = Instant.parse("2026-01-01T00:00:00Z");
+        for (long seq = 1; seq <= 3; seq++) {
+            game.queueMove(1, Direction.RIGHT, seq);
+        }
+
+        game.processQueuedInputs(start);
+        assertEquals(new Position(2, 5), player.getPosition());
+        assertEquals(1, player.getLastMoveSeq());
+
+        game.processQueuedInputs(start.plusMillis(50));
+        game.processQueuedInputs(start.plusMillis(100));
+        assertEquals(new Position(3, 5), player.getPosition());
+        assertEquals(2, player.getLastMoveSeq());
+
+        game.processQueuedInputs(start.plusMillis(150));
+        assertEquals(new Position(4, 5), player.getPosition());
+        assertEquals(3, player.getLastMoveSeq());
+    }
+
+    @Test
+    void queueOverflowDropsOldestStepsAndAcknowledgesThem() {
+        BomberPlayer player = player(1, new Position(1, 5));
+        BombermanGame game = game(emptyMap(), player, player(2, new Position(10, 9)));
+        for (long seq = 1; seq <= BomberPlayer.MAX_QUEUED_STEPS + 2; seq++) {
+            game.queueMove(1, Direction.RIGHT, seq);
+        }
+
+        assertEquals(2, player.getLastMoveSeq());
+        game.processQueuedInputs(Instant.parse("2026-01-01T00:00:00Z"));
+        assertEquals(3, player.getLastMoveSeq());
+    }
+
+    @Test
+    void bombQueuedBehindAStepLandsOnTheNewTile() {
+        BomberPlayer player = player(1, new Position(5, 5));
+        BombermanGame game = game(emptyMap(), player, player(2, new Position(10, 9)));
+        Instant now = Instant.parse("2026-01-01T00:00:00Z");
+        game.processQueuedInputs(now);
+        game.queueMove(1, Direction.RIGHT, 1);
+        game.queueMove(1, Direction.RIGHT, 2);
+        game.queueBomb(1);
+
+        game.processQueuedInputs(now);
+        assertTrue(game.createSnapshot(1, now).bombs().isEmpty());
+        assertEquals(new Position(6, 5), player.getPosition());
+
+        Instant later = now.plusMillis(50);
+        game.processQueuedInputs(later);
+        assertEquals(List.of(new Position(7, 5)), game.createSnapshot(2, later).bombs().stream()
+                .map(BombermanSnapshot.BombSnapshot::position)
+                .toList());
+    }
+
+    @Test
+    void blockedQueuedStepIsAcknowledgedAndTheNextStepStillRuns() {
+        Tile[][] tiles = emptyTiles();
+        tiles[5][6] = Tile.HARD_WALL;
+        BomberPlayer player = player(1, new Position(5, 5));
+        BombermanGame game = game(GameMap.fromTiles(tiles), player, player(2, new Position(10, 9)));
+        game.queueMove(1, Direction.RIGHT, 1);
+        game.queueMove(1, Direction.DOWN, 2);
+
+        game.processQueuedInputs(Instant.parse("2026-01-01T00:00:00Z"));
+
+        assertEquals(new Position(5, 6), player.getPosition());
+        assertEquals(2, player.getLastMoveSeq());
+    }
+
+    @Test
+    void deadPlayersQueuedStepsAreDiscardedButAcknowledged() {
+        BomberPlayer player = player(1, new Position(5, 5));
+        BombermanGame game = game(emptyMap(), player, player(2, new Position(10, 9)),
+                player(3, new Position(1, 1)));
+        game.queueMove(1, Direction.RIGHT, 7);
+        player.kill();
+
+        game.processQueuedInputs(Instant.parse("2026-01-01T00:00:00Z"));
+
+        assertEquals(new Position(5, 5), player.getPosition());
+        assertEquals(7, player.getLastMoveSeq());
+    }
+
+    @Test
+    void blockedMoveDoesNotUseUpThePace() {
+        Tile[][] tiles = emptyTiles();
+        tiles[5][6] = Tile.HARD_WALL;
+        BomberPlayer player = player(1, new Position(5, 5));
+        BombermanGame game = game(GameMap.fromTiles(tiles), player, player(2, new Position(10, 9)));
+        Instant tick = Instant.parse("2026-01-01T00:00:00Z");
+
+        assertEquals(MoveResult.BLOCKED_BY_WALL, game.movePlayer(1, Direction.RIGHT, tick));
+        assertEquals(MoveResult.MOVED, game.movePlayer(1, Direction.DOWN, tick));
+    }
+
     private BombermanGame game(GameMap map, BomberPlayer first, BomberPlayer second) {
         return new BombermanGame(map, List.of(first, second));
+    }
+
+    private BombermanGame game(GameMap map, BomberPlayer first, BomberPlayer second, BomberPlayer third) {
+        return new BombermanGame(map, List.of(first, second, third));
     }
 
     private BomberPlayer player(long userId, Position position) {

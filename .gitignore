@@ -23,3 +23,12 @@ Thumbs.db
 # Logs and local environment
 *.log
 .env
+
+# Release artifacts served by the website (built by :client-fx:packageZip)
+downloads/*
+!downloads/README.md
+
+# Local code-analysis documentation and generated site
+/PROMPT_AGENT_PHAN_TICH_BOMBERMAN.md
+/docs/code-analysis/
+/documentation-site/

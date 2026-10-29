@@ -10,7 +10,9 @@ import com.bomberman.common.enums.PlayerStatus;
 import com.bomberman.common.message.NetworkMessage;
 import com.bomberman.server.lobby.LobbyService;
 import com.bomberman.server.network.ClientSession;
+import com.bomberman.server.network.ConnectionManager;
 import com.bomberman.server.room.RoomMessageHandler;
+import com.bomberman.server.social.FriendUpdatePublisher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -32,17 +34,23 @@ public class AuthMessageHandler {
     private final ObjectMapper objectMapper;
     private final LobbyService lobbyService;
     private final RoomMessageHandler roomMessageHandler;
+    private final ConnectionManager connectionManager;
+    private final FriendUpdatePublisher friendUpdatePublisher;
 
     public AuthMessageHandler(
             AuthenticationService authenticationService,
             ObjectMapper objectMapper,
             LobbyService lobbyService,
-            RoomMessageHandler roomMessageHandler
+            RoomMessageHandler roomMessageHandler,
+            ConnectionManager connectionManager,
+            FriendUpdatePublisher friendUpdatePublisher
     ) {
         this.authenticationService = authenticationService;
         this.objectMapper = objectMapper;
         this.lobbyService = lobbyService;
+        this.connectionManager = connectionManager;
         this.roomMessageHandler = roomMessageHandler;
+        this.friendUpdatePublisher = friendUpdatePublisher;
     }
 
     public void handleRegister(ClientSession session, NetworkMessage message) {
@@ -94,6 +102,10 @@ public class AuthMessageHandler {
                 request.password(),
                 session.getSessionId()
         );
+        if (result.result() == AuthResultCode.ACCOUNT_ALREADY_ONLINE && result.authenticatedUser() != null) {
+            replacePreviousSession(result.authenticatedUser());
+            result = authenticationService.claimOnline(result.authenticatedUser(), session.getSessionId());
+        }
         if (result.isSuccess()
                 && !session.attachAuthenticatedUser(result.authenticatedUser())) {
             authenticationService.logout(result.authenticatedUser(), session.getSessionId());
@@ -107,6 +119,7 @@ public class AuthMessageHandler {
                     result.authenticatedUser().username(),
                     session.getSessionId()
             );
+            friendUpdatePublisher.publishPresenceChanged(result.authenticatedUser().userId());
             lobbyService.broadcastLobbyUpdates();
         }
     }
@@ -119,11 +132,26 @@ public class AuthMessageHandler {
         cleanupSession(session, "disconnect");
     }
 
+    /**
+     * The password was verified, so a new login wins over the session already holding the
+     * account. That session is usually a dead connection the server has not noticed yet (e.g. the
+     * client's network changed), and keeping it would lock the player out until it times out.
+     */
+    private void replacePreviousSession(AuthenticatedUser user) {
+        authenticationService.findOnlineSessionId(user.userId())
+                .flatMap(connectionManager::find)
+                .ifPresent(previous -> {
+                    previous.close();
+                    cleanupSession(previous, "replaced by new login");
+                });
+    }
+
     private void cleanupSession(ClientSession session, String reason) {
         roomMessageHandler.handleSessionExit(session);
         AuthenticatedUser user = session.detachAuthenticatedUser();
         if (user != null) {
             authenticationService.logout(user, session.getSessionId());
+            friendUpdatePublisher.publishPresenceChanged(user.userId());
             log.info(
                     "User offline: userId={}, username={}, sessionId={}, reason={}",
                     user.userId(),
@@ -154,7 +182,7 @@ public class AuthMessageHandler {
     }
 
     private void sendLoginResponse(ClientSession session, String requestId, LoginResult result) {
-        AuthenticatedUser user = result.authenticatedUser();
+        AuthenticatedUser user = result.isSuccess() ? result.authenticatedUser() : null;
         LoginResponse response = new LoginResponse(
                 result.isSuccess(),
                 result.result(),

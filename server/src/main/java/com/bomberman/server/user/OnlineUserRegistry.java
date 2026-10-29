@@ -45,8 +45,16 @@ public class OnlineUserRegistry {
         return onlineUsers.containsKey(userId);
     }
 
+    public Optional<String> findSessionId(long userId) {
+        return Optional.ofNullable(onlineUsers.get(userId)).map(OnlineUserPresence::sessionId);
+    }
+
     public Optional<PlayerStatus> findStatus(long userId) {
         return Optional.ofNullable(onlineUsers.get(userId)).map(OnlineUserPresence::status);
+    }
+
+    public Optional<OnlineUserPresence> find(long userId) {
+        return Optional.ofNullable(onlineUsers.get(userId));
     }
 
     public List<OnlineUserPresence> snapshot() {

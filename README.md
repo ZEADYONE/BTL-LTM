@@ -1,12 +1,13 @@
 # Bomberman Online Mini
 
 Đồ án Lập trình mạng: game Bomberman desktop 2–4 người chơi mỗi phòng, hỗ trợ nhiều
-phòng chạy đồng thời. Server Spring Boot là authoritative server; client libGDX chỉ
-gửi input và render snapshot nhận qua persistent TCP connection.
+phòng chạy đồng thời. Server Spring Boot là authoritative server; client JavaFX mới
+và client libGDX tương thích ngược chỉ gửi input rồi render snapshot nhận qua kết nối
+TCP duy trì liên tục.
 
 ## Requirements
 
-- JDK 21
+- JDK 21 đầy đủ (`jpackage` cần thiết khi đóng gói bản Windows)
 - Docker Desktop hoặc Docker Engine + Docker Compose
 - Gradle Wrapper đi kèm project, không cần cài Gradle riêng
 - Windows, Linux hoặc macOS để chạy server; desktop client cần môi trường đồ họa
@@ -34,100 +35,235 @@ bomberman-online/
 │       ├── screen/                 Login/Lobby/Room/Game/Ranking/History
 │       ├── state/                  presentation state
 │       └── renderer/               authoritative snapshot renderer
-├── docker-compose.yml              MySQL only
+├── client-fx/                      JavaFX desktop application (giao diện chính)
+│   └── src/main/java/com/bomberman/clientfx/
+│       ├── game/                   renderer, input và hiệu ứng trận đấu
+│       ├── network/                persistent TCP client và dispatcher
+│       ├── state/                  presentation state
+│       └── ui/                     screen, component, popup và theme
+├── packaging/                      icon nguồn và icon nhiều kích thước cho Windows
+├── website/                        landing page tĩnh (HTML/CSS/JS) + Nginx image
+├── downloads/                      bản tải Windows do :client-fx:packageZip sinh ra (không commit)
+├── Dockerfile                      Multi-stage image for the Java server
+├── docker-compose.yml              server + website deployment stack (MySQL chạy riêng)
+├── env.template                    Environment variable template
 ├── settings.gradle
 └── build.gradle
 ```
 
 ## Configuration
 
-| Variable | Used by | Default | Purpose |
-|---|---|---:|---|
-| `BOMBERMAN_DB_PASSWORD` | Docker, server | required | MySQL root password |
-| `BOMBERMAN_DB_USERNAME` | server | `root` | Database username |
-| `BOMBERMAN_DB_URL` | server | local `bomberman_online` database | JDBC URL |
-| `BOMBERMAN_DB_PORT` | Docker | `3306` | Published MySQL port |
-| `BOMBERMAN_TCP_PORT` | server, client | `8081` | Gameplay TCP port |
-| `BOMBERMAN_SERVER_HOST` | client | `127.0.0.1` | TCP server hostname/IP |
+| Variable                  | Used by                 |                            Default | Purpose                                                    |
+| ------------------------- | ----------------------- | ---------------------------------: | ---------------------------------------------------------- |
+| `BOMBERMAN_DB_HOST`     | Docker                  |                           required | Host/IP của MySQL server riêng                           |
+| `BOMBERMAN_DB_PORT`     | Docker                  |                           `3306` | Cổng của MySQL server riêng                             |
+| `BOMBERMAN_DB_NAME`     | Docker                  |               `bomberman_online` | Database name                                              |
+| `BOMBERMAN_DB_USERNAME` | Docker, server          |                      `bomberman` | Application database user                                  |
+| `BOMBERMAN_DB_PASSWORD` | Docker, server          |                           required | Application database password                              |
+| `BOMBERMAN_DB_URL`      | server                  | local`bomberman_online` database | JDBC URL (Compose ghép từ các biến`BOMBERMAN_DB_*`)  |
+| `BOMBERMAN_TCP_PORT`    | Docker, server, clients |                           `8081` | Public gameplay TCP port                                   |
+| `BOMBERMAN_SERVER_HOST` | clients                 |                      `127.0.0.1` | TCP server hostname/IP                                     |
+| `BOMBERMAN_WEB_PORT`    | Docker                  |                             `80` | Cổng HTTP của website                                    |
+| `BOMBERMAN_PUBLIC_HOST` | website                 |          hostname của URL website | HOST hiển thị cho người chơi nhập vào game          |
+| `BOMBERMAN_PUBLIC_PORT` | website                 |             `BOMBERMAN_TCP_PORT` | PORT hiển thị, chỉ đặt khi router forward cổng khác |
+| `BOMBERMAN_REPO_URL`    | website                 |                  trống (ẩn link) | Link mã nguồn ở footer                                  |
 
-Client defaults live in `client/src/main/resources/client.properties`. They can also
-be overridden with Java system properties `bomberman.server.host` and
-`bomberman.tcp.port`.
+Client defaults live in each module's `src/main/resources/client.properties`. They can
+also be overridden with Java system properties `bomberman.server.host` and
+`bomberman.tcp.port`. Trên client JavaFX, người chơi có thể nhập `host:port` ngay tại
+màn hình đăng nhập; địa chỉ hợp lệ gần nhất sẽ được ghi nhớ.
 
-## Start MySQL
+## Run the deployment stack
 
-PowerShell:
+MySQL chạy trên server database riêng, không nằm trong Compose. Tạo database và user
+một lần trên MySQL đó (bảng do game server tự tạo khi khởi động lần đầu):
+
+```sql
+CREATE DATABASE bomberman_online CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'bomberman'@'%' IDENTIFIED BY 'mat-khau-manh';
+GRANT ALL PRIVILEGES ON bomberman_online.* TO 'bomberman'@'%';
+```
+
+Nên thay `'%'` bằng IP của máy chạy Docker. MySQL phải lắng nghe trên địa chỉ mà máy
+Docker truy cập được (`bind-address`), và cổng MySQL chỉ mở cho máy Docker, không mở ra
+Internet.
+
+Copy the environment template, set `BOMBERMAN_DB_HOST` and the database password in
+`.env`, then build and start the game server and website. Build the Windows download
+first (see [Website giới thiệu](#website-giới-thiệu)) so the website has a file to serve:
 
 ```powershell
-$env:BOMBERMAN_DB_PASSWORD = "choose-a-local-password"
-docker compose up -d
+Copy-Item env.template .env
+docker compose up -d --build
 docker compose ps
+docker compose logs -f server
 ```
 
 Linux/macOS:
 
 ```shell
-export BOMBERMAN_DB_PASSWORD='choose-a-local-password'
-docker compose up -d
+cp env.template .env
+docker compose up -d --build
 docker compose ps
+docker compose logs -f server
 ```
 
-Only MySQL is containerized. Database data is retained in the
-`bomberman_mysql_data` Docker volume.
+The game server is published on `${BOMBERMAN_TCP_PORT:-8081}`. Nếu MySQL chạy cùng
+máy với Docker, đặt `BOMBERMAN_DB_HOST=host.docker.internal`; khi đó MySQL không được
+chỉ nghe trên `127.0.0.1` mà phải nhận kết nối từ mạng Docker (user tạo với host
+`'172.%'` hoặc `'%'`). Do not commit `.env`.
 
-## Run server
+For a home deployment, forward only the configured gameplay TCP port on the router
+to the Docker host. Never forward the MySQL port.
 
-Set `BOMBERMAN_DB_PASSWORD` to the same value used by Docker, then run:
+## Run server locally during development
+
+Point the server at a MySQL database (local or the shared database server):
 
 ```powershell
+$env:BOMBERMAN_DB_URL = "jdbc:mysql://db-host:3306/bomberman_online?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+$env:BOMBERMAN_DB_USERNAME = "bomberman"
+$env:BOMBERMAN_DB_PASSWORD = "the-value-from-dot-env"
 .\gradlew.bat :server:bootRun
 ```
 
 Linux/macOS:
 
 ```shell
+export BOMBERMAN_DB_URL='jdbc:mysql://db-host:3306/bomberman_online?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
+export BOMBERMAN_DB_USERNAME='bomberman'
+export BOMBERMAN_DB_PASSWORD='the-value-from-dot-env'
 ./gradlew :server:bootRun
 ```
 
 The server opens gameplay TCP port `8081` by default. Gameplay does not use an HTTP,
 REST or WebSocket endpoint.
 
-## Run desktop client
+## Run JavaFX desktop client
 
 In another terminal:
 
 ```powershell
-.\gradlew.bat :client:run
+.\gradlew.bat :client-fx:run
 ```
 
-For a remote server:
+Mở gallery component và tài nguyên giao diện:
 
 ```powershell
-$env:BOMBERMAN_SERVER_HOST = "192.168.1.20"
-$env:BOMBERMAN_TCP_PORT = "8081"
-.\gradlew.bat :client:run
+.\gradlew.bat :client-fx:run --args="--gallery"
 ```
+
+Để kết nối server từ xa hoặc trong mạng LAN, chọn **Server Address** trên màn hình
+đăng nhập rồi nhập `host:port`, ví dụ `192.168.1.20:8081`.
+
+Sau khi đăng nhập, mở **Settings** để chỉnh riêng Master, Music, SFX hoặc tắt toàn bộ
+âm thanh bằng Mute. Các mức âm lượng được lưu cho lần mở ứng dụng tiếp theo.
+
+Client libGDX cũ vẫn có thể chạy bằng `.\gradlew.bat :client:run` để kiểm tra tương
+thích giao thức.
 
 ## Demo with four clients
 
-1. Start MySQL and the server.
+1. Make sure the MySQL server is reachable, then start the game server.
 2. Build the reusable desktop distribution:
 
    ```powershell
-   .\gradlew.bat :client:installDist
+   .\gradlew.bat :client-fx:installDist
    ```
-
 3. Open four terminals and run this command once in each terminal:
 
    ```powershell
-   .\client\build\install\client\bin\client.bat
+   .\client-fx\build\install\client-fx\bin\client-fx.bat
    ```
-
 4. Register four different accounts and log in.
 5. Client 1 creates a room; clients 2–4 join it.
 6. All players press Ready; the host presses Start Game.
 7. Use WASD/arrow keys to move and Space to place a bomb.
 8. On game over, open Ranking and History from the Lobby to inspect persisted data.
+
+## Package the JavaFX client for Windows
+
+Trên Windows có cài JDK 21 đầy đủ, chạy:
+
+```powershell
+.\gradlew.bat :client-fx:packageApp
+```
+
+Gradle tự tìm `jpackage` trong JDK 21 toolchain; không bắt buộc thêm `jpackage` vào
+`PATH`. Kết quả nằm tại:
+
+```text
+client-fx/build/dist/BombermanOnline/
+├── BombermanOnline.exe
+├── app/
+└── runtime/
+```
+
+Thư mục `runtime/` chứa Java dành riêng cho ứng dụng. Khi phát hành, nén và gửi
+**toàn bộ thư mục `BombermanOnline`**, không gửi riêng file `.exe`.
+
+Để nén sẵn cho website, dùng `packageZip` (tự chạy `packageApp` trước):
+
+```powershell
+.\gradlew.bat :client-fx:packageZip
+# Đặt version khác version Gradle: -PreleaseVersion=0.2.0
+```
+
+Kết quả nằm trong `downloads/`: `BombermanOnline-<version>-Windows.zip`, file
+`.sha256` và `release.json` (version, dung lượng, checksum mà website đọc để hiển
+thị). Bản ZIP cũ khác version bị xóa để website chỉ phục vụ một bản.
+
+## Website giới thiệu
+
+Landing page tĩnh trong `website/` (HTML/CSS/JS thuần, không cần Node.js) dùng chính
+màu, font và SVG của client JavaFX. Service `website` (Nginx) chạy cùng Compose:
+
+- `BOMBERMAN_PUBLIC_HOST`/`BOMBERMAN_PUBLIC_PORT` trong `.env` là địa chỉ hiển thị và
+  nút sao chép; Nginx trả về chúng qua `/config.js` khi container khởi động, nên sửa
+  `.env` rồi `docker compose up -d website` là đủ, không cần build lại image.
+- `downloads/` được mount chỉ đọc vào `/downloads/`. Cập nhật bản tải chỉ cần chạy lại
+  `packageZip`; website đọc `release.json` nên version, dung lượng và SHA-256 luôn
+  khớp file đang phục vụ.
+- Website không phụ thuộc service `server`: trang tải game vẫn mở được khi game
+  server tắt. Website không kiểm tra trạng thái server theo thời gian thực.
+
+Triển khai từ đầu trên máy Windows có JDK 21 và Docker:
+
+```powershell
+.\gradlew.bat :client-fx:packageZip
+Copy-Item env.template .env        # đặt BOMBERMAN_DB_HOST, mật khẩu DB, BOMBERMAN_PUBLIC_HOST
+docker compose up -d --build
+docker compose ps                  # server, website đều (healthy)
+```
+
+Kiểm tra nhanh:
+
+```powershell
+curl.exe -I http://localhost/                          # 200
+curl.exe http://localhost/config.js                    # host/port đúng .env
+curl.exe -I http://localhost/downloads/release.json    # 200
+```
+
+Cập nhật client mới: chạy lại `packageZip`, không cần restart container. Cập nhật mã
+website: `docker compose up -d --build website`. Dữ liệu người chơi nằm trên MySQL
+server riêng nên không bị ảnh hưởng khi build lại hay xóa container.
+
+### Router, DNS và HTTPS
+
+| Dịch vụ             |                          Cổng host | Forward trên router                            |
+| --------------------- | ----------------------------------: | ----------------------------------------------- |
+| Website HTTP          |         `BOMBERMAN_WEB_PORT` (80) | Có                                             |
+| Game TCP              |       `BOMBERMAN_TCP_PORT` (8081) | Có                                             |
+| MySQL (server riêng) | `BOMBERMAN_DB_PORT` trên máy DB | Không bao giờ; chỉ cho máy Docker truy cập |
+
+- Có thể dùng một hostname/DDNS cho cả hai; khi đó để trống `BOMBERMAN_PUBLIC_HOST`.
+- Nếu website đi qua Cloudflare proxy, hostname game phải là bản ghi **DNS only** và
+  phải đặt vào `BOMBERMAN_PUBLIC_HOST`, vì proxy HTTP không chuyển tiếp TCP thô.
+- Kiểm tra IP WAN của router trùng IP public; nếu ISP dùng CGNAT, port forwarding
+  không hoạt động (cần IPv4 public, tunnel hoặc VPS).
+- Website hiện chạy HTTP nên Chrome/Edge cảnh báo khi tải ZIP; trang có checksum
+  SHA-256 để người chơi tự kiểm tra. Nên bổ sung HTTPS (Caddy hoặc reverse proxy có TLS) khi domain ổn định.
+- Kết nối game là TCP chưa mã hóa: người chơi nên dùng mật khẩu riêng cho game.
 
 ## Architecture
 
@@ -187,12 +323,21 @@ JSON payload size is 1 MiB.
   `LOGIN_RESPONSE`, `LOGOUT`
 - Lobby: `ONLINE_USERS_REQUEST`, `ONLINE_USERS_UPDATE`, `ROOM_LIST_REQUEST`,
   `ROOM_LIST_UPDATE`
-- Room: `CREATE_ROOM`, `JOIN_ROOM`, `LEAVE_ROOM`, `ROOM_STATE`, `READY`, `START_GAME`
+- Friends: `FRIEND_LIST_REQUEST`, `FRIEND_LIST_UPDATE`, `FRIEND_REQUEST_SEND`,
+  `FRIEND_REQUEST_RESPOND`, `FRIEND_REQUEST_CANCEL`, `FRIEND_REMOVE`
+- Room: `CREATE_ROOM`, `JOIN_ROOM`, `LEAVE_ROOM`, `ROOM_STATE`, `READY`, `START_GAME`,
+  `KICK_ROOM_MEMBER`, `ROOM_MEMBER_REMOVED`
+- Room invitations: `ROOM_INVITE_SEND`, `ROOM_INVITE_RECEIVED`,
+  `ROOM_INVITE_RESPOND`, `ROOM_INVITE_STATUS`
 - Gameplay input: `MOVE`, `PLACE_BOMB`
 - Gameplay output: `GAME_STATE`, `PLAYER_DIED`, `GAME_OVER`
 - Post-game: `PLAY_AGAIN`
 - Ranking: `RANKING_REQUEST`, `RANKING_RESPONSE`
 - History: `HISTORY_REQUEST`, `HISTORY_RESPONSE`
+
+The social and room-moderation contract is specified in
+[`docs/social-protocol.md`](docs/social-protocol.md). Friends, host kick and room invitations are
+implemented end-to-end.
 
 ## Authoritative gameplay and concurrency
 
@@ -212,10 +357,10 @@ JSON payload size is 1 MiB.
 Scores are stored as integer half-point units to avoid floating-point errors:
 
 | Result | Stored units | Displayed score |
-|---|---:|---:|
-| WIN | 2 | 1.0 |
-| DRAW | 1 | 0.5 |
-| LOSS | 0 | 0.0 |
+| ------ | -----------: | --------------: |
+| WIN    |            2 |             1.0 |
+| DRAW   |            1 |             0.5 |
+| LOSS   |            0 |             0.0 |
 
 Ranking order is `totalScore DESC`, then `totalWins DESC`.
 

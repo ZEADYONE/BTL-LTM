@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.UUID;
 
@@ -117,7 +118,7 @@ class AuthenticationIntegrationTest {
     }
 
     @Test
-    void accountCannotLoginFromTwoClientsAtOnce() throws Exception {
+    void newLoginReplacesSessionAlreadyHoldingAccount() throws Exception {
         String username = uniqueUsername();
         String password = "correct-password";
 
@@ -125,10 +126,28 @@ class AuthenticationIntegrationTest {
             firstClient.register(username, password);
             assertTrue(firstClient.login(username, password).success());
 
-            LoginResponse duplicateLogin = secondClient.login(username, password);
+            LoginResponse secondLogin = secondClient.login(username, password);
 
-            assertFalse(duplicateLogin.success());
-            assertEquals(AuthResultCode.ACCOUNT_ALREADY_ONLINE, duplicateLogin.result());
+            assertTrue(secondLogin.success());
+            assertTrue(onlineUserRegistry.isOnline(secondLogin.userId()));
+            assertTrue(firstClient.isClosedByServer());
+            assertTrue(secondClient.ping());
+        }
+    }
+
+    @Test
+    void wrongPasswordDoesNotReplaceOnlineSession() throws Exception {
+        String username = uniqueUsername();
+        String password = "correct-password";
+
+        try (TestTcpClient firstClient = connect(); TestTcpClient secondClient = connect()) {
+            firstClient.register(username, password);
+            assertTrue(firstClient.login(username, password).success());
+
+            LoginResponse rejected = secondClient.login(username, "wrong-password");
+
+            assertEquals(AuthResultCode.INVALID_CREDENTIALS, rejected.result());
+            assertTrue(firstClient.ping());
         }
     }
 
@@ -243,6 +262,19 @@ class AuthenticationIntegrationTest {
             );
             NetworkMessage response = readMatching(MessageType.PONG, requestId);
             return response.type() == MessageType.PONG && requestId.equals(response.requestId());
+        }
+
+        private boolean isClosedByServer() {
+            try {
+                while (socket.getInputStream().read() != -1) {
+                    // Skip lobby broadcasts sent before the server dropped this session.
+                }
+                return true;
+            } catch (SocketTimeoutException exception) {
+                return false;
+            } catch (IOException exception) {
+                return true;
+            }
         }
 
         private <T> T exchange(

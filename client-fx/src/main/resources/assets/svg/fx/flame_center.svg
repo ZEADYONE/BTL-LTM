@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Placeholder art. Reaches every edge between 13 and 51 so it joins flame_mid / flame_end. -->
+  <path d="M0 13 H13 V0 H51 V13 H64 V51 H51 V64 H13 V51 H0 Z" fill="#FF7A1A"/>
+  <circle cx="32" cy="32" r="29" fill="#FF7A1A"/>
+  <path d="M0 19 H19 V0 H45 V19 H64 V45 H45 V64 H19 V45 H0 Z" fill="#FFC93C"/>
+  <circle cx="32" cy="32" r="21" fill="#FFC93C"/>
+  <path d="M0 25 H25 V0 H39 V25 H64 V39 H39 V64 H25 V39 H0 Z" fill="#FFF6C2"/>
+  <circle cx="32" cy="32" r="13" fill="#FFF6C2"/>
+</svg>

@@ -1,0 +1,11 @@
+# Build context allowlist for website/Dockerfile (BuildKit uses this file instead of
+# the root .dockerignore). Only the site and the client's art/fonts are sent.
+*
+!website/index.html
+!website/css/
+!website/js/
+!website/assets/
+!website/nginx/
+!client-fx/src/main/resources/assets/svg/
+!client-fx/src/main/resources/assets/app_icon.png
+!client-fx/src/main/resources/fonts/

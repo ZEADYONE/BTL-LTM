@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Placeholder art. Horizontal; both ends span y 13–51 so tiles join seamlessly. -->
+  <path d="M0 13 Q16 9 32 13 T64 13 V51 Q48 55 32 51 T0 51 Z" fill="#FF7A1A"/>
+  <path d="M0 19 Q16 16 32 19 T64 19 V45 Q48 48 32 45 T0 45 Z" fill="#FFC93C"/>
+  <path d="M0 25 H64 V39 H0 Z" fill="#FFF6C2"/>
+</svg>

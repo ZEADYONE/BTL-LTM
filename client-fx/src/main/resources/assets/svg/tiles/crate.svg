@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80">
+  <!-- Placeholder art. Same block geometry as block_stone.svg. -->
+  <g stroke="#2A1F3D" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="2" y="2" width="60" height="76" rx="6" fill="#B8621F"/>
+    <rect x="2" y="2" width="60" height="58" rx="6" fill="#E08A3C"/>
+    <rect x="10" y="10" width="44" height="42" rx="3" fill="#C9722A" stroke-width="3"/>
+    <path d="M13 48 L51 14" fill="none" stroke="#E08A3C" stroke-width="9"/>
+    <path d="M13 48 L51 14" fill="none" stroke-width="3"/>
+    <path d="M6 6 H30" fill="none" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="2.5"/>
+    <path d="M12 68 H20 M44 68 H52" fill="none" stroke="#8A4514" stroke-width="3"/>
+  </g>
+</svg>

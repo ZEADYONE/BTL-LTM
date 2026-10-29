@@ -15,7 +15,7 @@ public class GameStateMapper {
         return new GameStateDto(
                 snapshot.tick(),
                 snapshot.status(),
-                snapshot.map().stream()
+                snapshot.map() == null ? null : snapshot.map().stream()
                         .map(row -> row.stream().map(this::toTileType).toList())
                         .toList(),
                 snapshot.players().stream()
@@ -26,7 +26,8 @@ public class GameStateMapper {
                                 player.alive(),
                                 player.bombCapacity(),
                                 player.activeBombs(),
-                                player.bombRange()
+                                player.bombRange(),
+                                player.lastMoveSeq()
                         ))
                         .toList(),
                 snapshot.bombs().stream()
